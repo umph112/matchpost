@@ -26,7 +26,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     .eq('status', 'open')
     .order('date', { ascending: true })
 
-  console.log('params.id:', params.id)
+ console.log('params.id:', id)
 console.log('profile:', profile)
 
     if (!profile) return <div>존재하지 않는 인플루언서예요</div>
