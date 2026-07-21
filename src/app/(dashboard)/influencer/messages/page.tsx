@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense, type ChangeEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -14,6 +14,8 @@ function MessagesContent() {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
   const searchParams = useSearchParams()
   const proposalId = searchParams.get('proposalId')
   const receiverId = searchParams.get('receiverId')
@@ -132,7 +134,30 @@ function MessagesContent() {
     })
 
     setNewMessage('')
-    
+
+  }
+
+  const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !currentUser || !selectedConversation) return
+    setUploading(true)
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/chat/upload', { method: 'POST', body: fd })
+    const j = await res.json()
+    if (res.ok) {
+      await supabase.from('messages').insert({
+        sender_id: currentUser.id,
+        receiver_id: selectedConversation.otherId,
+        proposal_id: selectedConversation.proposalId ?? proposalId,
+        content: '',
+        file_url: j.url,
+        file_name: j.name,
+        file_type: j.type,
+      })
+    }
+    setUploading(false)
+    if (fileRef.current) fileRef.current.value = ''
   }
 
   if (selectedConversation) {
@@ -169,6 +194,12 @@ function MessagesContent() {
                   ? 'bg-blue-600 text-white rounded-br-sm'
                   : 'bg-gray-100 text-gray-800 rounded-bl-sm'
               }`}>
+                {msg.file_url && (
+                  <a href={msg.file_url} target="_blank" rel="noopener noreferrer" download={msg.file_name}
+                    className={`flex items-center gap-1.5 mb-1 underline ${msg.sender_id === currentUser?.id ? 'text-blue-100' : 'text-blue-600'}`}>
+                    📎 <span className="truncate max-w-[180px]">{msg.file_name}</span>
+                  </a>
+                )}
                 {msg.content}
                 <p className={`text-xs mt-1 ${msg.sender_id === currentUser?.id ? 'text-blue-200' : 'text-gray-400'}`}>
                   {new Date(msg.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
@@ -180,6 +211,12 @@ function MessagesContent() {
         </div>
 
         <div className="flex gap-2">
+          <input ref={fileRef} type="file" onChange={handleFile} className="hidden"
+            accept=".pdf,.doc,.docx,.hwp,.hwpx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.zip" />
+          <button onClick={() => fileRef.current?.click()} disabled={uploading}
+            className="px-3 py-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50" title="파일 첨부">
+            {uploading ? '⏳' : '📎'}
+          </button>
           <input
             type="text"
             value={newMessage}

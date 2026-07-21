@@ -230,9 +230,13 @@ export default async function InfluencerMyPage() {
                     <p className="font-semibold text-sm text-gray-800">{nameById[c.otherId] ?? '상대방'}</p>
                     <p className="text-xs text-gray-400 truncate">{c.last?.content}</p>
                   </div>
-                  {c.awaitingMe && (
+                  {c.awaitingMe ? (
                     <span className="ml-2 shrink-0 text-[11px] bg-red-100 text-red-500 px-2 py-0.5 rounded-full">
                       미응답
+                    </span>
+                  ) : (
+                    <span className="ml-2 shrink-0 text-[11px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">
+                      상대 미확인
                     </span>
                   )}
                 </Link>
