@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import DealConfirmBar from '@/components/DealConfirmBar'
 
 function MessagesContent() {
   const [conversations, setConversations] = useState<any[]>([])
@@ -146,6 +147,13 @@ function MessagesContent() {
           </div>
           <p className="font-semibold text-gray-800">{selectedConversation.otherName}</p>
         </div>
+
+        {(selectedConversation.proposalId ?? proposalId) && currentUser && (
+          <DealConfirmBar
+            proposalId={selectedConversation.proposalId ?? proposalId}
+            currentUserId={currentUser.id}
+          />
+        )}
 
         <div className="flex-1 overflow-y-auto space-y-3 mb-4">
           {messages.length === 0 && (

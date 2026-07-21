@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import LogoutButton from '@/components/LogoutButton'
 
 const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
 const PLATFORMS = ['인스타그램', '유튜브', '블로그', '틱톡']
@@ -43,10 +44,16 @@ export default function InfluencerProfilePage() {
         .eq('user_id', user.id)
         .single()
 
+      const { data: priv } = await supabase
+        .from('user_private')
+        .select('phone')
+        .eq('user_id', user.id)
+        .single()
+
       if (p) {
         setProfile(p)
         setName(p.name ?? '')
-        setPhone(p.phone ?? '')
+        setPhone(priv?.phone ?? '')
       }
       if (ip) {
         setInfluencerProfile(ip)
@@ -84,8 +91,12 @@ export default function InfluencerProfilePage() {
 
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ name, phone })
+      .update({ name })
       .eq('id', user.id)
+
+    await supabase
+      .from('user_private')
+      .upsert({ user_id: user.id, phone }, { onConflict: 'user_id' })
 
     const { error: ipError } = await supabase
       .from('influencer_profiles')
@@ -115,11 +126,14 @@ export default function InfluencerProfilePage() {
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
       {/* 헤더 */}
-      <div className="flex items-center mb-8">
-        <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">
-          ← 뒤로
-        </button>
-        <h1 className="text-xl font-bold text-gray-900">내 프로필</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center">
+          <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">
+            ← 뒤로
+          </button>
+          <h1 className="text-xl font-bold text-gray-900">내 정보 수정</h1>
+        </div>
+        <LogoutButton />
       </div>
 
       {error && (

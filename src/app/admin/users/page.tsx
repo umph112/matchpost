@@ -25,7 +25,19 @@ function UsersContent() {
       .neq('role', 'admin')
       .order('created_at', { ascending: false })
 
-    setUsers(data ?? [])
+    // 민감정보(전화·이메일)는 user_private에서 (관리자만 조회 가능)
+    const { data: privs } = await supabase
+      .from('user_private')
+      .select('user_id, phone, email')
+    const privMap = Object.fromEntries((privs ?? []).map((p) => [p.user_id, p]))
+
+    const merged = (data ?? []).map((u) => ({
+      ...u,
+      phone: privMap[u.id]?.phone ?? '',
+      email: privMap[u.id]?.email ?? '',
+    }))
+
+    setUsers(merged)
     setLoading(false)
   }
 

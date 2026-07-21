@@ -62,6 +62,16 @@ export default async function AdvertiserDashboard() {
         </div>
       </div>
 
+      <a href="/advertiser/campaigns/new" className="block bg-amber-500 text-white rounded-2xl p-5 shadow-sm hover:bg-amber-600 transition mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-semibold text-lg">📣 캠페인 등록하기</p>
+            <p className="text-amber-100 text-sm mt-1">원하는 일정 · 장소 · 키워드로 협업을 모집하세요</p>
+          </div>
+          <span className="text-2xl">＋</span>
+        </div>
+      </a>
+
       <div className="grid grid-cols-2 gap-4 mb-8">
         <a href="/advertiser/search" className="bg-blue-600 text-white rounded-2xl p-5 shadow-sm hover:bg-blue-700 transition">
           <div className="text-2xl mb-2">🔍</div>
