@@ -14,6 +14,7 @@ export default function DealConfirmBar({
   const [proposal, setProposal] = useState<any>(null)
   const [title, setTitle] = useState('')
   const [busy, setBusy] = useState(false)
+  const [contact, setContact] = useState<{ name: string; phone: string; email: string } | null>(null)
   const supabase = createClient()
 
   const load = async () => {
@@ -37,12 +38,35 @@ export default function DealConfirmBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proposalId])
 
+  const done = proposal ? proposal.advertiser_confirmed && proposal.influencer_confirmed : false
+
+  // 양쪽 확정 완료 시 상대 연락처 공개 (서버 라우트가 당사자·확정 여부 재검증)
+  useEffect(() => {
+    if (!done) {
+      setContact(null)
+      return
+    }
+    let alive = true
+    fetch('/api/deal/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ proposalId }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (alive && data && !data.error) setContact(data)
+      })
+    return () => {
+      alive = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, proposalId])
+
   if (!proposal) return null
 
   const isAdvertiser = currentUserId === proposal.advertiser_id
   const myConfirmed = isAdvertiser ? proposal.advertiser_confirmed : proposal.influencer_confirmed
   const otherConfirmed = isAdvertiser ? proposal.influencer_confirmed : proposal.advertiser_confirmed
-  const done = proposal.advertiser_confirmed && proposal.influencer_confirmed
 
   const confirm = async () => {
     setBusy(true)
@@ -81,6 +105,40 @@ export default function DealConfirmBar({
           </button>
         )}
       </div>
+
+      {done && contact && (contact.phone || contact.email) && (
+        <div className="mt-3 pt-3 border-t border-green-200">
+          <p className="text-[11px] text-gray-500 mb-1.5">
+            협의가 완료되어 <span className="font-semibold text-gray-700">{contact.name}</span>님의 연락처가 공개됐어요
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {contact.phone && (
+              <>
+                <a
+                  href={`tel:${contact.phone}`}
+                  className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-600"
+                >
+                  📞 {contact.phone}
+                </a>
+                <a
+                  href={`sms:${contact.phone}`}
+                  className="flex items-center gap-1 bg-white text-green-700 border border-green-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-50"
+                >
+                  💬 문자
+                </a>
+              </>
+            )}
+            {contact.email && (
+              <a
+                href={`mailto:${contact.email}`}
+                className="flex items-center gap-1 bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50"
+              >
+                ✉️ {contact.email}
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
