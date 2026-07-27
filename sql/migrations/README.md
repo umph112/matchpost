@@ -17,3 +17,7 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 
 ## 목록
 - `0001_campaigns_dealsheet_fields.sql` — 캠페인 채널/구분/옵션/다중날짜/총예산 컬럼
+- `0002_campaigns_content_counts.sql` — 채널별 의뢰 콘텐츠 수량
+- `0003_campaigns_manuscript_deadline.sql` — 원고 마감일 + 추가 전달내용
+- `0004_campaigns_payment.sql` — 결제 예정일 + 결제방식
+- `0005_campaigns_recruit_schedule.sql` — 참여 인플루언서 모집일정(신청기간·발표·콘텐츠등록기간·모집인원). manuscript_deadline* 대체·미사용

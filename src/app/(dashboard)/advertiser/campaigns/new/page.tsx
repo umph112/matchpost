@@ -3,19 +3,24 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { INFLUENCER_CATEGORIES } from '@/lib/categories'
 
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
+// 채널별 콘텐츠 단위 (수량 입력 라벨)
+const CHANNEL_UNIT: Record<string, string> = { 블로그: '포스트', 유튜브: '영상', 인스타그램: '피드', 틱톡: '피드' }
+// 결제방식 (복수 선택 가능 — 복수 선택 시 인플루언서가 대시에서 최종 결정)
+const PAYMENT_METHODS = ['세금계산서 발행', '3.3% 소득세 신고']
 const TYPES = [
   { key: '제품', label: '제품', desc: '제품을 받아 체험 후 포스팅' },
   { key: '지역', label: '지역', desc: '업장을 방문해 서비스 체험 후 포스팅' },
   { key: '기자단', label: '기자단', desc: '전달된 자료만으로 포스팅' },
 ]
-const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
-
 type DateRow = { date: string; start_time: string; end_time: string }
 
 export default function NewCampaignPage() {
   const [channels, setChannels] = useState<string[]>([])
+  // 채널별 의뢰 콘텐츠 수량 (선택한 채널에 대해서만, 1~99). 예: { 블로그: 1, 인스타그램: 2 }
+  const [contentCounts, setContentCounts] = useState<Record<string, number>>({})
   const [campaignType, setCampaignType] = useState('')
 
   // 옵션 (추가형 + 비용 직접 입력)
@@ -41,6 +46,19 @@ export default function NewCampaignPage() {
   //              딜시트에도 수수료 항목 별도 표기. (현재는 수수료 없음)
   const [budgetManwon, setBudgetManwon] = useState('')
 
+  // 참여 인플루언서 모집일정 (캠페인 진행 날짜와 별개)
+  const [recruitStart, setRecruitStart] = useState('')   // 신청기간 시작
+  const [recruitEnd, setRecruitEnd] = useState('')       // 신청기간 종료
+  const [announceDate, setAnnounceDate] = useState('')   // 인플루언서 발표
+  const [contentStart, setContentStart] = useState('')   // 콘텐츠 등록기간 시작
+  const [contentEnd, setContentEnd] = useState('')       // 콘텐츠 등록기간 종료
+  const [recruitTarget, setRecruitTarget] = useState('') // 모집 인원(목표)
+
+  // 결제 예정일(달력 지정 또는 규칙 직접입력) + 결제방식(복수 선택)
+  const [paymentDueDate, setPaymentDueDate] = useState('')
+  const [paymentDueRule, setPaymentDueRule] = useState('')
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([])
+
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [freeTags, setFreeTags] = useState('')
   const [details, setDetails] = useState('')
@@ -56,8 +74,19 @@ export default function NewCampaignPage() {
 
   const toggleChannel = (c: string) =>
     setChannels((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))
+  const setCount = (ch: string, v: string) => {
+    let n = parseInt(v || '0')
+    if (isNaN(n)) n = 1
+    n = Math.max(1, Math.min(99, n))
+    setContentCounts((prev) => ({ ...prev, [ch]: n }))
+  }
   const toggleCategory = (cat: string) =>
     setSelectedCategories((prev) => (prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]))
+  const togglePayMethod = (m: string) =>
+    setPaymentMethods((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]))
+  // 필수 키워드 파싱: 공백/쉼표 구분, 앞의 # 제거, 중복 제거 (저장은 # 없이)
+  const parseKeywords = (s: string) =>
+    [...new Set(s.split(/[,\s]+/).map((t) => t.trim().replace(/^#+/, '')).filter((t) => t.length > 0))]
 
   const addDate = () => {
     if (!dateInput) return
@@ -106,12 +135,18 @@ export default function NewCampaignPage() {
     if (clipOpt) options.push({ type: '네이버클립', cost: clipCost ? parseInt(clipCost) : null })
 
     const sorted = [...dates].sort((a, b) => a.date.localeCompare(b.date))
-    const freeTagsArray = freeTags.split(',').map((t) => t.trim()).filter((t) => t.length > 0)
+    const keywordArray = parseKeywords(freeTags)
+    if (keywordArray.length > 20) {
+      setError('필수 키워드는 최대 20개까지 넣을 수 있어요.')
+      return
+    }
 
     const { error: insertError } = await supabase.from('campaigns').insert({
       advertiser_id: user.id,
       title,
       channels,
+      // 선택한 채널에 대해서만 수량 저장 (미입력 시 기본 1)
+      content_counts: Object.fromEntries(channels.map((c) => [c, contentCounts[c] ?? 1])),
       campaign_type: campaignType,
       options,
       dates: sorted,
@@ -123,8 +158,19 @@ export default function NewCampaignPage() {
       location_district: isRegion ? locationDistrict : null,
       // 세금 포함 총 예산 (원 단위 저장). 만원 단위 입력값 × 10000
       budget_total: parseInt(budgetManwon) * 10000,
+      // 참여 인플루언서 모집일정 (캠페인 진행 날짜와 별개)
+      recruit_start: recruitStart || null,
+      recruit_end: recruitEnd || null,
+      announce_date: announceDate || null,
+      content_start: contentStart || null,
+      content_end: contentEnd || null,
+      recruit_target: recruitTarget ? parseInt(recruitTarget) : null,
+      // 결제 예정일(날짜 또는 규칙) + 결제방식(복수 → 대시에서 최종 결정)
+      payment_due_date: paymentDueDate || null,
+      payment_due_rule: paymentDueRule || null,
+      payment_methods: paymentMethods,
       predefined_categories: selectedCategories,
-      free_tags: freeTagsArray,
+      free_tags: keywordArray,
       details: details || null,
       is_public: isPublic,
       status: 'open',
@@ -272,6 +318,38 @@ export default function NewCampaignPage() {
         />
       </div>
 
+      {/* 참여 인플루언서 모집일정 (캠페인 진행 날짜와 별개) */}
+      <div className={card}>
+        <label className="block text-sm font-medium text-gray-700 mb-1">참여 인플루언서 모집일정</label>
+        <p className="text-xs text-gray-400 mb-3">캠페인 진행 날짜와 별개로, 인플루언서 모집·발표·콘텐츠 등록 일정이에요.</p>
+
+        <p className="text-xs text-gray-500 mb-1">캠페인 신청기간</p>
+        <div className="flex items-center gap-2 mb-3">
+          <input type="date" value={recruitStart} onChange={(e) => setRecruitStart(e.target.value)} className={input + ' flex-1'} />
+          <span className="text-gray-400 text-xs">~</span>
+          <input type="date" value={recruitEnd} onChange={(e) => setRecruitEnd(e.target.value)} className={input + ' flex-1'} />
+        </div>
+
+        <p className="text-xs text-gray-500 mb-1">인플루언서 발표</p>
+        <input type="date" value={announceDate} onChange={(e) => setAnnounceDate(e.target.value)} className={input + ' mb-3'} />
+
+        <p className="text-xs text-gray-500 mb-1">콘텐츠 등록기간</p>
+        <div className="flex items-center gap-2 mb-3">
+          <input type="date" value={contentStart} onChange={(e) => setContentStart(e.target.value)} className={input + ' flex-1'} />
+          <span className="text-gray-400 text-xs">~</span>
+          <input type="date" value={contentEnd} onChange={(e) => setContentEnd(e.target.value)} className={input + ' flex-1'} />
+        </div>
+
+        <p className="text-xs text-gray-500 mb-1">모집 인원</p>
+        <div className="flex items-center gap-2">
+          <input type="number" min={1} value={recruitTarget} onChange={(e) => setRecruitTarget(e.target.value)} className={input + ' w-28'} placeholder="예: 5" />
+          <span className="text-sm text-gray-500">명</span>
+          {recruitTarget && parseInt(recruitTarget) > 0 && (
+            <span className="text-xs text-gray-400 ml-1">참여 0/{parseInt(recruitTarget)}명</span>
+          )}
+        </div>
+      </div>
+
       {/* ⑤ 날짜 (최대 30일) + 기본 시간 */}
       <div className={card}>
         <label className="block text-sm font-medium text-gray-700 mb-2">날짜 * (최대 30일)</label>
@@ -364,7 +442,7 @@ export default function NewCampaignPage() {
       <div className={card}>
         <label className="block text-sm font-medium text-gray-700 mb-2">카테고리 (복수 선택 가능)</label>
         <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((cat) => (
+          {INFLUENCER_CATEGORIES.map((cat) => (
             <button key={cat} onClick={() => toggleCategory(cat)} className={chip(selectedCategories.includes(cat))}>
               {cat}
             </button>
@@ -372,10 +450,82 @@ export default function NewCampaignPage() {
         </div>
       </div>
 
-      {/* 자유 태그 */}
+      {/* 콘텐츠 수량 (선택한 채널별로 구분 입력) */}
       <div className={card}>
-        <label className="block text-sm font-medium text-gray-700 mb-2">자유 태그 (쉼표로 구분)</label>
-        <input type="text" value={freeTags} onChange={(e) => setFreeTags(e.target.value)} className={input} placeholder="예: 팝업스토어, 신제품, 뷰티" />
+        <label className="block text-sm font-medium text-gray-700 mb-1">의뢰 콘텐츠 수량</label>
+        <p className="text-xs text-gray-400 mb-3">선택한 채널별로 인플루언서에게 의뢰할 콘텐츠 개수예요 (채널당 최대 99개).</p>
+        {channels.length === 0 ? (
+          <p className="text-sm text-gray-400">먼저 위에서 채널을 선택해주세요.</p>
+        ) : (
+          <div className="space-y-2">
+            {channels.map((ch) => (
+              <div key={ch} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                <span className="text-sm font-medium text-gray-700 w-24 shrink-0">{ch}</span>
+                <span className="text-xs text-gray-400 flex-1">{CHANNEL_UNIT[ch] ?? '콘텐츠'}</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={contentCounts[ch] ?? 1}
+                  onChange={(e) => setCount(ch, e.target.value)}
+                  className="border border-gray-200 rounded px-2 py-1 text-sm w-20 text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+                <span className="text-sm text-gray-500 shrink-0">개</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 결제 예정일 + 결제방식 */}
+      <div className={card}>
+        <label className="block text-sm font-medium text-gray-700 mb-2">결제 예정일</label>
+        <input
+          type="date"
+          value={paymentDueDate}
+          onChange={(e) => setPaymentDueDate(e.target.value)}
+          className={input}
+        />
+        <p className="text-xs text-gray-400 my-2 text-center">또는 결제 규칙을 직접 입력</p>
+        <input
+          type="text"
+          value={paymentDueRule}
+          onChange={(e) => setPaymentDueRule(e.target.value)}
+          className={input}
+          placeholder="예: 원고 업로드 익월 10일 / 세금계산서 발행 후 30일"
+        />
+
+        <label className="block text-sm font-medium text-gray-700 mt-4 mb-2">결제방식 (복수 선택 가능)</label>
+        <div className="flex flex-wrap gap-2">
+          {PAYMENT_METHODS.map((m) => (
+            <button key={m} onClick={() => togglePayMethod(m)} className={chip(paymentMethods.includes(m))}>
+              {m}
+            </button>
+          ))}
+        </div>
+        {paymentMethods.length > 1 && (
+          <p className="text-xs text-amber-600 mt-2">복수 선택됨 — 인플루언서가 대시에서 최종 결정해요.</p>
+        )}
+      </div>
+
+      {/* 필수 키워드 */}
+      <div className={card}>
+        <label className="block text-sm font-medium text-gray-700 mb-2">필수 키워드 (최대 20개)</label>
+        <input
+          type="text"
+          value={freeTags}
+          onChange={(e) => setFreeTags(e.target.value)}
+          className={input}
+          placeholder="예: #팝업스토어 #가볼만한곳"
+        />
+        {(() => {
+          const n = parseKeywords(freeTags).length
+          return (
+            <p className={`text-xs mt-1 ${n > 20 ? 'text-red-500' : 'text-gray-400'}`}>
+              {n}/20개
+            </p>
+          )
+        })()}
       </div>
 
       {/* 상세 내용 */}
