@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
+import TimeSelect from '@/components/TimeSelect'
 
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
 // 채널별 콘텐츠 단위 (수량 입력 라벨)
@@ -32,14 +33,25 @@ export default function NewCampaignPage() {
   const [title, setTitle] = useState('')
 
   // 날짜 (최대 30일) + 기본 시간
-  const [dateInput, setDateInput] = useState('')
-  const [dates, setDates] = useState<DateRow[]>([])
-  const [defaultStart, setDefaultStart] = useState('')
-  const [defaultEnd, setDefaultEnd] = useState('')
+  const [dateInput, setDateInput] = useState('')   // 진행일정 시작일(또는 단일일)
+  const [dateEnd, setDateEnd] = useState('')        // 진행일정 종료일(기간 선택 시, 선택사항)
+  const [dates, setDates] = useState<string[]>([]) // 선택된 진행일정 날짜들 (YYYY-MM-DD)
+  // 평일 캠페인 시간
+  const [weekdayStart, setWeekdayStart] = useState('')
+  const [weekdayEnd, setWeekdayEnd] = useState('')
+  // 주말/휴일 시간 (포함 시 별도 입력 여부 안내 후)
+  const [weekendDecided, setWeekendDecided] = useState(false) // 안내에 응답했는지
+  const [useWeekendTime, setUseWeekendTime] = useState(false) // 별도 입력 선택
+  const [weekendStart, setWeekendStart] = useState('')
+  const [weekendEnd, setWeekendEnd] = useState('')
 
-  // 장소 (구분='지역'일 때만)
-  const [locationCity, setLocationCity] = useState('')
+  // 장소 (구분='지역'일 때만) — 네이버 지역검색으로 장소명·주소 자동입력
+  const [locationCity, setLocationCity] = useState('')       // 표시/달력용 지역(자동 파생)
   const [locationDistrict, setLocationDistrict] = useState('')
+  const [locationName, setLocationName] = useState('')       // 장소명
+  const [locationAddress, setLocationAddress] = useState('') // 상세 주소
+  const [placeQuery, setPlaceQuery] = useState('')
+  const [placeResults, setPlaceResults] = useState<{ name: string; address: string }[]>([])
 
   // 캠페인 예산 (만원 단위 입력, 세금 포함 총액. 저장은 원 단위)
   // TODO(수수료): 향후 캠페인별 플랫폼 이용 수수료 도입 시 → 이 총 예산에 수수료 포함 +
@@ -88,35 +100,86 @@ export default function NewCampaignPage() {
   const parseKeywords = (s: string) =>
     [...new Set(s.split(/[,\s]+/).map((t) => t.trim().replace(/^#+/, '')).filter((t) => t.length > 0))]
 
-  const addDate = () => {
-    if (!dateInput) return
-    if (dates.some((d) => d.date === dateInput)) return
-    if (dates.length >= 30) {
-      setError('날짜는 최대 30일까지 지정할 수 있어요.')
+  // 시작~종료(포함) 사이의 모든 날짜(YYYY-MM-DD) 나열. 종료 없으면 시작 하루만.
+  const enumerateDays = (start: string, end: string) => {
+    const out: string[] = []
+    const s = new Date(start + 'T00:00:00')
+    const e = new Date(end + 'T00:00:00')
+    for (const d = s; d <= e; d.setDate(d.getDate() + 1)) {
+      out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
+    }
+    return out
+  }
+  // 장소 검색 (300ms 디바운스)
+  useEffect(() => {
+    if (placeQuery.trim().length < 2) {
+      setPlaceResults([])
       return
     }
-    const next = [...dates, { date: dateInput, start_time: defaultStart, end_time: defaultEnd }]
-    next.sort((a, b) => a.date.localeCompare(b.date))
-    setDates(next)
+    const t = setTimeout(async () => {
+      try {
+        const r = await fetch(`/api/search-place?q=${encodeURIComponent(placeQuery)}`)
+        setPlaceResults(r.ok ? await r.json() : [])
+      } catch {
+        setPlaceResults([])
+      }
+    }, 300)
+    return () => clearTimeout(t)
+  }, [placeQuery])
+
+  const selectPlace = (name: string, address: string) => {
+    setLocationName(name)
+    setLocationAddress(address)
+    const toks = address.split(' ')
+    setLocationCity(toks.slice(0, 2).join(' ')) // 표시/달력용 지역(예: "서울특별시 강남구")
+    setLocationDistrict('')
+    setPlaceQuery('')
+    setPlaceResults([])
+  }
+
+  const isWeekend = (s: string) => {
+    const g = new Date(s + 'T00:00:00').getDay()
+    return g === 0 || g === 6 // 일(0)·토(6)
+  }
+  // 하루 또는 기간(시작~종료) 추가. 최대 30일.
+  const addDates = () => {
+    if (!dateInput) return
+    const start = dateInput
+    const end = dateEnd && dateEnd >= start ? dateEnd : start
+    const existing = new Set(dates)
+    const toAdd = enumerateDays(start, end).filter((x) => !existing.has(x))
+    if (toAdd.length === 0) {
+      setDateInput('')
+      setDateEnd('')
+      return
+    }
+    if (dates.length + toAdd.length > 30) {
+      setError('캠페인 진행일정은 최대 30일까지 지정할 수 있어요.')
+      return
+    }
+    setDates([...dates, ...toAdd].sort((a, b) => a.localeCompare(b)))
     setDateInput('')
+    setDateEnd('')
     setError('')
   }
-  const removeDate = (date: string) => setDates((prev) => prev.filter((d) => d.date !== date))
-  const setRowTime = (date: string, field: 'start_time' | 'end_time', value: string) =>
-    setDates((prev) => prev.map((d) => (d.date === date ? { ...d, [field]: value } : d)))
-  // 기본 시간을 모든 날짜에 일괄 적용
-  const applyDefaultToAll = () =>
-    setDates((prev) => prev.map((d) => ({ ...d, start_time: defaultStart, end_time: defaultEnd })))
+  const removeDate = (date: string) => setDates((prev) => prev.filter((d) => d !== date))
+  // 날짜별 적용 시간 (주말/휴일 별도 입력 시 그 시간, 아니면 평일 시간)
+  const timeFor = (d: string) => {
+    const wknd = isWeekend(d) && useWeekendTime
+    return { start: (wknd ? weekendStart : weekdayStart) || '', end: (wknd ? weekendEnd : weekdayEnd) || '' }
+  }
 
   const fmtDate = (s: string) =>
     new Date(s).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
+
+  const hasWeekend = dates.some(isWeekend) // 선택 일정에 주말 포함 여부
 
   const handleSubmit = async () => {
     if (channels.length === 0) return setError('원하는 채널을 하나 이상 선택해주세요.')
     if (!campaignType) return setError('캠페인 구분(제품/지역/기자단)을 선택해주세요.')
     if (!title) return setError('캠페인 제목을 입력해주세요.')
-    if (dates.length === 0) return setError('날짜를 하나 이상 지정해주세요.')
-    if (isRegion && (!locationCity || !locationDistrict)) return setError('지역 캠페인은 장소가 필요해요.')
+    if (isRegion && dates.length === 0) return setError('캠페인 진행일정을 하나 이상 지정해주세요.')
+    if (isRegion && !locationAddress) return setError('지역 캠페인은 장소(주소)가 필요해요.')
     if (!budgetManwon || parseInt(budgetManwon) <= 0) return setError('캠페인 예산을 입력해주세요.')
 
     setLoading(true)
@@ -134,7 +197,13 @@ export default function NewCampaignPage() {
     if (reviewOpt) options.push({ type: '구매평', cost: reviewCost ? parseInt(reviewCost) : null })
     if (clipOpt) options.push({ type: '네이버클립', cost: clipCost ? parseInt(clipCost) : null })
 
-    const sorted = [...dates].sort((a, b) => a.date.localeCompare(b.date))
+    // 진행일정은 지역 캠페인만 해당 (비지역이면 비움). 날짜별 시간 = 평일/주말 기준 자동
+    const sorted: DateRow[] = isRegion
+      ? [...dates].sort((a, b) => a.localeCompare(b)).map((d) => {
+          const t = timeFor(d)
+          return { date: d, start_time: t.start, end_time: t.end }
+        })
+      : []
     const keywordArray = parseKeywords(freeTags)
     if (keywordArray.length > 20) {
       setError('필수 키워드는 최대 20개까지 넣을 수 있어요.')
@@ -150,12 +219,14 @@ export default function NewCampaignPage() {
       campaign_type: campaignType,
       options,
       dates: sorted,
-      // 하위호환(달력 매칭): 첫 날짜/시간을 기존 컬럼에도 채움
-      date: sorted[0].date,
-      start_time: sorted[0].start_time || null,
-      end_time: sorted[0].end_time || null,
+      // 하위호환(달력 매칭): 첫 날짜/시간을 기존 컬럼에도 채움 (비지역이면 null)
+      date: sorted[0]?.date ?? null,
+      start_time: sorted[0]?.start_time || null,
+      end_time: sorted[0]?.end_time || null,
       location_city: isRegion ? locationCity : null,
       location_district: isRegion ? locationDistrict : null,
+      location_name: isRegion ? locationName || null : null,
+      location_address: isRegion ? locationAddress || null : null,
       // 세금 포함 총 예산 (원 단위 저장). 만원 단위 입력값 × 10000
       budget_total: parseInt(budgetManwon) * 10000,
       // 참여 인플루언서 모집일정 (캠페인 진행 날짜와 별개)
@@ -306,6 +377,18 @@ export default function NewCampaignPage() {
         </div>
       </div>
 
+      {/* 카테고리 (인플루언서 분야) */}
+      <div className={card}>
+        <label className="block text-sm font-medium text-gray-700 mb-2">카테고리 (복수 선택 가능)</label>
+        <div className="flex flex-wrap gap-2">
+          {INFLUENCER_CATEGORIES.map((cat) => (
+            <button key={cat} onClick={() => toggleCategory(cat)} className={chip(selectedCategories.includes(cat))}>
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ④ 제목 */}
       <div className={card}>
         <label className="block text-sm font-medium text-gray-700 mb-2">캠페인 제목 *</label>
@@ -350,69 +433,134 @@ export default function NewCampaignPage() {
         </div>
       </div>
 
-      {/* ⑤ 날짜 (최대 30일) + 기본 시간 */}
-      <div className={card}>
-        <label className="block text-sm font-medium text-gray-700 mb-2">날짜 * (최대 30일)</label>
-
-        {/* 기본 시간 */}
-        <div className="grid grid-cols-2 gap-3 mb-2">
-          <div>
-            <p className="text-xs text-gray-400 mb-1">기본 시작시간</p>
-            <input type="time" value={defaultStart} onChange={(e) => setDefaultStart(e.target.value)} className={input} />
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 mb-1">기본 종료시간</p>
-            <input type="time" value={defaultEnd} onChange={(e) => setDefaultEnd(e.target.value)} className={input} />
-          </div>
-        </div>
-        {dates.length > 0 && (
-          <button onClick={applyDefaultToAll} className="text-xs text-amber-600 hover:underline mb-3">
-            기본 시간을 모든 날짜에 적용
-          </button>
-        )}
-
-        {/* 날짜 추가 */}
-        <div className="flex gap-2 mt-1">
-          <input type="date" value={dateInput} onChange={(e) => setDateInput(e.target.value)} className={input + ' flex-1'} />
-          <button onClick={addDate} className="shrink-0 bg-gray-800 text-white px-4 rounded-lg text-sm font-medium hover:bg-gray-900">
-            추가
-          </button>
-        </div>
-        <p className="text-xs text-gray-400 mt-1">추가한 날짜는 기본 시간으로 들어가고, 아래에서 일정별로 바꿀 수 있어요.</p>
-
-        {/* 선택된 날짜 목록 (일정별 시간 수정) */}
-        {dates.length > 0 && (
-          <div className="mt-3 space-y-2">
-            {dates.map((d) => (
-              <div key={d.date} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                <span className="text-xs font-medium text-gray-700 w-24 shrink-0">{fmtDate(d.date)}</span>
-                <input type="time" value={d.start_time} onChange={(e) => setRowTime(d.date, 'start_time', e.target.value)}
-                  className="border border-gray-200 rounded px-2 py-1 text-xs flex-1" />
-                <span className="text-gray-400 text-xs">~</span>
-                <input type="time" value={d.end_time} onChange={(e) => setRowTime(d.date, 'end_time', e.target.value)}
-                  className="border border-gray-200 rounded px-2 py-1 text-xs flex-1" />
-                <button onClick={() => removeDate(d.date)} className="text-gray-400 hover:text-red-500 text-sm shrink-0">✕</button>
-              </div>
-            ))}
-            <p className="text-[11px] text-gray-400">총 {dates.length}일 선택됨</p>
-          </div>
-        )}
-      </div>
-
-      {/* ⑥ 장소 (지역일 때만) */}
+      {/* ⑤ 캠페인 진행일정 (지역 캠페인만) */}
       {isRegion && (
         <div className={card}>
-          <label className="block text-sm font-medium text-gray-700 mb-2">장소 * (지역 캠페인)</label>
-          <div className="grid grid-cols-2 gap-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2">캠페인 진행일정 * (최대 30일)</label>
+
+          {/* 평일 시간 */}
+          <div className="grid grid-cols-2 gap-3 mb-3">
             <div>
-              <p className="text-xs text-gray-400 mb-1">시/구</p>
-              <input type="text" value={locationCity} onChange={(e) => setLocationCity(e.target.value)} className={input} placeholder="예: 서울 강남구" />
+              <p className="text-xs text-gray-400 mb-1">평일 시작시간</p>
+              <TimeSelect value={weekdayStart} onChange={setWeekdayStart} />
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1">동</p>
-              <input type="text" value={locationDistrict} onChange={(e) => setLocationDistrict(e.target.value)} className={input} placeholder="예: 역삼동" />
+              <p className="text-xs text-gray-400 mb-1">평일 종료시간</p>
+              <TimeSelect value={weekdayEnd} onChange={setWeekdayEnd} />
             </div>
           </div>
+
+          {/* 날짜 추가 (하루 또는 기간) */}
+          <div className="flex items-center gap-2 mt-1">
+            <input type="date" value={dateInput} onChange={(e) => setDateInput(e.target.value)} className={input + ' flex-1'} />
+            <span className="text-gray-400 text-xs">~</span>
+            <input type="date" value={dateEnd} min={dateInput || undefined} onChange={(e) => setDateEnd(e.target.value)} className={input + ' flex-1'} />
+            <button onClick={addDates} className="shrink-0 bg-gray-800 text-white px-4 rounded-lg text-sm font-medium hover:bg-gray-900">
+              추가
+            </button>
+          </div>
+          <p className="text-xs text-gray-400 mt-1">하루만 지정하려면 시작일만 선택하세요. 기간은 시작~종료로 한 번에 추가돼요 (최대 30일).</p>
+
+          {/* 주말/휴일 포함 안내 */}
+          {hasWeekend && !weekendDecided && (
+            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-xs text-amber-800 leading-relaxed">
+                선택한 일정에 주말 또는 휴일이 포함되어 있습니다. 캠페인 진행시간이 평일과 다를 경우 주말/휴일 시간대를 별도 입력할 수 있습니다. 입력하시겠습니까?
+              </p>
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => { setWeekendDecided(true); setUseWeekendTime(true) }}
+                  className="bg-amber-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-amber-600"
+                >
+                  입력하기
+                </button>
+                <button
+                  onClick={() => { setWeekendDecided(true); setUseWeekendTime(false) }}
+                  className="bg-gray-100 text-gray-600 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-gray-200"
+                >
+                  평일과 동일
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 주말/휴일 시간 입력 */}
+          {hasWeekend && useWeekendTime && (
+            <div className="mt-3">
+              <p className="text-xs text-gray-500 mb-1">주말/휴일 캠페인 시간</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">시작시간</p>
+                  <TimeSelect value={weekendStart} onChange={setWeekendStart} />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">종료시간</p>
+                  <TimeSelect value={weekendEnd} onChange={setWeekendEnd} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 선택된 날짜 목록 (시간은 평일/주말 기준 자동 표시) */}
+          {dates.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {dates.map((d) => {
+                const t = timeFor(d)
+                const wknd = isWeekend(d)
+                return (
+                  <div key={d} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                    <span className="text-xs font-medium text-gray-700 shrink-0">{fmtDate(d)}</span>
+                    {wknd && <span className="text-[10px] bg-red-100 text-red-500 rounded px-1.5 py-0.5 shrink-0">주말</span>}
+                    <span className="text-xs text-gray-500 flex-1">
+                      {t.start || t.end ? `${t.start || '--:--'} ~ ${t.end || '--:--'}` : '시간 미지정'}
+                    </span>
+                    <button onClick={() => removeDate(d)} className="text-gray-400 hover:text-red-500 text-sm shrink-0">✕</button>
+                  </div>
+                )
+              })}
+              <p className="text-[11px] text-gray-400">총 {dates.length}일 선택됨</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ⑥ 장소 (지역일 때만) — 검색으로 장소명·주소 자동입력 */}
+      {isRegion && (
+        <div className={card}>
+          <label className="block text-sm font-medium text-gray-700 mb-2">장소 * (방문 주소)</label>
+
+          {/* 장소 검색 (자동완성) */}
+          <div className="relative">
+            <input
+              type="text"
+              value={placeQuery}
+              onChange={(e) => setPlaceQuery(e.target.value)}
+              className={input}
+              placeholder="🔍 장소명 검색 (예: 스타벅스 강남점)"
+            />
+            {placeResults.length > 0 && (
+              <div className="absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                {placeResults.map((r, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => selectPlace(r.name, r.address)}
+                    className="block w-full text-left px-3 py-2 hover:bg-amber-50 border-b border-gray-50 last:border-0"
+                  >
+                    <span className="text-sm font-medium text-gray-800">{r.name}</span>
+                    <span className="block text-xs text-gray-400">{r.address}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 선택/직접입력 */}
+          <p className="text-xs text-gray-500 mt-3 mb-1">장소명</p>
+          <input type="text" value={locationName} onChange={(e) => setLocationName(e.target.value)} className={input} placeholder="예: 강남 신상 카페" />
+          <p className="text-xs text-gray-500 mt-2 mb-1">상세 주소</p>
+          <input type="text" value={locationAddress} onChange={(e) => setLocationAddress(e.target.value)} className={input} placeholder="검색으로 자동입력되거나 직접 입력" />
+          <p className="text-[11px] text-gray-400 mt-1">지도 표시는 곧 추가돼요.</p>
         </div>
       )}
 
@@ -436,18 +584,6 @@ export default function NewCampaignPage() {
             <span className="text-gray-600"> = {(parseInt(budgetManwon) * 10000).toLocaleString()}원</span>
           )}
         </p>
-      </div>
-
-      {/* 카테고리 */}
-      <div className={card}>
-        <label className="block text-sm font-medium text-gray-700 mb-2">카테고리 (복수 선택 가능)</label>
-        <div className="flex flex-wrap gap-2">
-          {INFLUENCER_CATEGORIES.map((cat) => (
-            <button key={cat} onClick={() => toggleCategory(cat)} className={chip(selectedCategories.includes(cat))}>
-              {cat}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* 콘텐츠 수량 (선택한 채널별로 구분 입력) */}

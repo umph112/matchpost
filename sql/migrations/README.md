@@ -21,3 +21,4 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0003_campaigns_manuscript_deadline.sql` — 원고 마감일 + 추가 전달내용
 - `0004_campaigns_payment.sql` — 결제 예정일 + 결제방식
 - `0005_campaigns_recruit_schedule.sql` — 참여 인플루언서 모집일정(신청기간·발표·콘텐츠등록기간·모집인원). manuscript_deadline* 대체·미사용
+- `0006_campaigns_location.sql` — 장소 상세(장소명·주소). 네이버 지역검색 자동입력

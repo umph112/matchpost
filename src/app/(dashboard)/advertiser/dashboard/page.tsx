@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import TopBar from '@/components/TopBar'
 import HomeCalendar from '@/components/HomeCalendar'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
+import MyCampaignsList from '@/components/MyCampaignsList'
 
 export const dynamic = 'force-dynamic'
 
@@ -133,13 +134,6 @@ export default async function AdvertiserMyPage() {
   })
   const monthCampCount = (campaigns ?? []).filter((c) => c.date >= start && c.date <= end).length
 
-  const STATUS_STYLE: Record<string, string> = {
-    진행중: 'bg-amber-100 text-amber-700',
-    완료: 'bg-green-100 text-green-600',
-    마감: 'bg-gray-100 text-gray-500',
-    캔슬: 'bg-red-100 text-red-500',
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <TopBar name={displayName} homeHref="/advertiser/dashboard" editHref="/advertiser/profile" />
@@ -181,36 +175,13 @@ export default async function AdvertiserMyPage() {
           </Link>
         </section>
 
-        {/* 내 캠페인 */}
+        {/* 내 캠페인 (진행중/종료 탭 → 선택 시 딜시트) */}
         <section>
           <h2 className="text-sm font-bold text-gray-800 mb-3">📣 내 캠페인</h2>
           {campaignsWithStatus.length === 0 ? (
             <p className="text-sm text-gray-400 bg-white rounded-2xl p-4 shadow-sm">아직 등록한 캠페인이 없어요.</p>
           ) : (
-            <div className="space-y-2">
-              {campaignsWithStatus.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/advertiser/campaigns/${c.id}`}
-                  className="block bg-white rounded-2xl p-4 shadow-sm border-l-4 border-amber-400 hover:shadow-md transition"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">{c.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">📅 {c.date}　📍 {c.location_city} {c.location_district}</p>
-                    </div>
-                    <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[c.derivedStatus]}`}>
-                      {c.derivedStatus}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 mt-2 text-xs">
-                    <span className="text-gray-600">👥 참여 {c.stats.total}</span>
-                    <span className="text-green-600">확정 {c.stats.confirmed}</span>
-                    <span className="text-amber-600">협의중 {c.stats.negotiating}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <MyCampaignsList campaigns={campaignsWithStatus} />
           )}
         </section>
 
