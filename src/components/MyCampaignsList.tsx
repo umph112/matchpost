@@ -59,29 +59,37 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
       ) : (
         <div className="space-y-2">
           {list.map((c) => (
-            <Link
-              key={c.id}
-              href={`/advertiser/campaigns/${c.id}`}
-              className="block bg-white rounded-2xl p-4 shadow-sm border-l-4 border-amber-400 hover:shadow-md transition"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="font-semibold text-gray-900 truncate">{c.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    📅 {c.date}　📍 {c.location_city} {c.location_district}
-                  </p>
+            <div key={c.id} className="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-amber-400">
+              <Link href={`/advertiser/campaigns/${c.id}`} className="block hover:opacity-70 transition">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 truncate">{c.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      📅 {c.date}　📍 {c.location_city} {c.location_district}
+                    </p>
+                  </div>
+                  <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[c.derivedStatus]}`}>
+                    {c.derivedStatus}
+                  </span>
                 </div>
-                <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[c.derivedStatus]}`}>
-                  {c.derivedStatus}
-                </span>
+                <div className="flex items-center gap-3 mt-2 text-xs">
+                  <span className="text-gray-600">👥 참여 {c.stats.total}</span>
+                  <span className="text-green-600">확정 {c.stats.confirmed}</span>
+                  <span className="text-amber-600">협의중 {c.stats.negotiating}</span>
+                </div>
+              </Link>
+              <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-gray-50">
+                <Link href={`/advertiser/campaigns/${c.id}`} className="text-xs text-amber-600 font-medium">
+                  딜시트 →
+                </Link>
+                <Link
+                  href={`/advertiser/campaigns/new?copy=${c.id}`}
+                  className="ml-auto text-xs text-gray-600 border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200"
+                >
+                  📋 복사 재등록
+                </Link>
               </div>
-              <div className="flex items-center gap-3 mt-2 text-xs">
-                <span className="text-gray-600">👥 참여 {c.stats.total}</span>
-                <span className="text-green-600">확정 {c.stats.confirmed}</span>
-                <span className="text-amber-600">협의중 {c.stats.negotiating}</span>
-                <span className="ml-auto text-amber-600 font-medium">딜시트 →</span>
-              </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

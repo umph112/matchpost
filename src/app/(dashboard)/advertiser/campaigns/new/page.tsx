@@ -11,6 +11,37 @@ const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
 const CHANNEL_UNIT: Record<string, string> = { 블로그: '포스트', 유튜브: '영상', 인스타그램: '피드', 틱톡: '피드' }
 // 결제방식 (복수 선택 가능 — 복수 선택 시 인플루언서가 대시에서 최종 결정)
 const PAYMENT_METHODS = ['세금계산서 발행', '3.3% 소득세 신고']
+
+// 채널별 미션(세부 요구조건) 프리셋. type: toggle | number(광고주 값 지정, def=기본값) | text
+type MissionDef = { key: string; label: string; type: 'toggle' | 'number' | 'text'; def?: number; unit?: string; ph?: string }
+const MISSIONS: Record<string, MissionDef[]> = {
+  블로그: [
+    { key: '키워드', label: '키워드', type: 'text', ph: '예: #팝업스토어 #가볼만한곳' },
+    { key: '글자수', label: '글자수', type: 'number', def: 1000, unit: '자 이상' },
+    { key: '사진', label: '사진', type: 'number', def: 5, unit: '장 이상' },
+    { key: '지도삽입', label: '지도 삽입', type: 'toggle' },
+    { key: '동영상', label: '동영상', type: 'number', def: 5, unit: '초 이상' },
+    { key: '링크', label: '링크', type: 'text', ph: '삽입할 URL (예: https://...)' },
+  ],
+  유튜브: [
+    { key: '영상길이', label: '영상 길이', type: 'number', def: 3, unit: '분 이상' },
+    { key: '지정멘트', label: '지정 멘트', type: 'text', ph: '꼭 포함할 멘트' },
+    { key: '설명란링크', label: '설명란 링크', type: 'toggle' },
+    { key: '해시태그', label: '해시태그', type: 'text', ph: '예: #협찬 #제품명' },
+  ],
+  인스타그램: [
+    { key: '사진수', label: '사진/슬라이드', type: 'number', def: 5, unit: '장 이상' },
+    { key: '릴스길이', label: '릴스 길이', type: 'number', def: 15, unit: '초 이상' },
+    { key: '스토리', label: '스토리 추가', type: 'toggle' },
+    { key: '해시태그', label: '해시태그', type: 'text', ph: '예: #협찬 #제품명' },
+    { key: '계정태그', label: '계정 태그', type: 'toggle' },
+  ],
+  틱톡: [
+    { key: '영상길이', label: '영상 길이', type: 'number', def: 15, unit: '초 이상' },
+    { key: '해시태그', label: '해시태그', type: 'text', ph: '예: #협찬' },
+    { key: '지정멘트', label: '지정 멘트', type: 'text', ph: '꼭 포함할 멘트' },
+  ],
+}
 const TYPES = [
   { key: '제품', label: '제품', desc: '제품을 받아 체험 후 포스팅' },
   { key: '지역', label: '지역', desc: '업장을 방문해 서비스 체험 후 포스팅' },
@@ -22,6 +53,15 @@ export default function NewCampaignPage() {
   const [channels, setChannels] = useState<string[]>([])
   // 채널별 의뢰 콘텐츠 수량 (선택한 채널에 대해서만, 1~99). 예: { 블로그: 1, 인스타그램: 2 }
   const [contentCounts, setContentCounts] = useState<Record<string, number>>({})
+  // 채널별 미션(세부 요구조건). 예: { 블로그: { 글자수: 100, 지도삽입: true } }
+  const [missions, setMissions] = useState<Record<string, Record<string, string | number | boolean>>>({})
+
+  // 이전 캠페인 불러오기 (내가 올린 캠페인을 양식으로 재사용)
+  const [myCampaigns, setMyCampaigns] = useState<any[]>([])
+  const [showLoadList, setShowLoadList] = useState(false)
+  // 상세 내용 저장 양식 (별도 저장/불러오기)
+  const [detailTemplates, setDetailTemplates] = useState<any[]>([])
+  const [showDetailTpls, setShowDetailTpls] = useState(false)
   const [campaignType, setCampaignType] = useState('')
 
   // 옵션 (추가형 + 비용 직접 입력)
@@ -72,8 +112,11 @@ export default function NewCampaignPage() {
   const [paymentMethods, setPaymentMethods] = useState<string[]>([])
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [freeTags, setFreeTags] = useState('')
   const [details, setDetails] = useState('')
+  // 가이드 파일 (PDF·워드·한글 등)
+  const [guideUrl, setGuideUrl] = useState('')
+  const [guideName, setGuideName] = useState('')
+  const [guideUploading, setGuideUploading] = useState(false)
   const [isPublic, setIsPublic] = useState(true)
 
   const [loading, setLoading] = useState(false)
@@ -92,13 +135,174 @@ export default function NewCampaignPage() {
     n = Math.max(1, Math.min(99, n))
     setContentCounts((prev) => ({ ...prev, [ch]: n }))
   }
+  // 미션 토글/값 설정
+  const isMissionOn = (ch: string, key: string) =>
+    !!missions[ch] && Object.prototype.hasOwnProperty.call(missions[ch], key)
+  const toggleMission = (ch: string, m: MissionDef) =>
+    setMissions((prev) => {
+      const cur = { ...(prev[ch] || {}) }
+      if (Object.prototype.hasOwnProperty.call(cur, m.key)) delete cur[m.key]
+      else cur[m.key] = m.type === 'toggle' ? true : m.type === 'number' ? (m.def ?? 1) : ''
+      return { ...prev, [ch]: cur }
+    })
+  const setMissionVal = (ch: string, key: string, val: string | number) =>
+    setMissions((prev) => ({ ...prev, [ch]: { ...(prev[ch] || {}), [key]: val } }))
   const toggleCategory = (cat: string) =>
     setSelectedCategories((prev) => (prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]))
   const togglePayMethod = (m: string) =>
     setPaymentMethods((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]))
-  // 필수 키워드 파싱: 공백/쉼표 구분, 앞의 # 제거, 중복 제거 (저장은 # 없이)
-  const parseKeywords = (s: string) =>
-    [...new Set(s.split(/[,\s]+/).map((t) => t.trim().replace(/^#+/, '')).filter((t) => t.length > 0))]
+
+  // 내가 올린 캠페인 목록 조회 (복사 재등록용)
+  useEffect(() => {
+    ;(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('advertiser_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(30)
+      setMyCampaigns(data || [])
+      const { data: tpls } = await supabase
+        .from('campaign_detail_templates')
+        .select('*')
+        .eq('advertiser_id', user.id)
+        .order('created_at', { ascending: false })
+      setDetailTemplates(tpls || [])
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // 상세 내용 양식 저장 / 불러오기 / 삭제
+  const saveDetailTemplate = async () => {
+    if (!details.trim()) return setError('저장할 상세 내용이 없어요.')
+    const name = window.prompt('저장할 상세 양식 이름', title || '상세 양식')
+    if (!name) return
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return
+    const { data, error: e } = await supabase
+      .from('campaign_detail_templates')
+      .insert({ advertiser_id: user.id, name, content: details })
+      .select()
+      .single()
+    if (!e && data) setDetailTemplates((prev) => [data, ...prev])
+  }
+  const applyDetailTemplate = (t: any) => {
+    setDetails((prev) => (prev.trim() ? prev + '\n\n' + (t.content || '') : t.content || ''))
+    setShowDetailTpls(false)
+  }
+  const deleteDetailTemplate = async (id: string) => {
+    await supabase.from('campaign_detail_templates').delete().eq('id', id)
+    setDetailTemplates((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  // 지난 캠페인을 그대로 폼에 채움 (복사 재등록 — 고칠 것만 고치고 새로 등록)
+  const applyTemplate = (c: any) => {
+    setChannels(c.channels || [])
+    setCampaignType(c.campaign_type || '')
+    const opts = (c.options || []) as { type: string; cost: number | null }[]
+    const rv = opts.find((o) => o.type === '구매평')
+    setReviewOpt(!!rv)
+    setReviewCost(rv?.cost != null ? String(rv.cost) : '')
+    const cl = opts.find((o) => o.type === '네이버클립')
+    setClipOpt(!!cl)
+    setClipCost(cl?.cost != null ? String(cl.cost) : '')
+    setContentCounts(c.content_counts || {})
+    setMissions(c.missions || {})
+    setSelectedCategories(c.predefined_categories || [])
+    setTitle(c.title || '')
+    setBudgetManwon(c.budget_total ? String(Math.round(c.budget_total / 10000)) : '')
+    setDetails(c.details || '')
+    setGuideUrl(c.guide_url || '')
+    setGuideName(c.guide_name || '')
+    // 모집일정
+    setRecruitStart(c.recruit_start || '')
+    setRecruitEnd(c.recruit_end || '')
+    setAnnounceDate(c.announce_date || '')
+    setContentStart(c.content_start || '')
+    setContentEnd(c.content_end || '')
+    setRecruitTarget(c.recruit_target ? String(c.recruit_target) : '')
+    // 진행일정 (dates 재구성)
+    const ds = (c.dates || []) as { date: string; start_time: string; end_time: string }[]
+    setDates(ds.map((d) => d.date))
+    const wk = ds.find((d) => !isWeekend(d.date))
+    const we = ds.find((d) => isWeekend(d.date))
+    setWeekdayStart(wk?.start_time || ds[0]?.start_time || '')
+    setWeekdayEnd(wk?.end_time || ds[0]?.end_time || '')
+    if (we && (we.start_time !== (wk?.start_time || '') || we.end_time !== (wk?.end_time || ''))) {
+      setUseWeekendTime(true)
+      setWeekendDecided(true)
+      setWeekendStart(we.start_time || '')
+      setWeekendEnd(we.end_time || '')
+    } else {
+      setUseWeekendTime(false)
+      setWeekendDecided(!!we)
+      setWeekendStart('')
+      setWeekendEnd('')
+    }
+    // 장소
+    setLocationName(c.location_name || '')
+    setLocationAddress(c.location_address || '')
+    setLocationCity(c.location_city || '')
+    setLocationDistrict(c.location_district || '')
+    // 결제
+    setPaymentDueDate(c.payment_due_date || '')
+    setPaymentDueRule(c.payment_due_rule || '')
+    setPaymentMethods(c.payment_methods || [])
+    setIsPublic(c.is_public ?? true)
+    setShowLoadList(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // 마이페이지에서 "복사 재등록"으로 진입(?copy=<id>) 시 해당 캠페인 자동 불러오기
+  useEffect(() => {
+    const copyId = new URLSearchParams(window.location.search).get('copy')
+    if (!copyId) return
+    ;(async () => {
+      const { data } = await supabase.from('campaigns').select('*').eq('id', copyId).single()
+      if (data) applyTemplate(data)
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // 가이드 파일 업로드 (campaign-guides 버킷)
+  const uploadGuide = async (file: File) => {
+    setGuideUploading(true)
+    setError('')
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) return
+      const ext = file.name.split('.').pop() || 'file'
+      const path = `${user.id}/${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage.from('campaign-guides').upload(path, file, { upsert: true })
+      if (upErr) {
+        setError('가이드 업로드 실패: ' + upErr.message)
+        return
+      }
+      const { data: pub } = supabase.storage.from('campaign-guides').getPublicUrl(path)
+      setGuideUrl(pub.publicUrl)
+      setGuideName(file.name)
+    } finally {
+      setGuideUploading(false)
+    }
+  }
+
+  // 상세 내용 기본 양식 삽입 (지역 캠페인이면 방문·예약 안내 포함). 기존 내용 있으면 뒤에 덧붙임.
+  const loadDetailTemplate = () => {
+    const sections = ['■ 제공 내역\n- ']
+    if (campaignType === '지역') sections.push('■ 방문 및 예약 안내\n- ')
+    sections.push('■ 작성 가이드\n- ')
+    sections.push('■ 추가 안내사항\n- ')
+    const tpl = sections.join('\n\n')
+    setDetails((prev) => (prev.trim() ? prev + '\n\n' + tpl : tpl))
+  }
 
   // 시작~종료(포함) 사이의 모든 날짜(YYYY-MM-DD) 나열. 종료 없으면 시작 하루만.
   const enumerateDays = (start: string, end: string) => {
@@ -204,11 +408,6 @@ export default function NewCampaignPage() {
           return { date: d, start_time: t.start, end_time: t.end }
         })
       : []
-    const keywordArray = parseKeywords(freeTags)
-    if (keywordArray.length > 20) {
-      setError('필수 키워드는 최대 20개까지 넣을 수 있어요.')
-      return
-    }
 
     const { error: insertError } = await supabase.from('campaigns').insert({
       advertiser_id: user.id,
@@ -216,6 +415,8 @@ export default function NewCampaignPage() {
       channels,
       // 선택한 채널에 대해서만 수량 저장 (미입력 시 기본 1)
       content_counts: Object.fromEntries(channels.map((c) => [c, contentCounts[c] ?? 1])),
+      // 채널별 미션(세부 요구조건) — 선택 채널만
+      missions: Object.fromEntries(channels.map((c) => [c, missions[c] || {}])),
       campaign_type: campaignType,
       options,
       dates: sorted,
@@ -241,8 +442,9 @@ export default function NewCampaignPage() {
       payment_due_rule: paymentDueRule || null,
       payment_methods: paymentMethods,
       predefined_categories: selectedCategories,
-      free_tags: keywordArray,
       details: details || null,
+      guide_url: guideUrl || null,
+      guide_name: guideName || null,
       is_public: isPublic,
       status: 'open',
     })
@@ -285,6 +487,38 @@ export default function NewCampaignPage() {
       </div>
 
       {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>}
+
+      {/* 이전 캠페인 불러오기 (복사 재등록) */}
+      {myCampaigns.length > 0 && (
+        <div className="relative mb-4">
+          <button
+            type="button"
+            onClick={() => setShowLoadList((v) => !v)}
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between shadow-sm"
+          >
+            <span>📋 이전 캠페인 불러오기 (복사 재등록)</span>
+            <span className="text-gray-400">{showLoadList ? '▲' : '▼'}</span>
+          </button>
+          {showLoadList && (
+            <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+              {myCampaigns.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => applyTemplate(c)}
+                  className="block w-full text-left px-4 py-2.5 hover:bg-amber-50 border-b border-gray-50 last:border-0"
+                >
+                  <span className="text-sm font-medium text-gray-800 truncate block">{c.title}</span>
+                  <span className="text-xs text-gray-400">
+                    {c.campaign_type}
+                    {(c.channels?.length ? ' · ' + c.channels.join(', ') : '')}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ① 채널 (복수) */}
       <div className={card}>
@@ -586,29 +820,88 @@ export default function NewCampaignPage() {
         </p>
       </div>
 
-      {/* 콘텐츠 수량 (선택한 채널별로 구분 입력) */}
+      {/* 콘텐츠 수량 및 미션 (선택한 채널별) */}
       <div className={card}>
-        <label className="block text-sm font-medium text-gray-700 mb-1">의뢰 콘텐츠 수량</label>
-        <p className="text-xs text-gray-400 mb-3">선택한 채널별로 인플루언서에게 의뢰할 콘텐츠 개수예요 (채널당 최대 99개).</p>
+        <label className="block text-sm font-medium text-gray-700 mb-1">콘텐츠 수량 및 미션</label>
+        <p className="text-xs text-gray-400 mb-3">선택한 채널별로 의뢰 수량과 세부 미션(요구조건)을 정해요 (수량 채널당 최대 99개).</p>
         {channels.length === 0 ? (
           <p className="text-sm text-gray-400">먼저 위에서 채널을 선택해주세요.</p>
         ) : (
-          <div className="space-y-2">
-            {channels.map((ch) => (
-              <div key={ch} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                <span className="text-sm font-medium text-gray-700 w-24 shrink-0">{ch}</span>
-                <span className="text-xs text-gray-400 flex-1">{CHANNEL_UNIT[ch] ?? '콘텐츠'}</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={99}
-                  value={contentCounts[ch] ?? 1}
-                  onChange={(e) => setCount(ch, e.target.value)}
-                  className="border border-gray-200 rounded px-2 py-1 text-sm w-20 text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-                <span className="text-sm text-gray-500 shrink-0">개</span>
-              </div>
-            ))}
+          <div className="space-y-3">
+            {channels.map((ch) => {
+              const valueMissions = (MISSIONS[ch] ?? []).filter((m) => m.type !== 'toggle' && isMissionOn(ch, m.key))
+              return (
+                <div key={ch} className="border border-gray-100 rounded-xl p-3">
+                  {/* 수량 */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-gray-800 w-24 shrink-0">{ch}</span>
+                    <span className="text-xs text-gray-400 flex-1">{CHANNEL_UNIT[ch] ?? '콘텐츠'}</span>
+                    <input
+                      type="number" min={1} max={99}
+                      value={contentCounts[ch] ?? 1}
+                      onChange={(e) => setCount(ch, e.target.value)}
+                      className="border border-gray-200 rounded px-2 py-1 text-sm w-16 text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <span className="text-sm text-gray-500 shrink-0">개</span>
+                  </div>
+
+                  {/* 미션 칩 */}
+                  <p className="text-xs text-gray-500 mt-3 mb-1.5">미션 (요구조건)</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(MISSIONS[ch] ?? []).map((m) => (
+                      <button
+                        key={m.key} type="button"
+                        onClick={() => toggleMission(ch, m)}
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                          isMissionOn(ch, m.key) ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* 값이 필요한 미션(글자수·사진 등) 입력 */}
+                  {valueMissions.length > 0 && (
+                    <div className="mt-2 space-y-1.5">
+                      {valueMissions.map((m) => (
+                        <div key={m.key} className="flex items-center gap-2">
+                          <span className="text-xs text-gray-600 w-20 shrink-0">{m.label}</span>
+                          {m.type === 'number' ? (
+                            <>
+                              <input
+                                type="number" min={1}
+                                value={String(missions[ch]?.[m.key] ?? '')}
+                                onChange={(e) => setMissionVal(ch, m.key, e.target.value)}
+                                className="border border-gray-200 rounded px-2 py-1 text-xs w-24 text-right focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              />
+                              <span className="text-xs text-gray-500">{m.unit}</span>
+                            </>
+                          ) : (
+                            <input
+                              type="text"
+                              value={String(missions[ch]?.[m.key] ?? '')}
+                              onChange={(e) => setMissionVal(ch, m.key, e.target.value)}
+                              placeholder={m.ph}
+                              className="border border-gray-200 rounded px-2 py-1 text-xs flex-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 커스텀 미션 */}
+                  <input
+                    type="text"
+                    value={String(missions[ch]?.['_custom'] ?? '')}
+                    onChange={(e) => setMissionVal(ch, '_custom', e.target.value)}
+                    placeholder="기타 요구사항 직접 입력 (선택)"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-xs mt-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
@@ -644,32 +937,81 @@ export default function NewCampaignPage() {
         )}
       </div>
 
-      {/* 필수 키워드 */}
-      <div className={card}>
-        <label className="block text-sm font-medium text-gray-700 mb-2">필수 키워드 (최대 20개)</label>
-        <input
-          type="text"
-          value={freeTags}
-          onChange={(e) => setFreeTags(e.target.value)}
-          className={input}
-          placeholder="예: #팝업스토어 #가볼만한곳"
-        />
-        {(() => {
-          const n = parseKeywords(freeTags).length
-          return (
-            <p className={`text-xs mt-1 ${n > 20 ? 'text-red-500' : 'text-gray-400'}`}>
-              {n}/20개
-            </p>
-          )
-        })()}
-      </div>
-
       {/* 상세 내용 */}
       <div className={card}>
-        <label className="block text-sm font-medium text-gray-700 mb-2">상세 내용</label>
-        <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={5}
+        <div className="flex items-center justify-between mb-2 gap-2">
+          <label className="text-sm font-medium text-gray-700 shrink-0">상세 내용</label>
+          <div className="flex items-center gap-1.5 relative">
+            <button type="button" onClick={loadDetailTemplate}
+              className="text-xs text-gray-600 border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-50">
+              기본 양식
+            </button>
+            <button type="button" onClick={saveDetailTemplate}
+              className="text-xs text-amber-600 border border-amber-200 rounded-lg px-2.5 py-1 hover:bg-amber-50">
+              저장
+            </button>
+            <button type="button" onClick={() => setShowDetailTpls((v) => !v)}
+              className="text-xs text-gray-600 border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-50">
+              내 양식{detailTemplates.length > 0 ? ` ${detailTemplates.length}` : ''}
+            </button>
+            {showDetailTpls && (
+              <div className="absolute z-20 right-0 top-8 w-64 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                {detailTemplates.length === 0 ? (
+                  <p className="text-xs text-gray-400 px-3 py-2">저장된 상세 양식이 없어요.</p>
+                ) : (
+                  detailTemplates.map((t) => (
+                    <div key={t.id} className="flex items-center border-b border-gray-50 last:border-0">
+                      <button type="button" onClick={() => applyDetailTemplate(t)}
+                        className="flex-1 text-left px-3 py-2 hover:bg-amber-50 text-sm text-gray-700 truncate">
+                        {t.name}
+                      </button>
+                      <button type="button" onClick={() => deleteDetailTemplate(t.id)}
+                        className="px-2 text-gray-400 hover:text-red-500 text-xs shrink-0">✕</button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={10}
           className={input + ' resize-none'}
-          placeholder="원하는 협업 내용, 조건, 제작물 등을 자유롭게 적어주세요." />
+          placeholder="'양식 불러오기'로 제공 내역·작성 가이드 등 기본 섹션을 넣고 작성하거나, 자유롭게 적어주세요." />
+      </div>
+
+      {/* 가이드 파일 업로드 */}
+      <div className={card}>
+        <label className="block text-sm font-medium text-gray-700 mb-1">가이드 파일 <span className="text-gray-400 font-normal">(선택)</span></label>
+        <p className="text-xs text-gray-400 mb-2">PDF·워드·한글 등 가이드 파일. 지금 안 올려도 되고, 확정 후 대시에서 개별 전달해도 돼요.</p>
+        {guideName ? (
+          <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+            <span className="text-sm text-gray-700 truncate flex-1">📎 {guideName}</span>
+            {guideUrl && (
+              <a href={guideUrl} target="_blank" rel="noreferrer" className="text-xs text-amber-600 shrink-0">보기</a>
+            )}
+            <button
+              type="button"
+              onClick={() => { setGuideUrl(''); setGuideName('') }}
+              className="text-gray-400 hover:text-red-500 text-sm shrink-0"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <label className="flex items-center justify-center gap-2 border border-dashed border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-500 cursor-pointer hover:bg-gray-50">
+            {guideUploading ? '업로드 중...' : '＋ 파일 선택 (PDF·DOC·HWP 등)'}
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.hwp,.hwpx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              className="hidden"
+              disabled={guideUploading}
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) uploadGuide(f)
+              }}
+            />
+          </label>
+        )}
       </div>
 
       {/* 공개 설정 */}
