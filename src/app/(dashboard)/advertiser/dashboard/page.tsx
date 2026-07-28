@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import HomeCalendar from '@/components/HomeCalendar'
+import CampaignCalendar from '@/components/CampaignCalendar'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
 
 export const dynamic = 'force-dynamic'
@@ -64,21 +64,26 @@ export default async function AdvertiserMyPage() {
     }
   }
 
-  // 달력: 내 캠페인(amber) + 공개 오픈(blue)
-  const countsByDate: Record<string, { open: number; campaign: number }> = {}
-  for (const c of campaigns ?? []) {
-    if (c.date >= start && c.date <= end) (countsByDate[c.date] ??= { open: 0, campaign: 0 }).campaign++
-  }
-  const { data: opens } = await supabase
+  // 이번 달 공개 오픈(인플루언서가 공개로 연 일정) + 인플루언서 정보
+  const { data: openRows } = await supabase
     .from('schedules')
-    .select('date')
+    .select('*')
     .eq('is_public', true)
     .eq('status', 'open')
     .gte('date', start)
     .lte('date', end)
-  for (const o of opens ?? []) {
-    ;(countsByDate[(o as { date: string }).date] ??= { open: 0, campaign: 0 }).open++
-  }
+    .order('date')
+  const openInfIds = [...new Set((openRows ?? []).map((o) => o.influencer_id))]
+  const { data: openProfiles } = openInfIds.length
+    ? await supabase.from('profiles').select('id, name').in('id', openInfIds)
+    : { data: [] }
+  const { data: openIps } = openInfIds.length
+    ? await supabase.from('influencer_profiles').select('user_id, follower_count, categories').in('user_id', openInfIds)
+    : { data: [] }
+  const pNameById = Object.fromEntries((openProfiles ?? []).map((p) => [p.id, p.name]))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ipById: Record<string, any> = Object.fromEntries((openIps ?? []).map((i) => [i.user_id, i]))
+  const openCount = (openRows ?? []).length
 
   // 메시지 미리보기
   const { data: msgs } = await supabase
@@ -118,8 +123,29 @@ export default async function AdvertiserMyPage() {
     return { ...c, derivedStatus: st, stats: byCamp[c.id] ?? { total: 0, confirmed: 0, negotiating: 0 } }
   })
   const monthCampCount = (campaigns ?? []).filter((c) => c.date >= start && c.date <= end).length
-  const openCount = (opens ?? []).length
   const recentCampaigns = campaignsWithStatus.slice(0, 5)
+
+  // 캘린더 날짜별 데이터 (내 캠페인 + 공개 오픈) — 셀 카운트 + 팝업(STEP 5)용
+  const dayOf = (dateStr: string) => parseInt(dateStr.slice(8, 10))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const byDay: Record<number, { campaigns: any[]; opens: any[] }> = {}
+  for (const c of campaignsWithStatus) {
+    if (c.date && c.date >= start && c.date <= end) (byDay[dayOf(c.date)] ??= { campaigns: [], opens: [] }).campaigns.push(c)
+  }
+  for (const o of openRows ?? []) {
+    ;(byDay[dayOf(o.date)] ??= { campaigns: [], opens: [] }).opens.push({
+      id: o.id,
+      name: pNameById[o.influencer_id] || '인플루언서',
+      category: ipById[o.influencer_id]?.categories?.[0] || o.predefined_categories?.[0] || '',
+      followers: ipById[o.influencer_id]?.follower_count || 0,
+      channels: o.channels || null,
+      region: [o.location_city, o.location_district].filter(Boolean).join(' '),
+      time: o.start_time ? `${String(o.start_time).slice(0, 5)}${o.end_time ? '~' + String(o.end_time).slice(0, 5) : ''}` : '종일',
+      fee: o.fee || null,
+      memo: o.memo || null,
+      influencerId: o.influencer_id,
+    })
+  }
 
   // 양식함 (저장된 상세 양식). 없으면 예시로 모양 채움.
   const { data: detailTpls } = await supabase
@@ -167,6 +193,8 @@ export default async function AdvertiserMyPage() {
     마감: 'bg-[#F1F1F4] text-[#7C7C88]',
     캔슬: 'bg-[#FEE2E2] text-[#DC2626]',
   }
+  const BAR_COLOR: Record<string, string> = { 진행중: '#F59E0B', 완료: '#22C55E', 마감: '#C4C4CE', 캔슬: '#F87171' }
+  const CAMP_COLS = 'grid-cols-[minmax(0,1fr)_96px_108px_120px_92px]'
 
   const card = 'bg-white border border-[#EAEAEE] rounded-[14px] overflow-hidden'
   const cardHead = 'h-[52px] flex items-center border-b border-[#F1F1F4] shrink-0'
@@ -227,7 +255,7 @@ export default async function AdvertiserMyPage() {
               <span className="ml-auto text-[13px] font-bold">{year}. {month}</span>
             </div>
             <div className="p-5 pt-3.5 pb-[18px]">
-              <HomeCalendar year={year} month={month} countsByDate={countsByDate} isLoggedIn={true} />
+              <CampaignCalendar year={year} month={month} byDay={byDay} />
             </div>
           </section>
 
@@ -242,27 +270,50 @@ export default async function AdvertiserMyPage() {
               <p className="text-sm text-[#9A9AA5] p-5">아직 등록한 캠페인이 없어요.</p>
             ) : (
               <div>
-                {recentCampaigns.map((c) => (
-                  <Link
-                    key={c.id}
-                    href={`/advertiser/campaigns/${c.id}`}
-                    className="flex items-center gap-3 px-5 py-[13px] border-b border-[#F5F5F7] hover:bg-[#FAFAFB]"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[13.5px] font-semibold truncate">{c.title}</div>
-                      <div className="text-[11.5px] text-[#9A9AA5] mt-0.5">
-                        {c.campaign_type ?? '캠페인'}
-                        {c.channels?.length ? ' · ' + c.channels.join(',') : ''}
+                {/* 표 헤더 */}
+                <div className={`grid ${CAMP_COLS} px-5 py-[9px] bg-[#FAFAFB] border-b border-[#F1F1F4]`}>
+                  <span className="text-[11px] font-bold text-[#9A9AA5]">캠페인</span>
+                  <span className="text-[11px] font-bold text-[#9A9AA5]">상태</span>
+                  <span className="text-[11px] font-bold text-[#9A9AA5] text-right">모집</span>
+                  <span className="text-[11px] font-bold text-[#9A9AA5] text-right">확정 예산</span>
+                  <span className="text-[11px] font-bold text-[#9A9AA5] text-right">딜시트</span>
+                </div>
+                {/* 데이터 행 */}
+                {recentCampaigns.map((c) => {
+                  const target = c.recruit_target || c.stats.total || 0
+                  const pct = target > 0 ? Math.min(100, Math.round((c.stats.confirmed / target) * 100)) : 0
+                  const meta = [c.campaign_type || '캠페인', c.channels?.length ? c.channels.join('·') : null, c.location_city || null, c.date || null]
+                    .filter(Boolean)
+                    .join(' · ')
+                  return (
+                    <Link
+                      key={c.id}
+                      href={`/advertiser/campaigns/${c.id}`}
+                      className={`grid ${CAMP_COLS} items-center px-5 py-[13px] border-b border-[#F5F5F7] hover:bg-[#FAFAFB]`}
+                    >
+                      <div className="min-w-0 pr-3.5">
+                        <div className="text-[13.5px] font-semibold truncate tracking-[-0.01em]">{c.title}</div>
+                        <div className="text-[11.5px] text-[#9A9AA5] mt-[3px] truncate">{meta}</div>
                       </div>
-                    </div>
-                    <span className={`shrink-0 text-[11px] font-bold px-2 py-[3px] rounded-[5px] ${STATUS_STYLE[c.derivedStatus]}`}>{c.derivedStatus}</span>
-                    <span className="shrink-0 text-[12.5px] font-semibold w-16 text-right">
-                      확정 {c.stats.confirmed}
-                      <span className="text-[#B0B0BB]">/{c.stats.total}</span>
-                    </span>
-                    <span className="shrink-0 text-[12px] font-semibold text-[#B45309]">열기 →</span>
-                  </Link>
-                ))}
+                      <div>
+                        <span className={`text-[11px] font-bold px-2 py-[3px] rounded-[5px] ${STATUS_STYLE[c.derivedStatus]}`}>{c.derivedStatus}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[12.5px] font-semibold">
+                          확정 {c.stats.confirmed}
+                          <span className="text-[#B0B0BB]">/{target}</span>
+                        </div>
+                        <div className="h-1 rounded-[2px] bg-[#F1F1F4] mt-[5px] ml-auto w-[78px] overflow-hidden">
+                          <div className="h-full rounded-[2px]" style={{ width: pct + '%', background: BAR_COLOR[c.derivedStatus] }} />
+                        </div>
+                      </div>
+                      <div className="text-right text-[12.5px] font-semibold [font-variant-numeric:tabular-nums]">
+                        {c.budget_total ? c.budget_total.toLocaleString() : '—'}
+                      </div>
+                      <div className="text-right text-[12px] font-semibold text-[#B45309]">열기 →</div>
+                    </Link>
+                  )
+                })}
               </div>
             )}
           </section>
