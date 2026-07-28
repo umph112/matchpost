@@ -39,7 +39,6 @@ export default function AdvertiserShell({
 
   useEffect(() => {
     const detectMobile = () =>
-      window.matchMedia('(max-width: 1023px)').matches ||
       /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
     const apply = () => {
       const saved = localStorage.getItem('advViewMode')
