@@ -18,12 +18,14 @@ const NAV = [
 
 export default function AdvertiserShell({
   name,
+  sub = '광고주 콘솔',
   spend = 0,
   msgCount = 0,
   notifCount = 0,
   children,
 }: {
   name: string
+  sub?: string
   spend?: number
   msgCount?: number
   notifCount?: number
@@ -58,16 +60,21 @@ export default function AdvertiserShell({
 
   const brand = (
     <div className="h-16 flex items-center gap-[9px] px-5 border-b border-[#F1F1F4]">
-      <div className="w-[22px] h-[22px] rounded-md bg-[#F59E0B] flex items-center justify-center">
-        <div className="w-2 h-2 rounded-[2px] bg-white" />
+      <div className="w-[22px] h-[22px] rounded-md bg-[#17171B] flex items-center justify-center">
+        <div className="grid grid-cols-2 gap-[2px]">
+          <span className="w-[3px] h-[3px] rounded-[1px] bg-white" />
+          <span className="w-[3px] h-[3px] rounded-[1px] bg-white/60" />
+          <span className="w-[3px] h-[3px] rounded-[1px] bg-white/60" />
+          <span className="w-[3px] h-[3px] rounded-[1px] bg-[#F59E0B]" />
+        </div>
       </div>
-      <span className="text-[15px] font-extrabold tracking-[-0.02em] text-[#17171B]">MATCHPOST</span>
+      <span className="text-[15px] font-extrabold tracking-[-0.02em] text-[#17171B]">MATCH·POST</span>
     </div>
   )
 
   const navList = (
     <nav className="flex flex-col gap-0.5 p-3">
-      <div className="text-[10px] font-bold text-[#B0B0BB] tracking-[0.06em] px-2.5 pt-2 pb-1.5">메뉴</div>
+      <div className="text-[10px] font-bold text-[#B0B0BB] tracking-[0.06em] px-2.5 pt-2 pb-1.5">운영</div>
       {NAV.map((n) => {
         const b = badgeVal(n.badge)
         const active = isActive(n.href)
@@ -166,7 +173,7 @@ export default function AdvertiserShell({
         <header className="h-16 bg-white/[.88] backdrop-blur-[10px] border-b border-[#EAEAEE] flex items-center gap-3.5 px-7 sticky top-0 z-30">
           <div className="flex flex-col">
             <span className="text-sm font-bold tracking-[-0.01em]">{name}</span>
-            <span className="text-[11px] text-[#9A9AA5] mt-px">광고주 콘솔</span>
+            <span className="text-[11px] text-[#9A9AA5] mt-px">{sub}</span>
           </div>
           <div className="ml-auto flex items-center gap-2.5">
             {modeToggle}

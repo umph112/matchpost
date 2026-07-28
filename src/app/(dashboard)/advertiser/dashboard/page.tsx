@@ -49,10 +49,7 @@ export default async function AdvertiserMyPage() {
 
   // 캠페인별 참여 인플루언서(제안) 집계
   const { data: cProposals } = campIds.length
-    ? await supabase
-        .from('proposals')
-        .select('campaign_id, advertiser_confirmed, influencer_confirmed, budget')
-        .in('campaign_id', campIds)
+    ? await supabase.from('proposals').select('campaign_id, advertiser_confirmed, influencer_confirmed, budget').in('campaign_id', campIds)
     : { data: [] }
   const byCamp: Record<string, { total: number; confirmed: number; negotiating: number }> = {}
   let spendConfirmed = 0
@@ -90,7 +87,7 @@ export default async function AdvertiserMyPage() {
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
     .order('created_at', { ascending: false })
     .limit(60)
-  const convMap: Record<string, { otherId: string; last: any; awaitingMe: boolean }> = {}
+  const convMap: Record<string, { otherId: string; last: { content?: string }; awaitingMe: boolean }> = {}
   for (const m of msgs ?? []) {
     const other = m.sender_id === user.id ? m.receiver_id : m.sender_id
     if (!convMap[other]) convMap[other] = { otherId: other, last: m, awaitingMe: m.receiver_id === user.id }
@@ -112,18 +109,16 @@ export default async function AdvertiserMyPage() {
   const unreadNotif = (notifs ?? []).filter((n) => !n.is_read).length
   const notifPreview = (notifs ?? []).slice(0, 3)
 
-  const bannerBits: string[] = []
-  if (unreadNotif > 0) bannerBits.push(`새 알림 ${unreadNotif}`)
-
   // 캠페인 상태 파생
   const campaignsWithStatus = (campaigns ?? []).map((c) => {
     let st: '진행중' | '마감' | '캔슬' | '완료' = '진행중'
     if (c.status === 'cancelled') st = '캔슬'
     else if (c.status === 'completed') st = '완료'
-    else if (c.date < todayStr) st = '마감'
+    else if (c.date && c.date < todayStr) st = '마감'
     return { ...c, derivedStatus: st, stats: byCamp[c.id] ?? { total: 0, confirmed: 0, negotiating: 0 } }
   })
   const monthCampCount = (campaigns ?? []).filter((c) => c.date >= start && c.date <= end).length
+  const openCount = (opens ?? []).length
   const recentCampaigns = campaignsWithStatus.slice(0, 5)
 
   // 양식함 (저장된 상세 양식). 없으면 예시로 모양 채움.
@@ -150,192 +145,219 @@ export default async function AdvertiserMyPage() {
     { id: 'f4', name: '홈카페 소소', followers: 33000, category: '라이프' },
   ]
 
+  // KPI
+  const ongoingCount = campaignsWithStatus.filter((c) => c.derivedStatus === '진행중').length
+  let confirmedInf = 0
+  let negotiatingInf = 0
+  for (const c of campaignsWithStatus) {
+    confirmedInf += c.stats.confirmed
+    negotiatingInf += c.stats.negotiating
+  }
+  const respWaiting = Object.values(convMap).filter((c) => c.awaitingMe).length
+  const kpis = [
+    { label: '진행중 캠페인', value: String(ongoingCount), unit: '건', sub: `이번 달 등록 ${monthCampCount}건`, dot: '#F59E0B' },
+    { label: '확정 인플루언서', value: String(confirmedInf), unit: '명', sub: `협의중 ${negotiatingInf}명`, dot: '#22C55E' },
+    { label: '확정 집행 예정', value: spendConfirmed.toLocaleString(), unit: '원', sub: '양쪽 확정 기준', dot: '#3B82F6' },
+    { label: '응답 대기', value: String(respWaiting), unit: '건', sub: '미응답 대화', dot: '#EF4444' },
+  ]
+
   const STATUS_STYLE: Record<string, string> = {
-    진행중: 'bg-amber-100 text-amber-700',
-    완료: 'bg-green-100 text-green-600',
-    마감: 'bg-gray-100 text-gray-500',
-    캔슬: 'bg-red-100 text-red-500',
+    진행중: 'bg-[#FEF3C7] text-[#B45309]',
+    완료: 'bg-[#DCFCE7] text-[#15803D]',
+    마감: 'bg-[#F1F1F4] text-[#7C7C88]',
+    캔슬: 'bg-[#FEE2E2] text-[#DC2626]',
   }
 
+  const card = 'bg-white border border-[#EAEAEE] rounded-[14px] overflow-hidden'
+  const cardHead = 'h-[52px] flex items-center border-b border-[#F1F1F4] shrink-0'
+
   return (
-    <div>
+    <div className="flex flex-col gap-5">
       <NotificationsRealtime userId={user.id} />
 
-      <main className="max-w-lg mx-auto space-y-6 [.adv-pc_&]:max-w-none [.adv-pc_&]:columns-2 [.adv-pc_&]:gap-6 [&>*]:break-inside-avoid">
-        {/* 액션 배너 */}
-        {bannerBits.length > 0 && (
-          <Link
-            href="/advertiser/notifications"
-            className="flex items-center justify-between bg-amber-500 text-white rounded-2xl px-4 py-3 shadow-sm hover:bg-amber-600 transition"
-          >
-            <span className="text-sm font-medium">🔔 {bannerBits.join(' · ')}</span>
-            <span>→</span>
+      {/* 페이지 헤더 */}
+      <div className="flex items-end gap-4">
+        <div>
+          <h1 className="text-[23px] font-extrabold tracking-[-0.03em] text-[#17171B]">마이페이지</h1>
+          <p className="text-[13px] text-[#7C7C88] mt-1">확정 대기 {negotiatingInf}건 · 진행중 캠페인 {ongoingCount}건이 있어요.</p>
+        </div>
+        <div className="ml-auto flex gap-2">
+          <Link href="/advertiser/search" className="flex items-center gap-1.5 h-[38px] px-[15px] rounded-[9px] border border-[#E2E2E8] bg-white text-[13px] font-semibold text-[#3C3C46] hover:bg-[#F6F6F7]">
+            🔍 인플루언서 찾기
           </Link>
-        )}
-
-        {/* 달력 */}
-        <section>
-          <div className="flex items-baseline justify-between mb-2">
-            <h1 className="text-lg font-bold text-gray-900">캠페인 캘린더</h1>
-            <p className="text-xs text-gray-500">
-              <span className="text-amber-600 font-medium">내 캠페인 {monthCampCount}</span> ·{' '}
-              <span className="text-blue-600 font-medium">오픈 {(opens ?? []).length}</span>
-            </p>
-          </div>
-          <HomeCalendar year={year} month={month} countsByDate={countsByDate} isLoggedIn={true} />
-        </section>
-
-        {/* 빠른 액션 */}
-        <section className="grid grid-cols-2 gap-3">
-          <Link href="/advertiser/campaigns/new" className="bg-amber-500 text-white rounded-2xl p-4 shadow-sm hover:bg-amber-600 transition text-center">
-            <div className="text-2xl mb-1">＋</div>
-            <p className="font-semibold text-sm">캠페인 등록</p>
+          <Link href="/advertiser/campaigns/new" className="flex items-center gap-1.5 h-[38px] px-4 rounded-[9px] bg-[#F59E0B] text-white text-[13px] font-bold hover:bg-[#D97706] shadow-[0_1px_2px_rgba(245,158,11,0.35)]">
+            ＋ 캠페인 등록
           </Link>
-          <Link href="/advertiser/search" className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition text-center">
-            <div className="text-2xl mb-1">🔍</div>
-            <p className="font-semibold text-sm text-gray-800">인플루언서 찾기</p>
-          </Link>
-        </section>
+        </div>
+      </div>
 
-        {/* 최근 캠페인 (5개) + 전체보기 */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-gray-800">📣 최근 캠페인</h2>
-            <Link href="/advertiser/campaigns" className="text-xs text-amber-600 hover:underline">전체보기 →</Link>
-          </div>
-          {recentCampaigns.length === 0 ? (
-            <p className="text-sm text-gray-400 bg-white rounded-2xl p-4 shadow-sm">아직 등록한 캠페인이 없어요.</p>
-          ) : (
-            <div className="space-y-2">
-              {recentCampaigns.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/advertiser/campaigns/${c.id}`}
-                  className="block bg-white rounded-2xl p-4 shadow-sm border-l-4 border-amber-400 hover:shadow-md transition"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-semibold text-gray-900 truncate">{c.title}</p>
-                    <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[c.derivedStatus]}`}>
-                      {c.derivedStatus}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                    <span>👥 참여 {c.stats.total}</span>
-                    <span className="text-green-600">확정 {c.stats.confirmed}</span>
-                    <span className="ml-auto text-amber-600 font-medium">딜시트 →</span>
-                  </div>
-                </Link>
-              ))}
+      {/* KPI 행 */}
+      <div className="grid grid-cols-2 [.adv-pc_&]:grid-cols-4 gap-3.5">
+        {kpis.map((k) => (
+          <div key={k.label} className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-[2px]" style={{ background: k.dot }} />
+              <span className="text-xs font-semibold text-[#7C7C88]">{k.label}</span>
             </div>
-          )}
-        </section>
-
-        {/* 양식함 (저장된 상세 양식) */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-gray-800">🗂 양식함</h2>
-            <Link href="/advertiser/campaigns/new" className="text-xs text-amber-600 hover:underline">등록에 쓰기 →</Link>
+            <div className="flex items-baseline gap-1">
+              <span className="text-[26px] font-extrabold tracking-[-0.035em] leading-none">{k.value}</span>
+              <span className="text-xs font-semibold text-[#9A9AA5]">{k.unit}</span>
+            </div>
+            <div className="text-[11.5px] text-[#9A9AA5]">{k.sub}</div>
           </div>
-          <div className="bg-white rounded-2xl p-3 shadow-sm space-y-1">
-            {savedForms.map((f) => (
-              <div key={f.id} className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-50">
-                <span className="text-sm text-gray-700 truncate flex-1">📄 {f.name}</span>
-                {f.sample && <span className="text-[10px] bg-gray-100 text-gray-400 rounded px-1.5 py-0.5 shrink-0">예시</span>}
+        ))}
+      </div>
+
+      {/* 2단 그리드 */}
+      <div className="flex flex-col gap-5 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] [.adv-pc_&]:gap-5 [.adv-pc_&]:items-stretch">
+        {/* 좌 */}
+        <div className="flex flex-col gap-5 min-w-0">
+          {/* 캘린더 */}
+          <section className={card}>
+            <div className={cardHead + ' gap-3 px-5'}>
+              <h2 className="text-[14.5px] font-bold tracking-[-0.01em] whitespace-nowrap">캠페인 캘린더</h2>
+              <div className="flex items-center gap-3 ml-2.5 whitespace-nowrap">
+                <span className="flex items-center gap-1.5 text-[11.5px] text-[#7C7C88]">
+                  <span className="w-[7px] h-[7px] rounded-[2px] bg-[#F59E0B]" />내 캠페인 {monthCampCount} <span className="text-[#B0B0BB]">(내가 등록)</span>
+                </span>
+                <span className="flex items-center gap-1.5 text-[11.5px] text-[#7C7C88]">
+                  <span className="w-[7px] h-[7px] rounded-[2px] bg-[#3B82F6]" />공개 오픈 {openCount} <span className="text-[#B0B0BB]">(전체)</span>
+                </span>
               </div>
-            ))}
-          </div>
-        </section>
+              <span className="ml-auto text-[13px] font-bold">{year}. {month}</span>
+            </div>
+            <div className="p-5 pt-3.5 pb-[18px]">
+              <HomeCalendar year={year} month={month} countsByDate={countsByDate} isLoggedIn={true} />
+            </div>
+          </section>
 
-        {/* 친구등록 인플루언서 */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-gray-800">⭐ 친구등록 인플루언서</h2>
-            <Link href="/advertiser/search" className="text-xs text-amber-600 hover:underline">인플루언서 찾기 →</Link>
-          </div>
-          <div className="space-y-2">
-            {favInfluencers.map((inf) => (
-              <div key={inf.id} className="flex items-center bg-white rounded-2xl p-3 shadow-sm">
-                <div className="w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold mr-3 shrink-0">
-                  {inf.name[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">{inf.name}</p>
-                  <p className="text-xs text-gray-400">{inf.category} · 팔로워 {inf.followers.toLocaleString()}</p>
-                </div>
-                <span className="text-[10px] bg-gray-100 text-gray-400 rounded px-1.5 py-0.5 shrink-0">예시</span>
+          {/* 최근 캠페인 (표는 STEP 3에서 정식 컬럼화) */}
+          <section className={card + ' flex-1 flex flex-col'}>
+            <div className={cardHead + ' px-5'}>
+              <h2 className="text-[14.5px] font-bold tracking-[-0.01em]">최근 캠페인</h2>
+              <span className="ml-2 text-[11.5px] text-[#9A9AA5]">총 {campaignsWithStatus.length}건</span>
+              <Link href="/advertiser/campaigns" className="ml-auto text-xs font-semibold text-[#B45309] hover:text-[#92400E]">전체보기 →</Link>
+            </div>
+            {recentCampaigns.length === 0 ? (
+              <p className="text-sm text-[#9A9AA5] p-5">아직 등록한 캠페인이 없어요.</p>
+            ) : (
+              <div>
+                {recentCampaigns.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/advertiser/campaigns/${c.id}`}
+                    className="flex items-center gap-3 px-5 py-[13px] border-b border-[#F5F5F7] hover:bg-[#FAFAFB]"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[13.5px] font-semibold truncate">{c.title}</div>
+                      <div className="text-[11.5px] text-[#9A9AA5] mt-0.5">
+                        {c.campaign_type ?? '캠페인'}
+                        {c.channels?.length ? ' · ' + c.channels.join(',') : ''}
+                      </div>
+                    </div>
+                    <span className={`shrink-0 text-[11px] font-bold px-2 py-[3px] rounded-[5px] ${STATUS_STYLE[c.derivedStatus]}`}>{c.derivedStatus}</span>
+                    <span className="shrink-0 text-[12.5px] font-semibold w-16 text-right">
+                      확정 {c.stats.confirmed}
+                      <span className="text-[#B0B0BB]">/{c.stats.total}</span>
+                    </span>
+                    <span className="shrink-0 text-[12px] font-semibold text-[#B45309]">열기 →</span>
+                  </Link>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
+            )}
+          </section>
+        </div>
 
-        {/* 대시 · 메시지 */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-gray-800">💬 대시 · 메시지</h2>
-            <Link href="/advertiser/messages" className="text-xs text-amber-600 hover:underline">전체보기 →</Link>
-          </div>
-          {convPreview.length === 0 ? (
-            <p className="text-sm text-gray-400 bg-white rounded-2xl p-4 shadow-sm">아직 주고받은 대시가 없어요.</p>
-          ) : (
-            <div className="space-y-2">
-              {convPreview.map((c) => (
-                <Link key={c.otherId} href={`/advertiser/messages`}
-                  className="flex items-center bg-white rounded-2xl p-3 shadow-sm hover:shadow-md transition">
-                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold mr-3">
+        {/* 우 */}
+        <div className="flex flex-col gap-5 min-w-0">
+          {/* 대시·메시지 */}
+          <section className={card}>
+            <div className={cardHead + ' px-[18px]'}>
+              <h2 className="text-[13.5px] font-bold">대시 · 메시지</h2>
+              {respWaiting > 0 && <span className="ml-[7px] text-[10.5px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded-full px-1.5">{respWaiting}</span>}
+              <Link href="/advertiser/messages" className="ml-auto text-[11.5px] font-semibold text-[#B45309]">전체보기 →</Link>
+            </div>
+            {convPreview.length === 0 ? (
+              <p className="text-sm text-[#9A9AA5] p-[18px]">아직 주고받은 대시가 없어요.</p>
+            ) : (
+              convPreview.map((c) => (
+                <Link key={c.otherId} href="/advertiser/messages" className="flex items-center gap-[11px] px-[18px] py-3 border-b border-[#F5F5F7] hover:bg-[#FAFAFB]">
+                  <div className="w-[34px] h-[34px] rounded-full bg-[#FEF3C7] text-[#B45309] text-[13px] font-extrabold flex items-center justify-center shrink-0">
                     {nameById[c.otherId]?.[0] ?? '?'}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-gray-800">{nameById[c.otherId] ?? '상대방'}</p>
-                    <p className="text-xs text-gray-400 truncate">{c.last?.content}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-semibold truncate">{nameById[c.otherId] ?? '상대방'}</div>
+                    <div className="text-[11.5px] text-[#9A9AA5] truncate mt-0.5">{c.last?.content}</div>
                   </div>
                   {c.awaitingMe ? (
-                    <span className="ml-2 shrink-0 text-[11px] bg-red-100 text-red-500 px-2 py-0.5 rounded-full">미응답</span>
+                    <span className="text-[10.5px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded-full px-[7px] py-0.5 shrink-0">미응답</span>
                   ) : (
-                    <span className="ml-2 shrink-0 text-[11px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">상대 미확인</span>
+                    <span className="text-[10.5px] font-semibold bg-[#F1F1F4] text-[#9A9AA5] rounded-full px-[7px] py-0.5 shrink-0">상대 미확인</span>
                   )}
                 </Link>
-              ))}
-            </div>
-          )}
-        </section>
+              ))
+            )}
+          </section>
 
-        {/* 알림함 */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-gray-800">
-              🔔 알림함
-              {unreadNotif > 0 && <span className="ml-1.5 text-[11px] bg-red-500 text-white px-2 py-0.5 rounded-full align-middle">{unreadNotif}</span>}
-            </h2>
-            <Link href="/advertiser/notifications" className="text-xs text-amber-600 hover:underline">전체보기 →</Link>
-          </div>
-          {notifPreview.length === 0 ? (
-            <p className="text-sm text-gray-400 bg-white rounded-2xl p-4 shadow-sm">아직 알림이 없어요.</p>
-          ) : (
-            <div className="space-y-2">
-              {notifPreview.map((n) => (
-                <Link key={n.id} href="/advertiser/notifications"
-                  className={`flex items-start gap-3 rounded-2xl p-3 shadow-sm transition ${n.is_read ? 'bg-white' : 'bg-amber-50 hover:bg-amber-100'}`}>
-                  <span className="text-lg shrink-0">{NOTIF_ICON[n.type] ?? '🔔'}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm ${n.is_read ? 'text-gray-700' : 'font-semibold text-gray-900'}`}>{n.title}</p>
-                    {n.body && <p className="text-xs text-gray-400 truncate">{n.body}</p>}
+          {/* 알림함 */}
+          <section className={card}>
+            <div className={cardHead + ' px-[18px]'}>
+              <h2 className="text-[13.5px] font-bold">알림함</h2>
+              {unreadNotif > 0 && <span className="ml-[7px] text-[10.5px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded-full px-1.5">{unreadNotif}</span>}
+              <Link href="/advertiser/notifications" className="ml-auto text-[11.5px] font-semibold text-[#B45309]">전체보기 →</Link>
+            </div>
+            {notifPreview.length === 0 ? (
+              <p className="text-sm text-[#9A9AA5] p-[18px]">아직 알림이 없어요.</p>
+            ) : (
+              notifPreview.map((n) => (
+                <Link key={n.id} href="/advertiser/notifications" className={`flex gap-[11px] px-[18px] py-3 border-b border-[#F5F5F7] ${n.is_read ? 'bg-white' : 'bg-[#FFFBEB]'}`}>
+                  <span className="text-sm shrink-0 leading-snug">{NOTIF_ICON[n.type] ?? '🔔'}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className={`text-[12.5px] tracking-[-0.01em] ${n.is_read ? 'font-medium text-[#5C5C68]' : 'font-bold'}`}>{n.title}</div>
+                    {n.body && <div className="text-[11.5px] text-[#9A9AA5] truncate mt-0.5">{n.body}</div>}
                   </div>
-                  {!n.is_read && <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 mt-1.5" />}
                 </Link>
+              ))
+            )}
+          </section>
+
+          {/* 친구등록 인플루언서 (예시) */}
+          <section className={card}>
+            <div className={cardHead + ' px-[18px]'}>
+              <h2 className="text-[13.5px] font-bold">친구등록 인플루언서</h2>
+              <span className="ml-[7px] text-[9.5px] font-bold text-[#9A9AA5] bg-[#F1F1F4] rounded px-[5px] py-0.5">예시</span>
+              <Link href="/advertiser/search" className="ml-auto text-[11.5px] font-semibold text-[#B45309]">찾기 →</Link>
+            </div>
+            {favInfluencers.map((inf) => (
+              <div key={inf.id} className="flex items-center gap-[11px] px-[18px] py-[11px] border-b border-[#F5F5F7]">
+                <div className="w-8 h-8 rounded-full bg-[#F1F1F4] text-[#5C5C68] text-[12.5px] font-bold flex items-center justify-center shrink-0">{inf.name[0]}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[12.5px] font-semibold truncate">{inf.name}</div>
+                  <div className="text-[11px] text-[#9A9AA5] mt-px">{inf.category} · 팔로워 {inf.followers.toLocaleString()}</div>
+                </div>
+                <span className="text-[11px] font-semibold text-[#7C7C88] border border-[#E2E2E8] rounded-md px-[9px] py-1">초대</span>
+              </div>
+            ))}
+          </section>
+
+          {/* 양식함 */}
+          <section className={card + ' flex-1 flex flex-col'}>
+            <div className={cardHead + ' px-[18px]'}>
+              <h2 className="text-[13.5px] font-bold">양식함</h2>
+              <Link href="/advertiser/campaigns/new" className="ml-auto text-[11.5px] font-semibold text-[#B45309]">등록에 쓰기 →</Link>
+            </div>
+            <div className="p-2.5 pt-2">
+              {savedForms.map((f) => (
+                <div key={f.id} className="flex items-center gap-2.5 px-2.5 py-[9px] rounded-lg hover:bg-[#FAFAFB]">
+                  <span className="text-[13px] opacity-60">📄</span>
+                  <span className="text-[12.5px] font-medium flex-1 min-w-0 truncate">{f.name}</span>
+                  {f.sample && <span className="text-[9.5px] font-bold text-[#9A9AA5] bg-[#F1F1F4] rounded px-[5px] py-0.5">예시</span>}
+                </div>
               ))}
             </div>
-          )}
-        </section>
-
-        {/* 집행 요약 */}
-        <section>
-          <div className="block bg-white rounded-2xl p-5 shadow-sm">
-            <p className="text-sm text-gray-500">💰 확정 집행 예정</p>
-            <p className="text-2xl font-bold text-gray-900 mt-0.5">{spendConfirmed.toLocaleString()}원</p>
-            <p className="text-xs text-gray-400 mt-0.5">양쪽 확정된 협업 기준</p>
-          </div>
-        </section>
-      </main>
+          </section>
+        </div>
+      </div>
     </div>
   )
 }

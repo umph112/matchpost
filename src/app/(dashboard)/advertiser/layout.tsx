@@ -46,8 +46,11 @@ export default async function AdvertiserLayout({ children }: { children: React.R
     if (m.receiver_id === user.id) msgCount++
   }
 
+  const now = new Date()
+  const sub = `광고주 콘솔 · ${now.getFullYear()}년 ${now.getMonth() + 1}월`
+
   return (
-    <AdvertiserShell name={name} spend={spend} msgCount={msgCount} notifCount={notifCount ?? 0}>
+    <AdvertiserShell name={name} sub={sub} spend={spend} msgCount={msgCount} notifCount={notifCount ?? 0}>
       {children}
     </AdvertiserShell>
   )
