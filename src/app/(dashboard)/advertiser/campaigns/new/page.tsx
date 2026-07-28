@@ -119,6 +119,11 @@ export default function NewCampaignPage() {
   const [guideUploading, setGuideUploading] = useState(false)
   const [isPublic, setIsPublic] = useState(true)
 
+  // 캠페인 이미지 (최대 5장)
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [coverImageUrl, setCoverImageUrl] = useState('')
+  const [imageUploading, setImageUploading] = useState(false)
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -255,6 +260,8 @@ export default function NewCampaignPage() {
     setPaymentDueRule(c.payment_due_rule || '')
     setPaymentMethods(c.payment_methods || [])
     setIsPublic(c.is_public ?? true)
+    setImageUrls(c.image_urls || [])
+    setCoverImageUrl(c.cover_image_url || '')
     setShowLoadList(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -269,6 +276,42 @@ export default function NewCampaignPage() {
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 이미지 업로드 (campaign-images 버킷, 최대 5장)
+  const uploadImages = async (files: FileList) => {
+    const remaining = 5 - imageUrls.length
+    if (remaining <= 0) return setError('이미지는 최대 5장까지 첨부할 수 있어요.')
+    const toUpload = Array.from(files).slice(0, remaining)
+    setImageUploading(true)
+    setError('')
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const uploaded: string[] = []
+      for (const file of toUpload) {
+        const ext = file.name.split('.').pop() || 'jpg'
+        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const { error: upErr } = await supabase.storage.from('campaign-images').upload(path, file, { upsert: true })
+        if (upErr) { setError('이미지 업로드 실패: ' + upErr.message); break }
+        const { data: pub } = supabase.storage.from('campaign-images').getPublicUrl(path)
+        uploaded.push(pub.publicUrl)
+      }
+      setImageUrls((prev) => {
+        const next = [...prev, ...uploaded]
+        if (!coverImageUrl && next.length > 0) setCoverImageUrl(next[0])
+        return next
+      })
+    } finally {
+      setImageUploading(false)
+    }
+  }
+  const removeImage = (url: string) => {
+    setImageUrls((prev) => {
+      const next = prev.filter((u) => u !== url)
+      if (coverImageUrl === url) setCoverImageUrl(next[0] ?? '')
+      return next
+    })
+  }
 
   // 가이드 파일 업로드 (campaign-guides 버킷)
   const uploadGuide = async (file: File) => {
@@ -446,6 +489,8 @@ export default function NewCampaignPage() {
       guide_url: guideUrl || null,
       guide_name: guideName || null,
       is_public: isPublic,
+      image_urls: imageUrls,
+      cover_image_url: coverImageUrl || null,
       status: 'open',
     })
 
@@ -626,7 +671,59 @@ export default function NewCampaignPage() {
         </div>
       </div>
 
-      {/* ④ 제목 */}
+      {/* ④ 캠페인 이미지 */}
+      <div className={card}>
+        <label className="block text-sm font-medium text-gray-700 mb-1">캠페인 이미지 <span className="text-gray-400 font-normal">(최대 5장)</span></label>
+        <p className="text-xs text-gray-400 mb-3">대표사진은 캠페인 페이지 최상단에 크게 노출돼요. 클릭해서 대표사진을 바꿀 수 있어요.</p>
+
+        {/* 업로드된 이미지 썸네일 */}
+        {imageUrls.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {imageUrls.map((url) => (
+              <div key={url} className="relative group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt=""
+                  onClick={() => setCoverImageUrl(url)}
+                  className={`w-full aspect-square object-cover rounded-lg cursor-pointer border-2 transition ${
+                    coverImageUrl === url ? 'border-amber-500' : 'border-transparent hover:border-gray-300'
+                  }`}
+                />
+                {coverImageUrl === url && (
+                  <span className="absolute bottom-1 left-1 bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+                    대표
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeImage(url)}
+                  className="absolute top-1 right-1 bg-black/50 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 추가 업로드 버튼 */}
+        {imageUrls.length < 5 && (
+          <label className="flex items-center justify-center gap-2 border border-dashed border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-500 cursor-pointer hover:bg-gray-50">
+            {imageUploading ? '업로드 중...' : `＋ 사진 추가 (${imageUrls.length}/5)`}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              disabled={imageUploading}
+              onChange={(e) => { if (e.target.files?.length) uploadImages(e.target.files) }}
+            />
+          </label>
+        )}
+      </div>
+
+      {/* ⑤ 제목 */}
       <div className={card}>
         <label className="block text-sm font-medium text-gray-700 mb-2">캠페인 제목 *</label>
         <input

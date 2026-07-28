@@ -55,6 +55,9 @@ export default async function CampaignDetailPage({
 
   const confirmedCount = participants.filter((p) => p.label === '확정').length
 
+  const coverUrl: string = campaign.cover_image_url || campaign.image_urls?.[0] || ''
+  const albumUrls: string[] = (campaign.image_urls ?? []).filter((u: string) => u !== coverUrl)
+
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
       {/* 헤더 */}
@@ -62,6 +65,31 @@ export default async function CampaignDetailPage({
         <Link href="/advertiser/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
         <h1 className="text-xl font-bold text-gray-900 truncate">{campaign.title}</h1>
       </div>
+
+      {/* 대표사진 */}
+      {coverUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={coverUrl}
+          alt={campaign.title}
+          className="w-full aspect-video object-cover rounded-2xl mb-4"
+        />
+      )}
+
+      {/* 앨범 (나머지 사진) */}
+      {albumUrls.length > 0 && (
+        <div className={`grid gap-2 mb-4 ${albumUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+          {albumUrls.map((url: string) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={url}
+              src={url}
+              alt=""
+              className="w-full aspect-square object-cover rounded-xl"
+            />
+          ))}
+        </div>
+      )}
 
       {/* 캠페인 정보 */}
       <div className="bg-white rounded-2xl p-5 shadow-sm mb-4 border-l-4 border-amber-400">
