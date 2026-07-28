@@ -469,7 +469,7 @@ export default function NewCampaignPage() {
     )
   }
 
-  const card = 'bg-white rounded-2xl p-5 shadow-sm mb-4'
+  const card = 'bg-white rounded-2xl p-5 shadow-sm mb-4 break-inside-avoid'
   const chip = (on: boolean) =>
     `px-4 py-2 rounded-full text-sm font-medium transition ${
       on ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -478,7 +478,7 @@ export default function NewCampaignPage() {
     'w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500'
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0">
       <div className="flex items-center mb-8">
         <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">
           ← 뒤로
@@ -519,6 +519,9 @@ export default function NewCampaignPage() {
           )}
         </div>
       )}
+
+      {/* 등록 항목들 — PC 버전에선 2단(멀티컬럼)으로 한눈에 배치 */}
+      <div className="[.adv-pc_&]:columns-2 [.adv-pc_&]:gap-5">
 
       {/* ① 채널 (복수) */}
       <div className={card}>
@@ -1015,7 +1018,7 @@ export default function NewCampaignPage() {
       </div>
 
       {/* 공개 설정 */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
+      <div className="bg-white rounded-2xl p-5 shadow-sm mb-6 break-inside-avoid">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-700">인플루언서에게 공개</p>
@@ -1026,6 +1029,7 @@ export default function NewCampaignPage() {
           </button>
         </div>
       </div>
+      </div>{/* /등록 항목 2단 래퍼 */}
 
       <button onClick={handleSubmit} disabled={loading}
         className="w-full bg-amber-500 text-white py-3 rounded-xl font-medium hover:bg-amber-600 transition disabled:opacity-50">

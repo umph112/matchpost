@@ -70,7 +70,7 @@ setLoading(false)
       }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0">
       {/* 헤더 */}
       <div className="flex items-center mb-8">
         <Link href="/advertiser/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">

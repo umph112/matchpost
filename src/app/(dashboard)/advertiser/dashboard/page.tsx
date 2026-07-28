@@ -1,10 +1,8 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import TopBar from '@/components/TopBar'
 import HomeCalendar from '@/components/HomeCalendar'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
-import MyCampaignsList from '@/components/MyCampaignsList'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,13 +31,6 @@ export default async function AdvertiserMyPage() {
   if (profile?.status === 'pending') redirect('/pending')
   if (profile?.role === 'influencer') redirect('/influencer/dashboard')
   if (profile?.role !== 'advertiser') redirect('/login')
-
-  const { data: advProfile } = await supabase
-    .from('advertiser_profiles')
-    .select('company_name')
-    .eq('user_id', user.id)
-    .single()
-  const displayName = advProfile?.company_name ?? profile?.name
 
   const now = new Date()
   const year = now.getFullYear()
@@ -133,13 +124,44 @@ export default async function AdvertiserMyPage() {
     return { ...c, derivedStatus: st, stats: byCamp[c.id] ?? { total: 0, confirmed: 0, negotiating: 0 } }
   })
   const monthCampCount = (campaigns ?? []).filter((c) => c.date >= start && c.date <= end).length
+  const recentCampaigns = campaignsWithStatus.slice(0, 5)
+
+  // 양식함 (저장된 상세 양식). 없으면 예시로 모양 채움.
+  const { data: detailTpls } = await supabase
+    .from('campaign_detail_templates')
+    .select('id, name')
+    .eq('advertiser_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(6)
+  const savedForms =
+    detailTpls && detailTpls.length > 0
+      ? detailTpls.map((t) => ({ ...t, sample: false }))
+      : [
+          { id: 's1', name: '방문형 카페 리뷰 기본 양식', sample: true },
+          { id: 's2', name: '제품 협찬 블로그 양식', sample: true },
+          { id: 's3', name: '기자단 배포 양식', sample: true },
+        ]
+
+  // 친구등록 인플루언서 (기능 미구현 — 예시 데이터로 모양 채움)
+  const favInfluencers = [
+    { id: 'f1', name: '뷰티하는 지연', followers: 82000, category: '뷰티' },
+    { id: 'f2', name: '먹방요정 하루', followers: 154000, category: '맛집' },
+    { id: 'f3', name: '여행자 민준', followers: 47000, category: '여행' },
+    { id: 'f4', name: '홈카페 소소', followers: 33000, category: '라이프' },
+  ]
+
+  const STATUS_STYLE: Record<string, string> = {
+    진행중: 'bg-amber-100 text-amber-700',
+    완료: 'bg-green-100 text-green-600',
+    마감: 'bg-gray-100 text-gray-500',
+    캔슬: 'bg-red-100 text-red-500',
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <TopBar name={displayName} homeHref="/advertiser/dashboard" editHref="/advertiser/profile" />
+    <div>
       <NotificationsRealtime userId={user.id} />
 
-      <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
+      <main className="max-w-lg mx-auto space-y-6 [.adv-pc_&]:max-w-none [.adv-pc_&]:columns-2 [.adv-pc_&]:gap-6 [&>*]:break-inside-avoid">
         {/* 액션 배너 */}
         {bannerBits.length > 0 && (
           <Link
@@ -175,14 +197,75 @@ export default async function AdvertiserMyPage() {
           </Link>
         </section>
 
-        {/* 내 캠페인 (진행중/종료 탭 → 선택 시 딜시트) */}
+        {/* 최근 캠페인 (5개) + 전체보기 */}
         <section>
-          <h2 className="text-sm font-bold text-gray-800 mb-3">📣 내 캠페인</h2>
-          {campaignsWithStatus.length === 0 ? (
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-gray-800">📣 최근 캠페인</h2>
+            <Link href="/advertiser/campaigns" className="text-xs text-amber-600 hover:underline">전체보기 →</Link>
+          </div>
+          {recentCampaigns.length === 0 ? (
             <p className="text-sm text-gray-400 bg-white rounded-2xl p-4 shadow-sm">아직 등록한 캠페인이 없어요.</p>
           ) : (
-            <MyCampaignsList campaigns={campaignsWithStatus} />
+            <div className="space-y-2">
+              {recentCampaigns.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/advertiser/campaigns/${c.id}`}
+                  className="block bg-white rounded-2xl p-4 shadow-sm border-l-4 border-amber-400 hover:shadow-md transition"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold text-gray-900 truncate">{c.title}</p>
+                    <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[c.derivedStatus]}`}>
+                      {c.derivedStatus}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                    <span>👥 참여 {c.stats.total}</span>
+                    <span className="text-green-600">확정 {c.stats.confirmed}</span>
+                    <span className="ml-auto text-amber-600 font-medium">딜시트 →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           )}
+        </section>
+
+        {/* 양식함 (저장된 상세 양식) */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-gray-800">🗂 양식함</h2>
+            <Link href="/advertiser/campaigns/new" className="text-xs text-amber-600 hover:underline">등록에 쓰기 →</Link>
+          </div>
+          <div className="bg-white rounded-2xl p-3 shadow-sm space-y-1">
+            {savedForms.map((f) => (
+              <div key={f.id} className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-50">
+                <span className="text-sm text-gray-700 truncate flex-1">📄 {f.name}</span>
+                {f.sample && <span className="text-[10px] bg-gray-100 text-gray-400 rounded px-1.5 py-0.5 shrink-0">예시</span>}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 친구등록 인플루언서 */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-gray-800">⭐ 친구등록 인플루언서</h2>
+            <Link href="/advertiser/search" className="text-xs text-amber-600 hover:underline">인플루언서 찾기 →</Link>
+          </div>
+          <div className="space-y-2">
+            {favInfluencers.map((inf) => (
+              <div key={inf.id} className="flex items-center bg-white rounded-2xl p-3 shadow-sm">
+                <div className="w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold mr-3 shrink-0">
+                  {inf.name[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">{inf.name}</p>
+                  <p className="text-xs text-gray-400">{inf.category} · 팔로워 {inf.followers.toLocaleString()}</p>
+                </div>
+                <span className="text-[10px] bg-gray-100 text-gray-400 rounded px-1.5 py-0.5 shrink-0">예시</span>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* 대시 · 메시지 */}
