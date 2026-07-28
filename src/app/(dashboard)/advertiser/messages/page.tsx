@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, type ChangeEvent } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import DealConfirmBar from '@/components/DealConfirmBar'
@@ -16,15 +17,38 @@ export default function AdvertiserMessagesPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const toParam = searchParams.get('to')
+  const dateParam = searchParams.get('date')
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       setCurrentUser(user)
-      fetchConversations(user.id)
+      const convList = await fetchConversations(user.id)
+
+      // ?to= 파라미터: 해당 인플루언서 대화 자동 선택
+      if (toParam) {
+        const existing = convList.find((c: any) => c.otherId === toParam)
+        if (existing) {
+          setSelectedConversation(existing)
+          fetchMessages(existing.otherId, existing.proposalId)
+        } else {
+          // 기존 대화 없음 → 이름 조회 후 신규 대화창 열기
+          const { data: prof } = await supabase.from('profiles').select('name').eq('id', toParam).single()
+          setSelectedConversation({ otherId: toParam, otherName: prof?.name ?? '인플루언서', proposalId: null })
+          setMessages([])
+        }
+        // ?date= 있으면 입력창 프리필
+        if (dateParam) {
+          const [, m, d] = dateParam.split('-')
+          setNewMessage(`안녕하세요! ${m}월 ${d}일 날짜로 협업을 제안드리고 싶어요.\n캠페인 관련 이야기 나눠볼 수 있을까요?`)
+        }
+      }
     }
     init()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -63,6 +87,7 @@ export default function AdvertiserMessagesPage() {
 
     setConversations(convList)
     setLoading(false)
+    return convList
   }
 
   const fetchMessages = async (otherId: string, proposalId: string) => {
