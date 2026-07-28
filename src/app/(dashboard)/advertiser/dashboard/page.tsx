@@ -204,12 +204,12 @@ export default async function AdvertiserMyPage() {
       <NotificationsRealtime userId={user.id} />
 
       {/* 페이지 헤더 */}
-      <div className="flex items-end gap-4">
+      <div className="flex flex-col gap-3 [.adv-pc_&]:flex-row [.adv-pc_&]:items-end [.adv-pc_&]:gap-4">
         <div>
           <h1 className="text-[23px] font-extrabold tracking-[-0.03em] text-[#17171B]">마이페이지</h1>
           <p className="text-[13px] text-[#7C7C88] mt-1">확정 대기 {negotiatingInf}건 · 진행중 캠페인 {ongoingCount}건이 있어요.</p>
         </div>
-        <div className="ml-auto flex gap-2">
+        <div className="flex gap-2 [.adv-pc_&]:ml-auto">
           <Link href="/advertiser/search" className="flex items-center gap-1.5 h-[38px] px-[15px] rounded-[9px] border border-[#E2E2E8] bg-white text-[13px] font-semibold text-[#3C3C46] hover:bg-[#F6F6F7]">
             🔍 인플루언서 찾기
           </Link>
@@ -269,7 +269,8 @@ export default async function AdvertiserMyPage() {
             {recentCampaigns.length === 0 ? (
               <p className="text-sm text-[#9A9AA5] p-5">아직 등록한 캠페인이 없어요.</p>
             ) : (
-              <div>
+              <div className="overflow-x-auto">
+               <div className="min-w-[560px]">
                 {/* 표 헤더 */}
                 <div className={`grid ${CAMP_COLS} px-5 py-[9px] bg-[#FAFAFB] border-b border-[#F1F1F4]`}>
                   <span className="text-[11px] font-bold text-[#9A9AA5]">캠페인</span>
@@ -314,6 +315,7 @@ export default async function AdvertiserMyPage() {
                     </Link>
                   )
                 })}
+               </div>
               </div>
             )}
           </section>
