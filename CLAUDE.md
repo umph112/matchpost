@@ -70,13 +70,21 @@ sql/migrations/              스키마 변경 이력(0001~). README 참고
 - 세무자료: 세금계산서(발행주체+상대 사업자등록증) / 3.3%(신분증X, 전화번호·국세청ID) → 대시서 교환 → 딜시트 체크. 플랫폼 밖 교환 대비 갭체크+양방향 알림+셀프입력.
 - **결제 실행은 하지 않음**(기록·추적만). 향후 캠페인별 수수료 도입 시 budget_total 포함+딜시트 표기(코드 TODO(수수료)).
 
-## 다음 할 일 (후보)
-- 인플루언서 캠페인 상세 뷰(양면 딜시트 첫 구현) — campaigns/[id] 확장 (PC 와이드 레이아웃 포함)
+## 다음 할 일 — 신규 디자인 구현 (2026-07-31 업데이트)
+디자인 핸드오프 `design/mypage-pc/README.md` (Screen 2-5 + 로고 스펙 추가됨)
+
+- [ ] **① 로고 교체** — AdvertiserShell.tsx 인라인 SVG → `/logo/matchpost-mark.svg` + Archivo 워드마크 (SVG 파일은 `public/logo/`에 저장 완료)
+- [ ] **② Screen 4** — 캠페인 등록 폼(`campaigns/new`): `[.adv-pc_&]:columns-2` → `grid-cols-[1fr_320px]` + 우측 sticky 사이드바 (로직 변경 없음)
+- [ ] **③ Screen 2** — 캠페인 목록(`campaigns/page.tsx`): 7열 PC 표 + 필터 탭(전체/진행중/마감/완료/취소)
+- [ ] **④ Screen 5** — 인플루언서 찾기(`search/page.tsx`): 284px 필터 사이드바 + 날짜별/인플루언서별 그룹 결과 카드
+- [ ] **⑤ Screen 3** — 딜시트(`campaigns/[id]`): DB 마이그레이션 0012 후 구현 (가장 공수 큼)
+  - `proposals` + `campaigns` 스키마 추가 → `sql/migrations/0012_dealsheet.sql` 작성 필요
+
+## 이전 후보 (아직 유효)
 - proposals에 initiated_by 추가 + confirm 토글화(개시자 자동확정/철회)
-- 딜시트 본체(인플루언서별 조건·진행단계·게재URL·검수·결제 추적)
 - 캘린더 월 이동(‹›) — `?ym=YYYY-MM` 서버 재조회
 - 장소 **지도 시각화**(NCP Maps 키 필요, 현재 주소 자동입력만)
-- 캠페인 진행일정 **공휴일 자동감지**(data.go.kr 특일정보, 현재 주말만) — KPGTR TOURAPI_KEY 재사용 가능
+- 캠페인 진행일정 **공휴일 자동감지**(data.go.kr 특일정보, 현재 주말만)
 - 친구등록 인플루언서 favorites 테이블 구현(현재 예시 데이터)
 
 ## 테스트 계정

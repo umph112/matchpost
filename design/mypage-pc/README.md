@@ -140,3 +140,206 @@ amber(#F59E0B/#D97706/#B45309/#FEF3C7/#FFFBEB/#FCD34D/#FDE68A)=`amber-500/600/70
 4. 캘린더 데이터 확장(카운트→목록) + `schedules` 필드 마이그레이션 검토
 5. 날짜 팝업(목록→상세) 구현
 6. "이 날짜로 대시 보내기" → 대시 생성 프리필 연결
+
+---
+
+## Screen 2 — 캠페인 목록 (`/advertiser/campaigns`)
+
+### 구조
+PC 모드: 상단 필터 바 + 7열 표. 모바일 모드: 기존 카드 목록 유지.
+
+### 상단 영역
+- 페이지 헤더: 제목 "캠페인 목록" + 우측 "+ 캠페인 등록" 버튼(amber)
+- 필터 탭: 전체 / 진행중 / 마감 / 완료 / 취소 (활성탭 amber 600 border-bottom 2px)
+- 검색 인풋 + 정렬 드롭다운 (날짜순 / 예산순)
+
+### 표 (PC only)
+`grid-template-columns: minmax(0,1fr) 92px 150px 122px 158px 128px 108px`
+
+| 열 | 내용 |
+|---|---|
+| 캠페인 | 제목 + 메타(유형·채널·지역) |
+| 상태 | 상태 배지 |
+| 유형·채널 | 구분 칩 + 채널 아이콘 |
+| 진행일 | 시작일~종료일 |
+| 모집현황 | 확정/목표 + 진행바 |
+| 확정예산 | 원 단위 (오른쪽 정렬) |
+| 액션 | 딜시트 버튼(amber outline) · 복사 버튼(gray) |
+
+- 헤더행: `bg:#FAFAFB` `11px/700/#9A9AA5`
+- 데이터행: 패딩 `13 20` 하단보더 `#F5F5F7` hover `#FAFAFB` cursor pointer
+- 페이지네이션: 하단 중앙, 이전/다음 + 페이지 번호
+
+---
+
+## Screen 3 — 딜시트 (`/advertiser/campaigns/[id]`)
+
+### 구조
+헤더 섹션 + 채널 그룹별 인플루언서 표 + 하단 정산 바.
+
+### 인플루언서별 진행 단계 (8단계)
+`신청 → 확정 → 가이드 → 방문 → 업로드 → 수정/컴프 → 검사 → 정산`
+- 지역 캠페인: 8단계 전체
+- 제품·기자단: 방문 제외 7단계 (방문 열 숨김)
+
+### 채널 그룹 헤더
+| 채널 | 텍스트 | 배경 |
+|---|---|---|
+| 블로그 | `#15803D` | `#DCFCE7` |
+| 유튜브 | `#DC2626` | `#FEE2E2` |
+| 인스타 | `#BE185D` | `#FCE7F3` |
+| 틱톡 | `#17171B` | `#E8E8EC` |
+
+### 표 열 구성
+`grid-template-columns: 36px 224px 112px 218px minmax(0,1fr) 112px 116px 92px`
+- 체크박스 / 인플루언서(아바타+이름+팔로워) / 채널 / 단계 진행바 / 업로드URL / 검사일 / 세무자료 / 정산상태
+
+### 성과 팝업
+- 트리거: 행 클릭 또는 "성과 보기" 버튼
+- 패널: `width:640px` 오버레이 위, 채널별 지표(조회수·좋아요·댓글·저장) + 누적 합계
+
+### 하단 정산 바
+`background:#17171B` (다크), 고정 바텀. 선택된 인플루언서 수 + 합계 금액 + "정산 처리" 버튼
+
+### 갭 경고 배너
+세무자료 미수령 또는 업로드 마감 임박 시 상단 amber 배너 자동 표시.
+
+### 필요 스키마 추가 (sql/migrations/0012~)
+**`proposals` 컬럼 추가:**
+- `stage` (text) — 현재 진행 단계
+- `visit_at` (timestamptz) — 방문 일시 (지역 캠페인용)
+- `visit_confirmed` (boolean)
+- `upload_url` (text)
+- `inspection_url` (text)
+- `inspection_at` (date)
+- `inspection_status` (text) — 통과/미통과/검토중
+- `tax_doc_type` (text) — 세금계산서/3.3%
+- `tax_doc_received` (boolean)
+- `settlement_status` (text) — 미정산/정산중/완료
+- `performance_metrics` (jsonb) — `{views, likes, comments, saves}`
+
+**`campaigns` 컬럼 추가:**
+- `upload_deadline` (date)
+- `inspection_deadline` (date)
+- `settlement_date` (date)
+
+---
+
+## Screen 4 — 캠페인 등록 폼 (`/advertiser/campaigns/new`)
+
+### 레이아웃 변경 (PC 모드)
+기존 `[.adv-pc_&]:columns-2` → 2열 사이드바 레이아웃으로 교체.
+
+```
+[.adv-pc_&]:grid
+[.adv-pc_&]:grid-cols-[minmax(0,1fr)_320px]
+[.adv-pc_&]:gap-5
+[.adv-pc_&]:items-start
+```
+
+우측 사이드바: `position:sticky; top:84px` (상단바 64px + 20px 여유)
+```
+[.adv-pc_&]:sticky [.adv-pc_&]:top-[84px]
+```
+
+### 우측 사이드바 섹션 구성
+1. **예산·결제 요약 카드** — 입력한 예산·결제 방식 실시간 미리보기 (`bg:#FAFAFB border:#EAEAEE radius:12`)
+2. **추가옵션 요약** — 선택된 옵션 칩 목록
+3. **등록 전 확인 체크리스트** — 필수 입력 항목 완료 여부 자동 체크 (`✓` 그린 / `○` 회색)
+4. **캠페인 등록 버튼** — amber, `w-full h-12 radius:10 font-bold`
+
+### 구현 방법
+- 기존 `campaigns/new/page.tsx` 내 폼 `<form>` 래퍼에 PC 그리드 클래스 추가
+- 우측 사이드바는 별도 `<div>` 블록 — 폼 state를 props로 받아 표시 (또는 form context)
+- 모바일 모드는 기존 단일 컬럼 그대로
+
+---
+
+## Screen 5 — 인플루언서 찾기 (`/advertiser/search`)
+
+### 레이아웃
+```
+[.adv-pc_&]:grid
+[.adv-pc_&]:grid-cols-[284px_minmax(0,1fr)]
+[.adv-pc_&]:gap-5
+[.adv-pc_&]:items-start
+```
+
+### 좌측 필터 사이드바
+`position:sticky; top:84px`
+필터 그룹:
+- **날짜** — datepicker (공개 오픈 날짜 기준)
+- **지역** — 체크박스 멀티
+- **채널** — 블로그/유튜브/인스타/틱톡 체크
+- **분야** — 23개 카테고리 체크 (INFLUENCER_CATEGORIES 기준)
+- **희망페이** — 범위 슬라이더 (0~100만)
+- **키워드** — 텍스트 인풋
+- **친구등록만** — ☆ 토글 (favorites 테이블 완성 후 활성화)
+
+### 우측 결과 영역
+상단: 그룹 방식 탭 (날짜별 / 인플루언서별) + 정렬 드롭다운 + 결과 수
+
+**날짜별 그룹** (`#3B82F6` 도트)
+- 날짜 헤더 → 그 날짜의 오픈 카드 2열 그리드 `repeat(2, minmax(0,1fr)) gap:11px`
+
+**인플루언서별 그룹** (`#F59E0B` 도트)
+- 인플루언서 이름 헤더 → 해당 인플루언서의 오픈 날짜 카드들
+
+**오픈 카드 구성**
+- 아바타 + 이름 + 팔로워 + 분야 칩
+- 날짜 / 채널 / 지역 / 희망페이
+- CTA: **"이 날짜로 대시 →"** (amber, `w-full`)
+- hover: `bg:#FFFBEB border:#FDE68A`
+
+**정렬 옵션**
+날짜 빠른순 / 페이 낮은순 / 팔로워 많은순 / 응답률 높은순
+
+---
+
+## 로고 (Logo)
+
+### 파일 위치
+`public/logo/matchpost-mark.svg` — 마크만 (64×64)
+`public/logo/matchpost-lockup.svg` — 마크 + 워드마크 (468×64)
+`public/logo/matchpost-favicon.svg` — 파비콘용 (64×64, 선 두께 강조)
+
+### 마크 구조 (matchpost-mark.svg)
+```
+64×64 viewBox, rx:16.6, fill:#17171B
+수평선: y=37.1, h=1.9, #FFFFFF opacity:0.26
+수직선: x=24.3, w=1.9, #FFFFFF opacity:0.26
+앰버 원: cx=25.3 cy=38.1 r=8.3, fill:#F59E0B
+```
+원의 중심 = 두 선의 교차점 → "포스트(게시) 위치" 은유.
+
+### 워드마크 (lockup)
+`MATCH` (Archivo 900, letter-spacing 0.055em) + amber 원(r=6.5) + `POST`
+배경 없음, 다크 텍스트 기준. 라이트 배경용.
+
+### 사이드바 사용 (AdvertiserShell)
+```
+마크 크기: 24×24
+워드마크: font-size 19px (= 24 × 0.79), font-family Archivo, font-weight 900, letter-spacing 0.055em
+gap: 10px
+```
+
+### 기존 로고 교체 방법 (AdvertiserShell.tsx)
+```tsx
+// 기존 brand div 내 인라인 SVG → 교체
+<Image src="/logo/matchpost-mark.svg" width={24} height={24} alt="MatchPost" />
+<span style={{ fontFamily: 'Archivo, sans-serif', fontWeight: 900, fontSize: 19, letterSpacing: '0.055em' }}>
+  MATCH<span style={{ color: '#F59E0B' }}>·</span>POST
+</span>
+```
+또는 `<img>` 태그로 간단히. Archivo 폰트는 Google Fonts에서 import.
+
+---
+
+## 신규 구현 순서 제안 (Screen 2-5)
+
+1. **로고 교체** (AdvertiserShell.tsx) — 인라인 SVG 제거, mark.svg + Archivo 워드마크
+2. **Screen 4** (캠페인 등록 폼 레이아웃) — `columns-2` → `grid 1fr 320px`, 우측 사이드바 추가. 로직 변경 없음.
+3. **Screen 2** (캠페인 목록) — 7열 PC 표 + 필터 탭. `campaigns/page.tsx` 신규 또는 개편.
+4. **Screen 5** (인플루언서 찾기) — 284px 필터 사이드바 + 결과 카드. `search/page.tsx` 개편.
+5. **Screen 3** (딜시트) — DB 마이그레이션 0012 이후 구현. 가장 공수 크고 스키마 의존.
+

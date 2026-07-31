@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 468 64" width="468" height="64">
+  <rect width="64" height="64" rx="16.6" fill="#17171B"/>
+  <rect x="0" y="37.1" width="64" height="1.9" fill="#FFFFFF" fill-opacity="0.26"/>
+  <rect x="24.3" y="0" width="1.9" height="64" fill="#FFFFFF" fill-opacity="0.26"/>
+  <circle cx="25.3" cy="38.1" r="8.3" fill="#F59E0B"/>
+  <text x="88" y="50.2" font-family="Archivo, sans-serif" font-weight="900" font-size="50" letter-spacing="2.75" fill="#17171B">MATCH</text>
+  <circle cx="303" cy="32" r="6.5" fill="#F59E0B"/>
+  <text x="315" y="50.2" font-family="Archivo, sans-serif" font-weight="900" font-size="50" letter-spacing="2.75" fill="#17171B">POST</text>
+</svg>

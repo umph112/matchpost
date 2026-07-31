@@ -565,8 +565,9 @@ export default function NewCampaignPage() {
         </div>
       )}
 
-      {/* 등록 항목들 — PC 버전에선 2단(멀티컬럼)으로 한눈에 배치 */}
-      <div className="[.adv-pc_&]:columns-2 [.adv-pc_&]:gap-5">
+      {/* 등록 항목들 — PC: 1fr + 320px 사이드바 그리드 */}
+      <div className="[.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1fr)_320px] [.adv-pc_&]:gap-5 [.adv-pc_&]:items-start">
+      <div className="min-w-0">
 
       {/* ① 채널 (복수) */}
       <div className={card}>
@@ -1126,10 +1127,71 @@ export default function NewCampaignPage() {
           </button>
         </div>
       </div>
-      </div>{/* /등록 항목 2단 래퍼 */}
+      </div>{/* /left column */}
 
+      {/* RIGHT: sticky 사이드바 (PC only) */}
+      <div className="hidden [.adv-pc_&]:flex [.adv-pc_&]:flex-col [.adv-pc_&]:gap-4 [.adv-pc_&]:sticky [.adv-pc_&]:top-[84px]">
+        {/* 예산·결제 미리보기 */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EAEAEE]">
+          <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.06em] mb-3">예산 · 결제</p>
+          {budgetManwon && parseInt(budgetManwon) > 0 ? (
+            <div>
+              <p className="text-[22px] font-extrabold tracking-tight text-[#17171B] leading-none">
+                {parseInt(budgetManwon).toLocaleString()}
+                <span className="text-[13px] font-semibold text-[#9A9AA5] ml-1">만원</span>
+              </p>
+              <p className="text-[12px] text-[#9A9AA5] mt-1">= {(parseInt(budgetManwon) * 10000).toLocaleString()}원</p>
+            </div>
+          ) : (
+            <p className="text-[13px] text-[#C4C4CE]">예산 미입력</p>
+          )}
+          {paymentMethods.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {paymentMethods.map((m) => (
+                <span key={m} className="text-[11px] font-semibold bg-[#FEF3C7] text-[#B45309] rounded-full px-2.5 py-1">{m}</span>
+              ))}
+            </div>
+          )}
+          {(paymentDueDate || paymentDueRule) && (
+            <p className="text-[11.5px] text-[#7C7C88] mt-2">{paymentDueDate || paymentDueRule}</p>
+          )}
+        </div>
+
+        {/* 등록 전 확인 체크리스트 */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EAEAEE]">
+          <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.06em] mb-3">등록 전 확인</p>
+          <ul className="space-y-2">
+            {([
+              { label: '채널 선택', ok: channels.length > 0 },
+              { label: '캠페인 구분', ok: !!campaignType },
+              { label: '제목 입력', ok: !!title.trim() },
+              { label: '예산 입력', ok: !!budgetManwon && parseInt(budgetManwon) > 0 },
+            ] as { label: string; ok: boolean }[]).map(({ label, ok }) => (
+              <li key={label} className="flex items-center gap-2">
+                <span className={`text-[13px] font-bold ${ok ? 'text-[#22C55E]' : 'text-[#C4C4CE]'}`}>
+                  {ok ? '✓' : '○'}
+                </span>
+                <span className={`text-[12.5px] ${ok ? 'text-[#3C3C46]' : 'text-[#B0B0BB]'}`}>{label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* PC 등록 버튼 */}
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full bg-amber-500 text-white py-3 rounded-xl font-bold text-[14px] hover:bg-amber-600 transition disabled:opacity-50 shadow-[0_1px_2px_rgba(245,158,11,.35)]"
+        >
+          {loading ? '등록 중...' : '캠페인 등록하기'}
+        </button>
+      </div>
+
+      </div>{/* /그리드 래퍼 */}
+
+      {/* 모바일 전용 등록 버튼 */}
       <button onClick={handleSubmit} disabled={loading}
-        className="w-full bg-amber-500 text-white py-3 rounded-xl font-medium hover:bg-amber-600 transition disabled:opacity-50">
+        className="w-full bg-amber-500 text-white py-3 rounded-xl font-medium hover:bg-amber-600 transition disabled:opacity-50 [.adv-pc_&]:hidden">
         {loading ? '등록 중...' : '캠페인 등록하기'}
       </button>
     </div>

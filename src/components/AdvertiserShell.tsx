@@ -58,16 +58,15 @@ export default function AdvertiserShell({
   }
 
   const brand = (
-    <div className="h-16 flex items-center gap-[9px] px-5 border-b border-[#F1F1F4]">
-      <div className="w-[22px] h-[22px] rounded-md bg-[#17171B] flex items-center justify-center">
-        <div className="grid grid-cols-2 gap-[2px]">
-          <span className="w-[3px] h-[3px] rounded-[1px] bg-white" />
-          <span className="w-[3px] h-[3px] rounded-[1px] bg-white/60" />
-          <span className="w-[3px] h-[3px] rounded-[1px] bg-white/60" />
-          <span className="w-[3px] h-[3px] rounded-[1px] bg-[#F59E0B]" />
-        </div>
-      </div>
-      <span className="text-[15px] font-extrabold tracking-[-0.02em] text-[#17171B]">MATCH·POST</span>
+    <div className="h-16 flex items-center gap-[10px] px-5 border-b border-[#F1F1F4]">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logo/matchpost-mark.svg" width={24} height={24} alt="" aria-hidden />
+      <span
+        style={{ fontFamily: 'Archivo, ui-sans-serif, system-ui, sans-serif', fontWeight: 900, fontSize: 19, letterSpacing: '0.055em' }}
+        className="text-[#17171B] leading-none"
+      >
+        MATCH<span className="text-[#F59E0B]">·</span>POST
+      </span>
     </div>
   )
 
