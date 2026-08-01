@@ -372,27 +372,30 @@ def calculate_grade(data: dict, post_rankings: list) -> tuple[str, int]:
     elif visitor >=  3_000: score += 10
     elif visitor >=  1_000: score +=  4
 
-    # ② 포스팅 노출 (0~35) = 노출률(0~20) + 평균 순위 품질(0~15)
+    # ② 포스팅 노출 (0~35) = 키워드 노출률(0~20) + 평균 순위 품질(0~15)
+    # 제목 전체 검색은 자기 글 제목이므로 항상 1위 → 변별력 없음
+    # 실제 사람이 검색하는 키워드(2-gram) 단위 노출률을 기준으로 배점
     if post_rankings:
-        total   = len(post_rankings)
-        exposed = [p for p in post_rankings if p.get('found') and p.get('rank')]
-        rate    = len(exposed) / total
+        all_kws     = [k for p in post_rankings for k in (p.get('keywords') or [])]
+        exposed_kws = [k for k in all_kws if k.get('found') and k.get('rank')]
+        if all_kws:
+            rate = len(exposed_kws) / len(all_kws)
 
-        # 노출률 점수 (0~20)
-        if   rate >= 0.9: score += 20
-        elif rate >= 0.7: score += 15
-        elif rate >= 0.5: score += 10
-        elif rate >= 0.3: score +=  5
-        elif rate  > 0:   score +=  2
+            # 노출률 점수 (0~20)
+            if   rate >= 0.9: score += 20
+            elif rate >= 0.7: score += 15
+            elif rate >= 0.5: score += 10
+            elif rate >= 0.3: score +=  5
+            elif rate  > 0:   score +=  2
 
-        # 평균 순위 품질 점수 (0~15) — 노출된 글들의 평균 순위 기준
-        if exposed:
-            avg_rank = sum(p['rank'] for p in exposed) / len(exposed)
-            if   avg_rank <=  3: score += 15
-            elif avg_rank <= 10: score += 12
-            elif avg_rank <= 20: score +=  8
-            elif avg_rank <= 50: score +=  4
-            else:                score +=  1
+            # 평균 순위 품질 점수 (0~15) — 노출된 키워드들의 평균 순위 기준
+            if exposed_kws:
+                avg_rank = sum(k['rank'] for k in exposed_kws) / len(exposed_kws)
+                if   avg_rank <=  3: score += 15
+                elif avg_rank <= 10: score += 12
+                elif avg_rank <= 20: score +=  8
+                elif avg_rank <= 50: score +=  4
+                else:                score +=  1
 
     # ③ 포스팅 빈도 (0~15)
     if   freq >= 20: score += 15

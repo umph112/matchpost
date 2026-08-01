@@ -81,7 +81,8 @@ function fmtNum(n: number) {
 export function BlogAnalyticsCompact({ data }: { data: BlogAnalytics | null }) {
   if (!data?.blog_id) return null
   const postRankings = data.post_keyword_rankings ?? []
-  const exposedCount = postRankings.filter((p) => p.found).length
+  const allKws       = postRankings.flatMap((p) => p.keywords ?? [])
+  const exposedCount = allKws.filter((k) => k.found).length
   if (!data.blog_grade && !data.neighbor_count && !postRankings.length) return null
 
   const s = gradeStyle(data.blog_grade)
@@ -104,10 +105,10 @@ export function BlogAnalyticsCompact({ data }: { data: BlogAnalytics | null }) {
           글 {data.post_count}
         </span>
       )}
-      {postRankings.length > 0 && (
+      {allKws.length > 0 && (
         <span className={`text-[10.5px] font-semibold rounded px-1.5 py-[2px] ${
           exposedCount > 0 ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#F1F1F4] text-[#9A9AA5]'}`}>
-          노출 {exposedCount}/{postRankings.length}
+          키워드 {exposedCount}/{allKws.length}
         </span>
       )}
     </div>
@@ -121,6 +122,11 @@ function PostRow({ post }: { post: PostKeywordRanking }) {
   const [open, setOpen] = useState(false)
   const hasKeywords = (post.keywords ?? []).length > 0
 
+  // 키워드 단위 노출 여부 + 최고 순위 (제목 전체 검색은 항상 1위라 변별력 없음)
+  const foundKws   = (post.keywords ?? []).filter((k) => k.found && k.rank)
+  const kwFound    = foundKws.length > 0
+  const bestKwRank = foundKws.length > 0 ? Math.min(...foundKws.map((k) => k.rank!)) : null
+
   return (
     <div className="border border-[#EAEAEE] rounded-xl overflow-hidden">
       {/* 포스팅 헤더 행 */}
@@ -129,15 +135,15 @@ function PostRow({ post }: { post: PostKeywordRanking }) {
         onClick={() => hasKeywords && setOpen((v) => !v)}
         disabled={!hasKeywords}
       >
-        {/* 노출/미노출 뱃지 */}
+        {/* 노출/미노출 뱃지 — 키워드 기준 */}
         <span className={`text-[10px] font-bold rounded px-1.5 py-[2px] shrink-0 ${
-          post.found ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>
-          {post.found ? '노출' : '미노출'}
+          kwFound ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>
+          {kwFound ? '노출' : '미노출'}
         </span>
         {/* 제목 */}
         <span className="text-[12px] text-[#3C3C46] truncate flex-1">{post.title}</span>
-        {/* 순위 */}
-        <RankBadge rank={post.rank} />
+        {/* 최고 키워드 순위 */}
+        <RankBadge rank={bestKwRank} />
         {/* 펼치기 화살표 */}
         {hasKeywords && (
           <span className="text-[10px] text-[#C4C4CE] shrink-0 ml-1">
@@ -173,7 +179,8 @@ export function BlogAnalyticsFull({ data }: { data: BlogAnalytics | null }) {
 
   const postRankings = data.post_keyword_rankings ?? []
   const kwRankings   = data.keyword_rankings ?? []
-  const exposedCount = postRankings.filter((p) => p.found).length
+  const allKws       = postRankings.flatMap((p) => p.keywords ?? [])
+  const exposedCount = allKws.filter((k) => k.found).length
   const s = gradeStyle(data.blog_grade)
 
   const stats = [
@@ -221,7 +228,7 @@ export function BlogAnalyticsFull({ data }: { data: BlogAnalytics | null }) {
               최근 포스팅 검색 노출
             </p>
             <span className="text-[10.5px] text-[#C4C4CE]">
-              {exposedCount}/{postRankings.length}개 · 제목 클릭 시 키워드 상세
+              {exposedCount}/{allKws.length}키워드 · 제목 클릭 시 상세
             </span>
           </div>
           <div className="space-y-1.5">
@@ -275,15 +282,18 @@ export function BlogAnalyticsSummaryCard({ data }: { data: BlogAnalytics | null 
   }
 
   const postRankings  = data.post_keyword_rankings ?? []
-  const exposedCount  = postRankings.filter((p) => p.found).length
-  const totalChecked  = postRankings.length
+  // 키워드 단위 노출률 — 제목 전체 검색은 자기 글 제목이라 항상 1위, 변별력 없음
+  const allKws        = postRankings.flatMap((p) => p.keywords ?? [])
+  const exposedKws    = allKws.filter((k) => k.found)
+  const exposedCount  = exposedKws.length
+  const totalChecked  = allKws.length
   const exposureRate  = totalChecked > 0 ? exposedCount / totalChecked : 0
   const s = gradeStyle(data.blog_grade)
 
-  // 평균 순위 (노출된 포스팅 기준)
-  const rankedPosts = postRankings.filter((p) => p.found && p.rank)
-  const avgRank = rankedPosts.length
-    ? Math.round(rankedPosts.reduce((sum, p) => sum + (p.rank ?? 0), 0) / rankedPosts.length)
+  // 평균 순위 (노출된 키워드 기준)
+  const rankedKws = exposedKws.filter((k) => k.rank)
+  const avgRank = rankedKws.length
+    ? Math.round(rankedKws.reduce((sum, k) => sum + (k.rank ?? 0), 0) / rankedKws.length)
     : null
 
   const chips = [
@@ -334,9 +344,9 @@ export function BlogAnalyticsSummaryCard({ data }: { data: BlogAnalytics | null 
       {totalChecked > 0 && (
         <div>
           <div className="flex items-center justify-between text-[11px] mb-1">
-            <span className="text-[#9A9AA5]">포스팅 검색 노출</span>
+            <span className="text-[#9A9AA5]">키워드 검색 노출</span>
             <span className={`font-bold ${exposedCount === totalChecked ? 'text-[#15803D]' : 'text-[#D97706]'}`}>
-              {exposedCount}/{totalChecked}개
+              {exposedCount}/{totalChecked}키워드
             </span>
           </div>
           <div className="h-1.5 bg-[#F1F1F4] rounded-full overflow-hidden">
