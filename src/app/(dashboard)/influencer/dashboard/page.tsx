@@ -5,6 +5,7 @@ import TopBar from '@/components/TopBar'
 import HomeCalendar from '@/components/HomeCalendar'
 import MyOpensList from '@/components/MyOpensList'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
+import { BlogAnalyticsSummaryCard } from '@/components/BlogAnalyticsCard'
 
 export const dynamic = 'force-dynamic'
 
@@ -118,6 +119,15 @@ export default async function InfluencerMyPage() {
   })
   const monthTotal = monthEarn.reduce((s, e) => s + (e.amount || 0), 0)
   const pendingTotal = monthEarn.filter((e) => e.status === '예정').reduce((s, e) => s + (e.amount || 0), 0)
+
+  // 채널 분석
+  const { data: blogAnalytics } = await supabase
+    .from('blog_analytics')
+    .select('blog_id,neighbor_count,visitor_today,post_count,post_keyword_rankings,blog_grade,crawled_at')
+    .eq('user_id', user.id)
+    .order('crawled_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
 
   // 알림
   const { data: notifs } = await supabase
@@ -287,6 +297,17 @@ export default async function InfluencerMyPage() {
         {/* 내 오픈 목록 */}
         <section>
           <MyOpensList opens={opensWithStatus} />
+        </section>
+
+        {/* 내 채널 분석 */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-gray-800">📊 내 채널 분석</h2>
+            <Link href="/influencer/channel-analytics" className="text-xs text-blue-600 hover:underline">
+              상세보기 →
+            </Link>
+          </div>
+          <BlogAnalyticsSummaryCard data={blogAnalytics} />
         </section>
 
         {/* 매출 */}

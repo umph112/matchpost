@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 export type PostKwDetail = {
   keyword: string
@@ -257,5 +258,100 @@ export function BlogAnalyticsFull({ data }: { data: BlogAnalytics | null }) {
         자동 수집 데이터 · 매일 갱신 · 광고주에게도 공개됩니다
       </p>
     </div>
+  )
+}
+
+
+// ── SummaryCard: 대시보드 "내 채널 분석" 요약 카드 ───────────────────────
+
+export function BlogAnalyticsSummaryCard({ data }: { data: BlogAnalytics | null }) {
+  if (!data?.blog_id) {
+    return (
+      <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
+        <p className="text-sm text-gray-400">아직 채널 분석 데이터가 없어요.</p>
+        <p className="text-xs text-gray-300 mt-1">분석은 매일 자동으로 수집됩니다.</p>
+      </div>
+    )
+  }
+
+  const postRankings  = data.post_keyword_rankings ?? []
+  const exposedCount  = postRankings.filter((p) => p.found).length
+  const totalChecked  = postRankings.length
+  const exposureRate  = totalChecked > 0 ? exposedCount / totalChecked : 0
+  const s = gradeStyle(data.blog_grade)
+
+  // 평균 순위 (노출된 포스팅 기준)
+  const rankedPosts = postRankings.filter((p) => p.found && p.rank)
+  const avgRank = rankedPosts.length
+    ? Math.round(rankedPosts.reduce((sum, p) => sum + (p.rank ?? 0), 0) / rankedPosts.length)
+    : null
+
+  const chips = [
+    data.neighbor_count != null && { label: '이웃', value: fmtNum(data.neighbor_count) },
+    data.visitor_today  != null && { label: '방문자', value: fmtNum(data.visitor_today) },
+    data.post_count     != null && { label: '글', value: String(data.post_count) },
+    avgRank             != null && { label: '평균순위', value: `${avgRank}위` },
+  ].filter(Boolean) as { label: string; value: string }[]
+
+  return (
+    <Link href="/influencer/channel-analytics"
+      className="block bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+
+      {/* 상단: 등급 + 날짜 */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          {data.blog_grade ? (
+            <span className="text-[15px] font-extrabold rounded-lg px-2.5 py-1"
+              style={{ background: s.bg, color: s.text }}>
+              {data.blog_grade}
+            </span>
+          ) : (
+            <span className="text-[13px] font-semibold text-[#9A9AA5]">등급 산정 중</span>
+          )}
+          <span className="text-[11.5px] text-[#9A9AA5]">네이버 블로그</span>
+        </div>
+        {data.crawled_at && (
+          <span className="text-[10.5px] text-[#C4C4CE]">
+            {new Date(data.crawled_at).toLocaleDateString('ko-KR')} 기준
+          </span>
+        )}
+      </div>
+
+      {/* 지표 칩 */}
+      {chips.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {chips.map(({ label, value }) => (
+            <span key={label}
+              className="text-[11px] bg-[#F6F6F7] text-[#5C5C68] rounded-lg px-2 py-1">
+              <span className="text-[#9A9AA5]">{label}</span>{' '}
+              <span className="font-bold text-[#17171B]">{value}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* 노출 프로그레스 바 */}
+      {totalChecked > 0 && (
+        <div>
+          <div className="flex items-center justify-between text-[11px] mb-1">
+            <span className="text-[#9A9AA5]">포스팅 검색 노출</span>
+            <span className={`font-bold ${exposedCount === totalChecked ? 'text-[#15803D]' : 'text-[#D97706]'}`}>
+              {exposedCount}/{totalChecked}개
+            </span>
+          </div>
+          <div className="h-1.5 bg-[#F1F1F4] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${exposureRate * 100}%`,
+                background: exposureRate >= 0.8 ? '#22C55E' : exposureRate >= 0.5 ? '#F59E0B' : '#EF4444',
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      <p className="text-[10.5px] text-[#C4C4CE] mt-2.5 text-right">상세 분석 보기 →</p>
+    </Link>
   )
 }
