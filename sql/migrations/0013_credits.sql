@@ -31,11 +31,13 @@ alter table credits enable row level security;
 alter table credit_transactions enable row level security;
 
 -- 본인 잔액만 조회 가능
-create policy if not exists "credits_own_select" on credits
+drop policy if exists "credits_own_select" on credits;
+create policy "credits_own_select" on credits
   for select using (auth.uid() = user_id);
 
 -- 본인 이력만 조회 가능
-create policy if not exists "credit_transactions_own_select" on credit_transactions
+drop policy if exists "credit_transactions_own_select" on credit_transactions;
+create policy "credit_transactions_own_select" on credit_transactions
   for select using (auth.uid() = user_id);
 
 -- INSERT/UPDATE는 service_role(트리거·API)만 허용 — RLS 정책 없으면 일반 유저 불가
