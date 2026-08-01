@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
 import MatchScore from '@/components/MatchScore'
+import { BlogAnalyticsCompact } from '@/components/BlogAnalyticsCard'
 
 const REGIONS = ['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '강원', '충남', '충북', '전남', '전북', '경남', '경북', '제주']
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
@@ -77,15 +78,20 @@ export default function AdvertiserSearchPage() {
 
     const enriched = await Promise.all(
       (data ?? []).map(async (s) => {
-        const [{ data: prof }, { data: ip }] = await Promise.all([
+        const [{ data: prof }, { data: ip }, { data: ba }] = await Promise.all([
           supabase.from('profiles').select('id, name, avatar_url').eq('id', s.influencer_id).single(),
           supabase
             .from('influencer_profiles')
             .select('bio, platforms, categories, follower_count, match_score, review_count')
             .eq('user_id', s.influencer_id)
             .single(),
+          supabase
+            .from('blog_analytics')
+            .select('blog_id, neighbor_count, post_count, top10_count, crawled_at')
+            .eq('user_id', s.influencer_id)
+            .single(),
         ])
-        return { ...s, profiles: prof, influencer_profiles: ip }
+        return { ...s, profiles: prof, influencer_profiles: ip, blog_analytics: ba }
       }),
     )
 
@@ -201,6 +207,12 @@ export default function AdvertiserSearchPage() {
           <span className="font-semibold text-[#3C3C46]">{fmtFee(schedule.fee)}</span>
         </div>
       </div>
+
+      {schedule.blog_analytics && (
+        <div className="border-t border-[#F1F1F4] pt-2.5">
+          <BlogAnalyticsCompact data={schedule.blog_analytics} />
+        </div>
+      )}
 
       <button
         onClick={() =>

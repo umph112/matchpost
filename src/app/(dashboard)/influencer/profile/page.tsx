@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import LogoutButton from '@/components/LogoutButton'
+import { BlogAnalyticsFull, type BlogAnalytics } from '@/components/BlogAnalyticsCard'
 
 const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
 const PLATFORMS = ['인스타그램', '유튜브', '블로그', '틱톡']
@@ -21,6 +22,7 @@ export default function InfluencerProfilePage() {
   const [youtubeUrl, setYoutubeUrl] = useState('')
   const [blogUrl, setBlogUrl] = useState('')
   const [portfolioUrl, setPortfolioUrl] = useState('')
+  const [blogAnalytics, setBlogAnalytics] = useState<BlogAnalytics | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -44,11 +46,11 @@ export default function InfluencerProfilePage() {
         .eq('user_id', user.id)
         .single()
 
-      const { data: priv } = await supabase
-        .from('user_private')
-        .select('phone')
-        .eq('user_id', user.id)
-        .single()
+      const [{ data: priv }, { data: ba }] = await Promise.all([
+        supabase.from('user_private').select('phone').eq('user_id', user.id).single(),
+        supabase.from('blog_analytics').select('*').eq('user_id', user.id).single(),
+      ])
+      if (ba) setBlogAnalytics(ba)
 
       if (p) {
         setProfile(p)
@@ -261,6 +263,13 @@ export default function InfluencerProfilePage() {
       >
         {loading ? '저장 중...' : '저장하기'}
       </button>
+
+      {/* 블로그 분석 (read-only) */}
+      {blogAnalytics && (
+        <div className="mt-4">
+          <BlogAnalyticsFull data={blogAnalytics} />
+        </div>
+      )}
     </div>
   )
 }
