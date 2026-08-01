@@ -222,22 +222,55 @@ def _naver_blog_search(query: str, display: int = 100) -> list | None:
         if r.status_code == 200:
             return r.json().get('items', [])
         if r.status_code == 429:
-            print('    [경고] 네이버 API 한도 초과')
+            print('    [WARNING] Naver API quota exceeded')
             return None
     except Exception as e:
-        print(f'    [오류] 검색 실패: {e}')
+        print(f'    [ERROR] search failed: {e}')
     return []
 
 
-# ── 포스팅 단위 노출 체크 (핵심) ───────────────────────────────────────────
+def _check_post_rank(blog_id: str, log_no: str, query: str) -> tuple[bool, int | None]:
+    """특정 쿼리로 검색해 해당 포스팅(logNo)이 몇 위에 있는지 반환."""
+    items = _naver_blog_search(query, display=100)
+    if items is None:
+        return False, None
+    for idx, item in enumerate(items, 1):
+        link = item.get('link', '')
+        if blog_id.lower() in link.lower() and log_no in link:
+            return True, idx
+    return False, None
+
+
+# ── 포스팅 제목 키워드 추출 ──────────────────────────────────────────────────
+
+_STOPWORDS = {
+    '의','가','이','은','는','을','를','에','에서','과','와','로','으로','도','만',
+    '한','하는','하고','더','정말','진짜','완전','너무','아주','매우','제','내',
+    '그','저','것','수','등','때','후','전','중','안','위','아래','및','또는',
+    '그리고','하면','부터','까지','에게',
+}
+
+def extract_keywords(title: str) -> list[str]:
+    """
+    포스팅 제목에서 검색용 키워드(2-gram) 추출.
+    예) "인천 데이트 홍대입구 일본풍 카페" → ["인천 데이트", "데이트 홍대입구", "홍대입구 카페"]
+    """
+    cleaned = re.sub(r'[^\w\s]', ' ', title)
+    words   = [w for w in cleaned.split() if len(w) >= 2 and w not in _STOPWORDS]
+    grams   = [f'{words[i]} {words[i+1]}' for i in range(len(words) - 1)]
+    return list(dict.fromkeys(grams))[:3]  # 중복 제거, 최대 3개
+
+
+# ── 포스팅 단위 노출 체크 ───────────────────────────────────────────────────
 
 def check_post_keyword_rankings(blog_id: str, posts: list) -> list:
     """
-    최근 포스팅 제목으로 검색 → 해당 글이 몇 위에 노출되는지 확인.
-    블맥스처럼 게시글 단위 노출(found)/누락(not found) 여부 반환.
+    최근 포스팅별:
+      1) 제목 전체로 검색 → 해당 글 노출 여부/순위 (인덱싱 상태 확인)
+      2) 제목에서 추출한 키워드별 검색 → 키워드마다 노출 순위 세분화
     """
     results = []
-    check_posts = posts[:7]  # 최근 7개 (API 절약)
+    check_posts = posts[:7]
 
     for post in check_posts:
         title  = unquote_plus(re.sub(r'<[^>]+>', '', post.get('title', ''))).strip()
@@ -245,26 +278,23 @@ def check_post_keyword_rankings(blog_id: str, posts: list) -> list:
         if not title or not log_no:
             continue
 
-        found = False
-        rank: int | None = None
+        # ① 제목 전체 검색 (누락 여부 판단)
+        found, rank = _check_post_rank(blog_id, log_no, title)
+        time.sleep(random.uniform(0.3, 0.6))
 
-        items = _naver_blog_search(title, display=100)
-        if items is None:  # API 한도 초과 → 중단
-            break
-
-        for idx, item in enumerate(items, 1):
-            link = item.get('link', '')
-            # 같은 블로그 + 같은 logNo 확인
-            if blog_id.lower() in link.lower() and log_no in link:
-                found = True
-                rank  = idx
-                break
+        # ② 키워드별 세분화 검색
+        kw_results = []
+        for kw in extract_keywords(title):
+            kw_found, kw_rank = _check_post_rank(blog_id, log_no, kw)
+            kw_results.append({'keyword': kw, 'found': kw_found, 'rank': kw_rank})
+            time.sleep(random.uniform(0.3, 0.6))
 
         results.append({
-            'log_no': log_no,
-            'title':  title,
-            'found':  found,
-            'rank':   rank,
+            'log_no':   log_no,
+            'title':    title,
+            'found':    found,
+            'rank':     rank,
+            'keywords': kw_results,
         })
 
         print(
@@ -316,50 +346,84 @@ def check_category_keywords(blog_id: str, categories: list[str]) -> dict:
 
 # ── 종합 등급 계산 ─────────────────────────────────────────────────────────
 
-def calculate_grade(data: dict, post_rankings: list) -> str:
+def calculate_grade(data: dict, post_rankings: list) -> tuple[str, int]:
     """
-    이웃 수(40) + 방문자(30) + 포스팅 빈도(15) + 포스팅 노출률(15) → 100점 만점
-    S ≥ 70 / A ≥ 50 / B ≥ 30 / C ≥ 15 / D
+    100점 만점 종합 등급 + 세부 등급(A-1 / A-2 / A-3 등) 반환
+
+    배점:
+      일 방문자     40점  — 실제 도달력, 조작 어려운 핵심 지표
+      포스팅 노출   35점  — 노출률(20) + 평균 순위 품질(15)
+      포스팅 빈도   15점  — 꾸준한 활동성
+      이웃 수       10점  — 참고 지표 (팔로워 매입 가능하므로 비중 낮춤)
+
+    등급 컷: S ≥ 75 / A ≥ 55 / B ≥ 35 / C ≥ 15 / D
+    세부:    X-1(상위 1/3) / X-2(중간) / X-3(하위 1/3)
     """
     score = 0
 
-    neighbor = data.get('neighbor_count') or 0
     visitor  = data.get('visitor_today')  or 0
     freq     = data.get('post_frequency') or 0.0
+    neighbor = data.get('neighbor_count') or 0
 
-    # 이웃 수 (0~40)
-    if   neighbor >= 100_000: score += 40
-    elif neighbor >=  30_000: score += 30
-    elif neighbor >=  10_000: score += 20
-    elif neighbor >=   3_000: score += 12
-    elif neighbor >=   1_000: score +=  6
+    # ① 일 방문자 (0~40) — 1만이 광고 활용 최소선
+    if   visitor >= 50_000: score += 40
+    elif visitor >= 20_000: score += 32
+    elif visitor >= 10_000: score += 22
+    elif visitor >=  3_000: score += 10
+    elif visitor >=  1_000: score +=  4
 
-    # 일 방문자 (0~30)
-    if   visitor >= 5_000: score += 30
-    elif visitor >= 2_000: score += 22
-    elif visitor >=   500: score += 14
-    elif visitor >=   100: score +=  7
+    # ② 포스팅 노출 (0~35) = 노출률(0~20) + 평균 순위 품질(0~15)
+    if post_rankings:
+        total   = len(post_rankings)
+        exposed = [p for p in post_rankings if p.get('found') and p.get('rank')]
+        rate    = len(exposed) / total
 
-    # 포스팅 빈도 (월 평균, 0~15)
+        # 노출률 점수 (0~20)
+        if   rate >= 0.9: score += 20
+        elif rate >= 0.7: score += 15
+        elif rate >= 0.5: score += 10
+        elif rate >= 0.3: score +=  5
+        elif rate  > 0:   score +=  2
+
+        # 평균 순위 품질 점수 (0~15) — 노출된 글들의 평균 순위 기준
+        if exposed:
+            avg_rank = sum(p['rank'] for p in exposed) / len(exposed)
+            if   avg_rank <=  3: score += 15
+            elif avg_rank <= 10: score += 12
+            elif avg_rank <= 20: score +=  8
+            elif avg_rank <= 50: score +=  4
+            else:                score +=  1
+
+    # ③ 포스팅 빈도 (0~15)
     if   freq >= 20: score += 15
     elif freq >= 10: score += 10
     elif freq >=  4: score +=  6
     elif freq >=  1: score +=  3
 
-    # 포스팅 노출률 (0~15)
-    if post_rankings:
-        exposed = sum(1 for p in post_rankings if p.get('found'))
-        rate = exposed / len(post_rankings)
-        if   rate >= 0.7: score += 15
-        elif rate >= 0.5: score += 10
-        elif rate >= 0.3: score +=  6
-        elif rate  > 0:   score +=  3
+    # ④ 이웃 수 (0~10) — 참고 지표
+    if   neighbor >= 100_000: score += 10
+    elif neighbor >=  30_000: score +=  7
+    elif neighbor >=  10_000: score +=  4
+    elif neighbor >=   3_000: score +=  2
 
-    if   score >= 70: return 'S'
-    elif score >= 50: return 'A'
-    elif score >= 30: return 'B'
-    elif score >= 15: return 'C'
-    else:             return 'D'
+    # 등급 + 세부 등급 계산
+    if   score >= 75:
+        base = 'S'
+        cuts = [90, 83]   # S-1 ≥90, S-2 ≥83, S-3 ≥75
+    elif score >= 55:
+        base = 'A'
+        cuts = [69, 62]   # A-1 ≥69, A-2 ≥62, A-3 ≥55
+    elif score >= 35:
+        base = 'B'
+        cuts = [49, 42]   # B-1 ≥49, B-2 ≥42, B-3 ≥35
+    elif score >= 15:
+        base = 'C'
+        cuts = [29, 22]   # C-1 ≥29, C-2 ≥22, C-3 ≥15
+    else:
+        return 'D', score
+
+    sub = 1 if score >= cuts[0] else (2 if score >= cuts[1] else 3)
+    return f'{base}-{sub}', score
 
 
 # ── Supabase 연동 ──────────────────────────────────────────────────────────
@@ -405,22 +469,20 @@ def run(user_id: str | None = None, skip_keywords: bool = False):
         data, posts = fetch_blog_analytics(blog_id)
 
         if not skip_keywords and not data.get('error_message'):
-            # ① 포스팅별 노출 체크 (핵심)
-            print(f'     포스팅 노출 체크 ({len(posts[:7])}개)...')
+            print(f'     posting exposure check ({len(posts[:7])})...')
             post_rankings = check_post_keyword_rankings(blog_id, posts)
             data['post_keyword_rankings'] = post_rankings
 
             exposed_cnt = sum(1 for p in post_rankings if p['found'])
-            print(f'     노출 {exposed_cnt}/{len(post_rankings)}개')
+            print(f'     exposed {exposed_cnt}/{len(post_rankings)}')
 
-            # ② 카테고리 키워드 보조 체크
-            print(f'     카테고리 키워드 체크... (카테고리: {categories})')
+            print(f'     category keywords... ({categories})')
             kw_data = check_category_keywords(blog_id, categories)
             data.update(kw_data)
 
-            # ③ 종합 등급
-            data['blog_grade'] = calculate_grade(data, post_rankings)
-            print(f'     등급: {data["blog_grade"]}  (top10:{kw_data["top10_count"]} top30:{kw_data["top30_count"]})')
+            grade, gscore = calculate_grade(data, post_rankings)
+            data['blog_grade'] = grade
+            print(f'     grade: {grade} ({gscore}pt)  top10:{kw_data["top10_count"]} top30:{kw_data["top30_count"]}')
 
         save_analytics(uid, url, data)
 

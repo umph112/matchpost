@@ -1,8 +1,19 @@
+'use client'
+
+import { useState } from 'react'
+
+export type PostKwDetail = {
+  keyword: string
+  found: boolean
+  rank: number | null
+}
+
 export type PostKeywordRanking = {
   log_no: string
   title: string
   found: boolean
   rank: number | null
+  keywords?: PostKwDetail[]
 }
 
 export type KeywordRanking = {
@@ -29,25 +40,30 @@ export type BlogAnalytics = {
   crawled_at?: string | null
 }
 
-// ── 등급 스타일 ──────────────────────────────────────────────────────────────
+// ── 공통 유틸 ──────────────────────────────────────────────────────────────
 
-const GRADE_STYLE: Record<string, { bg: string; text: string; label: string }> = {
-  S: { bg: '#FEF3C7', text: '#B45309', label: 'S급' },
-  A: { bg: '#DBEAFE', text: '#1D4ED8', label: 'A급' },
-  B: { bg: '#DCFCE7', text: '#15803D', label: 'B급' },
-  C: { bg: '#F1F1F4', text: '#5C5C68', label: 'C급' },
-  D: { bg: '#F1F1F4', text: '#9A9AA5', label: 'D급' },
+const GRADE_STYLE: Record<string, { bg: string; text: string }> = {
+  S:   { bg: '#FEF3C7', text: '#B45309' },
+  A:   { bg: '#DBEAFE', text: '#1D4ED8' },
+  B:   { bg: '#DCFCE7', text: '#15803D' },
+  C:   { bg: '#F1F1F4', text: '#5C5C68' },
+  D:   { bg: '#F1F1F4', text: '#9A9AA5' },
 }
 
-function GradeBadge({ grade, size = 'sm' }: { grade: string | null | undefined; size?: 'sm' | 'md' }) {
-  if (!grade) return null
-  const s = GRADE_STYLE[grade] ?? GRADE_STYLE['D']
+function gradeStyle(grade: string | null | undefined) {
+  const base = grade?.charAt(0) ?? 'D'
+  return GRADE_STYLE[base] ?? GRADE_STYLE['D']
+}
+
+function RankBadge({ rank, size = 'sm' }: { rank: number | null | undefined; size?: 'sm' | 'xs' }) {
+  if (!rank) return null
+  const cls = rank <= 3  ? 'text-[#1D4ED8] font-extrabold'
+            : rank <= 10 ? 'text-[#1D4ED8] font-bold'
+            : rank <= 30 ? 'text-[#D97706] font-bold'
+            : 'text-[#9A9AA5] font-semibold'
   return (
-    <span
-      className={`font-bold rounded-md ${size === 'md' ? 'text-[13px] px-2.5 py-1' : 'text-[10.5px] px-2 py-[3px]'}`}
-      style={{ background: s.bg, color: s.text }}
-    >
-      {s.label}
+    <span className={`${cls} ${size === 'xs' ? 'text-[10px]' : 'text-[11px]'} shrink-0`}>
+      {rank}위
     </span>
   )
 }
@@ -59,23 +75,24 @@ function fmtNum(n: number) {
 }
 
 
-// ── Compact: 검색 카드 내 한 줄 요약 ──────────────────────────────────────
+// ── Compact: 검색 카드 한 줄 요약 ─────────────────────────────────────────
 
 export function BlogAnalyticsCompact({ data }: { data: BlogAnalytics | null }) {
   if (!data?.blog_id) return null
-
-  const hasAny = data.neighbor_count != null || data.post_count != null || data.blog_grade
-  if (!hasAny) return null
-
-  // 포스팅 노출률 계산
   const postRankings = data.post_keyword_rankings ?? []
   const exposedCount = postRankings.filter((p) => p.found).length
-  const totalChecked = postRankings.length
+  if (!data.blog_grade && !data.neighbor_count && !postRankings.length) return null
 
+  const s = gradeStyle(data.blog_grade)
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
       <span className="text-[10.5px] text-[#B0B0BB]">블로그</span>
-      <GradeBadge grade={data.blog_grade} />
+      {data.blog_grade && (
+        <span className="text-[10.5px] font-bold rounded-md px-2 py-[2px]"
+          style={{ background: s.bg, color: s.text }}>
+          {data.blog_grade}
+        </span>
+      )}
       {data.neighbor_count != null && (
         <span className="text-[10.5px] font-semibold bg-[#F1F1F4] text-[#5C5C68] rounded px-1.5 py-[2px]">
           이웃 {fmtNum(data.neighbor_count)}
@@ -86,13 +103,10 @@ export function BlogAnalyticsCompact({ data }: { data: BlogAnalytics | null }) {
           글 {data.post_count}
         </span>
       )}
-      {totalChecked > 0 && (
-        <span
-          className={`text-[10.5px] font-semibold rounded px-1.5 py-[2px] ${
-            exposedCount > 0 ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#F1F1F4] text-[#9A9AA5]'
-          }`}
-        >
-          노출 {exposedCount}/{totalChecked}
+      {postRankings.length > 0 && (
+        <span className={`text-[10.5px] font-semibold rounded px-1.5 py-[2px] ${
+          exposedCount > 0 ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#F1F1F4] text-[#9A9AA5]'}`}>
+          노출 {exposedCount}/{postRankings.length}
         </span>
       )}
     </div>
@@ -100,20 +114,72 @@ export function BlogAnalyticsCompact({ data }: { data: BlogAnalytics | null }) {
 }
 
 
-// ── Full: 인플루언서 마이페이지 분석 카드 ─────────────────────────────────
+// ── PostRow: 포스팅 한 행 (접었다 펴기) ────────────────────────────────────
+
+function PostRow({ post }: { post: PostKeywordRanking }) {
+  const [open, setOpen] = useState(false)
+  const hasKeywords = (post.keywords ?? []).length > 0
+
+  return (
+    <div className="border border-[#EAEAEE] rounded-xl overflow-hidden">
+      {/* 포스팅 헤더 행 */}
+      <button
+        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#F6F6F7] transition"
+        onClick={() => hasKeywords && setOpen((v) => !v)}
+        disabled={!hasKeywords}
+      >
+        {/* 노출/미노출 뱃지 */}
+        <span className={`text-[10px] font-bold rounded px-1.5 py-[2px] shrink-0 ${
+          post.found ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>
+          {post.found ? '노출' : '미노출'}
+        </span>
+        {/* 제목 */}
+        <span className="text-[12px] text-[#3C3C46] truncate flex-1">{post.title}</span>
+        {/* 순위 */}
+        <RankBadge rank={post.rank} />
+        {/* 펼치기 화살표 */}
+        {hasKeywords && (
+          <span className="text-[10px] text-[#C4C4CE] shrink-0 ml-1">
+            {open ? '▲' : '▼'}
+          </span>
+        )}
+      </button>
+
+      {/* 키워드별 상세 (펼쳐졌을 때) */}
+      {open && (
+        <div className="border-t border-[#F1F1F4] bg-[#FAFAFA] px-3 py-2 space-y-1.5">
+          {(post.keywords ?? []).map((kw) => (
+            <div key={kw.keyword} className="flex items-center gap-2">
+              <span className={`text-[9px] font-bold rounded px-1 py-[1px] shrink-0 ${
+                kw.found ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#F1F1F4] text-[#9A9AA5]'}`}>
+                {kw.found ? '노출' : '미노출'}
+              </span>
+              <span className="text-[11.5px] text-[#5C5C68] flex-1 truncate">#{kw.keyword}</span>
+              <RankBadge rank={kw.rank} size="xs" />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+
+// ── Full: 인플루언서 마이페이지 ────────────────────────────────────────────
 
 export function BlogAnalyticsFull({ data }: { data: BlogAnalytics | null }) {
   if (!data?.blog_id) return null
 
-  const postRankings  = data.post_keyword_rankings ?? []
-  const kwRankings    = data.keyword_rankings ?? []
-  const exposedCount  = postRankings.filter((p) => p.found).length
+  const postRankings = data.post_keyword_rankings ?? []
+  const kwRankings   = data.keyword_rankings ?? []
+  const exposedCount = postRankings.filter((p) => p.found).length
+  const s = gradeStyle(data.blog_grade)
 
   const stats = [
-    { label: '이웃 수',       value: data.neighbor_count != null ? `${data.neighbor_count.toLocaleString()}명` : '비공개' },
-    { label: '오늘 방문자',   value: data.visitor_today  != null ? `${data.visitor_today.toLocaleString()}명`  : '비공개' },
-    { label: '총 글 수',      value: data.post_count     != null ? `${data.post_count}개`                      : '—' },
-    { label: '월 평균 포스팅', value: data.post_frequency != null ? `${data.post_frequency}회`                 : '—' },
+    { label: '이웃 수',        value: data.neighbor_count != null ? `${data.neighbor_count.toLocaleString()}명` : '비공개' },
+    { label: '오늘 방문자',    value: data.visitor_today  != null ? `${data.visitor_today.toLocaleString()}명`  : '비공개' },
+    { label: '총 글 수',       value: data.post_count     != null ? `${data.post_count}개`                      : '—' },
+    { label: '월 평균 포스팅', value: data.post_frequency != null ? `${data.post_frequency}회`                  : '—' },
   ]
 
   return (
@@ -122,7 +188,12 @@ export function BlogAnalyticsFull({ data }: { data: BlogAnalytics | null }) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-gray-800">블로그 분석</h2>
-          <GradeBadge grade={data.blog_grade} size="md" />
+          {data.blog_grade && (
+            <span className="text-[13px] font-bold rounded-md px-2.5 py-1"
+              style={{ background: s.bg, color: s.text }}>
+              {data.blog_grade}
+            </span>
+          )}
         </div>
         {data.crawled_at && (
           <span className="text-xs text-gray-400">
@@ -141,72 +212,41 @@ export function BlogAnalyticsFull({ data }: { data: BlogAnalytics | null }) {
         ))}
       </div>
 
-      {/* 포스팅 단위 노출 체크 (블맥스 핵심 기능) */}
+      {/* 포스팅 노출 (접었다 펴기) */}
       {postRankings.length > 0 && (
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
-            <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em]">최근 포스팅 검색 노출</p>
+            <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em]">
+              최근 포스팅 검색 노출
+            </p>
             <span className="text-[10.5px] text-[#C4C4CE]">
-              {exposedCount}/{postRankings.length}개 노출
+              {exposedCount}/{postRankings.length}개 · 제목 클릭 시 키워드 상세
             </span>
           </div>
           <div className="space-y-1.5">
             {postRankings.map((p) => (
-              <div key={p.log_no} className="flex items-center gap-2">
-                {/* 노출 뱃지 */}
-                <span
-                  className={`text-[10px] font-bold rounded px-1.5 py-[2px] shrink-0 ${
-                    p.found ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'
-                  }`}
-                >
-                  {p.found ? '노출' : '미노출'}
-                </span>
-                {/* 제목 */}
-                <span className="text-[12px] text-[#3C3C46] truncate flex-1">{p.title}</span>
-                {/* 순위 */}
-                {p.found && p.rank != null && (
-                  <span
-                    className={`text-[11px] font-bold shrink-0 ${
-                      p.rank <= 10 ? 'text-[#1D4ED8]'
-                      : p.rank <= 30 ? 'text-[#D97706]'
-                      : 'text-[#9A9AA5]'
-                    }`}
-                  >
-                    {p.rank}위
-                  </span>
-                )}
-              </div>
+              <PostRow key={p.log_no} post={p} />
             ))}
           </div>
         </div>
       )}
 
-      {/* 카테고리 키워드 보조 체크 */}
+      {/* 카테고리 키워드 보조 */}
       {kwRankings.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em]">카테고리 키워드 노출</p>
+            <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em]">카테고리 키워드</p>
             <span className="text-[10.5px] text-[#C4C4CE]">
-              TOP10 {data.top10_count ?? 0}건 / TOP30 {data.top30_count ?? 0}건
+              TOP10 {data.top10_count ?? 0} / TOP30 {data.top30_count ?? 0}
             </span>
           </div>
           <div className="space-y-1.5">
             {kwRankings.map((kr) => (
               <div key={kr.keyword} className="flex items-center justify-between gap-2 text-[12px]">
                 <span className="text-[#5C5C68] truncate flex-1">{kr.keyword}</span>
-                {kr.found && kr.rank != null ? (
-                  <span
-                    className={`font-bold shrink-0 ${
-                      kr.rank <= 10 ? 'text-[#1D4ED8]'
-                      : kr.rank <= 30 ? 'text-[#D97706]'
-                      : 'text-[#9A9AA5]'
-                    }`}
-                  >
-                    {kr.rank}위
-                  </span>
-                ) : (
-                  <span className="text-[#C4C4CE] shrink-0">미노출</span>
-                )}
+                {kr.found && kr.rank != null
+                  ? <RankBadge rank={kr.rank} />
+                  : <span className="text-[#C4C4CE] shrink-0 text-[11px]">미노출</span>}
               </div>
             ))}
           </div>
