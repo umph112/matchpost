@@ -34,6 +34,7 @@ export default function AdvertiserShell({
   const pathname = usePathname()
   const [mode, setMode] = useState<'pc' | 'mobile'>('pc')
   const [open, setOpen] = useState(false)
+  const [creditBalance, setCreditBalance] = useState<number | null>(null)
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
   const badgeVal = (key: string) => (key === 'msg' ? msgCount : key === 'notif' ? notifCount : 0)
 
@@ -48,6 +49,13 @@ export default function AdvertiserShell({
     apply()
     window.addEventListener('resize', apply)
     return () => window.removeEventListener('resize', apply)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/credits/balance')
+      .then(r => r.json())
+      .then(d => setCreditBalance(d.balance ?? 0))
+      .catch(() => {})
   }, [])
 
   const toggleMode = () => {
@@ -158,11 +166,20 @@ export default function AdvertiserShell({
       <aside className="w-[236px] shrink-0 bg-white border-r border-[#EAEAEE] sticky top-0 h-screen flex flex-col">
         {brand}
         {navList}
-        <div className="mt-auto border-t border-[#F1F1F4] px-4 py-3.5">
-          <div className="text-[11px] text-[#9A9AA5] leading-relaxed">이번 달 집행 예정</div>
-          <div className="text-base font-extrabold tracking-[-0.02em] mt-0.5">
-            {spend.toLocaleString()}
-            <span className="text-xs font-semibold text-[#7C7C88]">원</span>
+        <div className="mt-auto border-t border-[#F1F1F4] px-4 py-3.5 flex flex-col gap-2.5">
+          <div>
+            <div className="text-[11px] text-[#9A9AA5] leading-relaxed">이번 달 집행 예정</div>
+            <div className="text-base font-extrabold tracking-[-0.02em] mt-0.5">
+              {spend.toLocaleString()}
+              <span className="text-xs font-semibold text-[#7C7C88]">원</span>
+            </div>
+          </div>
+          <div>
+            <div className="text-[11px] text-[#9A9AA5] leading-relaxed">보유 크레딧</div>
+            <div className="text-base font-extrabold tracking-[-0.02em] mt-0.5">
+              {creditBalance === null ? '—' : creditBalance.toLocaleString()}
+              <span className="text-xs font-semibold text-[#F59E0B]"> C</span>
+            </div>
           </div>
         </div>
       </aside>

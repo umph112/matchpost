@@ -105,6 +105,11 @@ export default async function AdminDashboard() {
           <p className="font-semibold text-gray-800">승인 대기</p>
           <p className="text-gray-400 text-sm mt-1">{pendingUsers.length}명 대기 중</p>
         </Link>
+        <Link href="/admin/credits" className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition col-span-2">
+          <div className="text-2xl mb-2">🪙</div>
+          <p className="font-semibold text-gray-800">크레딧 관리</p>
+          <p className="text-gray-400 text-sm mt-1">회원별 잔액 조회 · 지급 · 차감 · 이력</p>
+        </Link>
       </div>
     </div>
   )
