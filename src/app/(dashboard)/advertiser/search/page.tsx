@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
+import MatchScore from '@/components/MatchScore'
 
 const REGIONS = ['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '강원', '충남', '충북', '전남', '전북', '경남', '경북', '제주']
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
@@ -80,7 +81,7 @@ export default function AdvertiserSearchPage() {
           supabase.from('profiles').select('id, name, avatar_url').eq('id', s.influencer_id).single(),
           supabase
             .from('influencer_profiles')
-            .select('bio, platforms, categories, follower_count')
+            .select('bio, platforms, categories, follower_count, match_score, review_count')
             .eq('user_id', s.influencer_id)
             .single(),
         ])
@@ -149,11 +150,17 @@ export default function AdvertiserSearchPage() {
             팔로워 {schedule.influencer_profiles?.follower_count?.toLocaleString() ?? '—'}명
           </p>
         </div>
-        {schedule.influencer_profiles?.categories?.[0] && (
-          <span className="shrink-0 text-[10.5px] font-semibold bg-[#F1F1F4] text-[#5C5C68] rounded-full px-2 py-0.5">
-            {schedule.influencer_profiles.categories[0]}
-          </span>
-        )}
+        <div className="shrink-0 flex items-center gap-1.5">
+          {schedule.influencer_profiles?.categories?.[0] && (
+            <span className="text-[10.5px] font-semibold bg-[#F1F1F4] text-[#5C5C68] rounded-full px-2 py-0.5">
+              {schedule.influencer_profiles.categories[0]}
+            </span>
+          )}
+          <MatchScore
+            score={schedule.influencer_profiles?.match_score ?? null}
+            reviewCount={schedule.influencer_profiles?.review_count ?? 0}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-1 text-[12px]">

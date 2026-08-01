@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import ReviewModal from './ReviewModal'
 
 // 8-stage pipeline (지역=8단계, 제품/기자단=방문 제외 7단계)
 const ALL_STAGES = ['신청', '확정', '가이드', '방문', '업로드', '수정/컴프', '검사', '정산'] as const
@@ -91,6 +92,20 @@ export default function DealSheet({
   const supabase = createClient()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [proposals_, setProposals] = useState<Proposal[]>(proposals)
+  const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set())
+  const [reviewModal, setReviewModal] = useState<{
+    proposalId: string; revieweeId: string; revieweeName: string
+  } | null>(null)
+
+  useEffect(() => {
+    supabase
+      .from('reviews')
+      .select('proposal_id')
+      .eq('reviewer_id', userId)
+      .then(({ data }) => {
+        if (data) setReviewedIds(new Set(data.map((r) => r.proposal_id)))
+      })
+  }, [userId])
 
   const isLocation = campaign.campaign_type === '지역'
   const stages = isLocation ? ALL_STAGES : ALL_STAGES.filter((s) => s !== '방문')
@@ -333,7 +348,7 @@ export default function DealSheet({
         </div>
 
         {/* 정산 */}
-        <div className="text-right">
+        <div className="text-right flex flex-col items-end gap-1">
           <select
             value={p.settlement_status ?? '미정산'}
             onChange={(e) => setSettlement(p.id, e.target.value)}
@@ -345,6 +360,23 @@ export default function DealSheet({
             <option value="정산중">정산중</option>
             <option value="완료">완료</option>
           </select>
+          {p.stage === stages[stages.length - 1] && isConfirmed && !reviewedIds.has(p.id) && (
+            <button
+              onClick={() =>
+                setReviewModal({
+                  proposalId: p.id,
+                  revieweeId: p.influencer_id,
+                  revieweeName: p.profile?.name ?? '인플루언서',
+                })
+              }
+              className="text-[10px] font-bold text-[#F59E0B] hover:text-[#D97706] underline"
+            >
+              평가하기
+            </button>
+          )}
+          {reviewedIds.has(p.id) && (
+            <span className="text-[10px] text-[#9A9AA5]">평가완료</span>
+          )}
         </div>
       </div>
     )
@@ -352,6 +384,20 @@ export default function DealSheet({
 
   return (
     <div className="pb-20">
+      {reviewModal && (
+        <ReviewModal
+          proposalId={reviewModal.proposalId}
+          reviewerId={userId}
+          revieweeId={reviewModal.revieweeId}
+          reviewerRole="advertiser"
+          revieweeName={reviewModal.revieweeName}
+          onClose={() => setReviewModal(null)}
+          onDone={() => {
+            setReviewedIds((prev) => new Set([...prev, reviewModal.proposalId]))
+            setReviewModal(null)
+          }}
+        />
+      )}
       {/* ── 헤더 ── */}
       <div className="flex items-start justify-between gap-4 mb-5">
         <div>
