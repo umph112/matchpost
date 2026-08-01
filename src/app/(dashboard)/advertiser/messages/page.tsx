@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import DealConfirmBar from '@/components/DealConfirmBar'
+import MatchScore from '@/components/MatchScore'
 
 export default function AdvertiserMessagesPage() {
   const [conversations, setConversations] = useState<any[]>([])
@@ -76,12 +77,11 @@ export default function AdvertiserMessagesPage() {
 
     const convList = await Promise.all(
       Object.values(grouped).map(async (conv) => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('name')
-          .eq('id', conv.otherId)
-          .single()
-        return { ...conv, otherName: profile?.name }
+        const [{ data: profile }, { data: ip }] = await Promise.all([
+          supabase.from('profiles').select('name').eq('id', conv.otherId).single(),
+          supabase.from('influencer_profiles').select('match_score, review_count').eq('user_id', conv.otherId).single(),
+        ])
+        return { ...conv, otherName: profile?.name, matchScore: ip?.match_score ?? null, reviewCount: ip?.review_count ?? 0 }
       })
     )
 
@@ -175,7 +175,12 @@ export default function AdvertiserMessagesPage() {
           <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3">
             {selectedConversation.otherName?.[0] ?? '?'}
           </div>
-          <p className="font-semibold text-gray-800">{selectedConversation.otherName}</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-gray-800">{selectedConversation.otherName}</p>
+              <MatchScore score={selectedConversation.matchScore ?? null} reviewCount={selectedConversation.reviewCount ?? 0} />
+            </div>
+          </div>
         </div>
 
         {selectedConversation.proposalId && currentUser && (
@@ -266,7 +271,10 @@ export default function AdvertiserMessagesPage() {
             {conv.otherName?.[0] ?? '?'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-800">{conv.otherName}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-gray-800">{conv.otherName}</p>
+              <MatchScore score={conv.matchScore} reviewCount={conv.reviewCount} />
+            </div>
             <p className="text-sm text-gray-400 truncate">{conv.lastMessage?.content}</p>
           </div>
           <p className="text-xs text-gray-300 ml-2">

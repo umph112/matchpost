@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import DealSheet from '@/components/DealSheet'
@@ -33,7 +32,7 @@ export default async function CampaignDetailPage({
       ? supabase.from('profiles').select('id, name, avatar_url').in('id', infIds)
       : Promise.resolve({ data: [] }),
     infIds.length
-      ? supabase.from('influencer_profiles').select('user_id, follower_count, platforms').in('user_id', infIds)
+      ? supabase.from('influencer_profiles').select('user_id, follower_count, platforms, match_score, review_count').in('user_id', infIds)
       : Promise.resolve({ data: [] }),
   ])
 

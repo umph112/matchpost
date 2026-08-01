@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import ReviewModal from './ReviewModal'
+import MatchScore from './MatchScore'
 
 // 8-stage pipeline (지역=8단계, 제품/기자단=방문 제외 7단계)
 const ALL_STAGES = ['신청', '확정', '가이드', '방문', '업로드', '수정/컴프', '검사', '정산'] as const
@@ -48,7 +49,7 @@ type Proposal = {
   settlement_status: string | null
   // joined
   profile: { id: string; name: string | null; avatar_url: string | null } | null
-  influencer_profile: { follower_count: number | null; platforms: string[] | null } | null
+  influencer_profile: { follower_count: number | null; platforms: string[] | null; match_score: number | null; review_count: number | null } | null
 }
 
 type Campaign = {
@@ -241,9 +242,15 @@ export default function DealSheet({
             {p.profile?.name?.[0] ?? '?'}
           </div>
           <div className="min-w-0">
-            <p className="text-[12.5px] font-semibold text-[#17171B] truncate">
-              {p.profile?.name ?? '인플루언서'}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[12.5px] font-semibold text-[#17171B] truncate">
+                {p.profile?.name ?? '인플루언서'}
+              </p>
+              <MatchScore
+                score={p.influencer_profile?.match_score ?? null}
+                reviewCount={p.influencer_profile?.review_count ?? 0}
+              />
+            </div>
             <p className="text-[11px] text-[#9A9AA5]">
               {p.influencer_profile?.follower_count?.toLocaleString() ?? '—'}명
               {p.budget ? ` · ${(p.budget / 10000).toLocaleString()}만원` : ''}
