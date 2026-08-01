@@ -84,6 +84,84 @@ sql/migrations/              스키마 변경 이력(0001~). README 참고
 
 ⚠️ **DB 실행 미완료**: 0010 / 0011 / 0012 모두 Supabase SQL Editor에서 실행 필요
 
+## 디자인 시스템 (새 페이지 작성 시 반드시 준수)
+
+### 색상 토큰
+```
+배경(페이지)  #F6F6F7
+배경(카드)    #FFFFFF
+테두리        #EAEAEE   (기본) / #F1F1F4 (연한)
+텍스트(본문)  #17171B   (근흑)
+텍스트(보조)  #9A9AA5   (11px 레이블) / #7C7C88 (단위·서브)
+텍스트(3차)   #5C5C68
+브랜드 앰버   #F59E0B   (버튼·포인트·크레딧)
+위험           #EF4444
+성공           #10B981
+```
+
+### 채널 배지 색상 (CH_GROUP)
+```
+블로그      bg #DCFCE7  text #15803D
+유튜브      bg #FEE2E2  text #DC2626
+인스타그램  bg #FCE7F3  text #BE185D
+틱톡        bg #E8E8EC  text #17171B
+```
+
+### 레이아웃 패턴
+- **PC 셸 (광고주)**: `AdvertiserShell` 사용 — 236px 사이드바 + `main.adv-pc` 래퍼
+  - PC 전용: `hidden [.adv-pc_&]:block` / 모바일 전용: `block [.adv-pc_&]:hidden`
+  - PC 조건부 스타일: `[.adv-pc_&]:grid-cols-[284px_minmax(0,1fr)]` 등
+- **관리자/공개 좁은 페이지**: `max-w-4xl mx-auto px-4 py-8` (또는 `max-w-5xl`)
+- **PC 필터 사이드바**: `284px` sticky `top-[84px]`
+
+### 컴포넌트 패턴
+
+#### 카드
+```tsx
+<div className="bg-white rounded-2xl p-5 shadow-sm">
+```
+
+#### 입력 폼
+```tsx
+// 인풋
+<input className="w-full px-3 py-2 text-sm rounded-xl border border-[#EAEAEE] focus:outline-none focus:border-amber-400" />
+// 레이블
+<label className="text-xs font-semibold text-gray-500 mb-1 block">
+```
+
+#### 버튼
+```tsx
+// 주요 (앰버)
+<button className="px-4 py-2 text-sm font-bold bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition disabled:opacity-40">
+// 보조 (흰 테두리)
+<button className="px-4 py-2 text-sm font-medium border border-[#EAEAEE] text-[#17171B] rounded-xl hover:bg-[#F6F6F7] transition">
+// 관리자 파란 계열
+<button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+```
+
+#### 배지/태그
+```tsx
+<span className="text-xs px-2 py-1 rounded-full font-medium bg-emerald-100 text-emerald-600">
+```
+
+#### PC 헤더 (AdvertiserShell 내 top bar)
+- 높이: `h-16` / 배경: `bg-white/[.88] backdrop-blur-[10px]` / sticky + z-30
+
+#### 글꼴
+- 본문: Pretendard (자동 적용)
+- 로고 워드마크: Archivo
+- 강조 수치: `font-extrabold tracking-[-0.02em]`
+- 보조 레이블: `text-[11px] text-[#9A9AA5]`
+
+### 크레딧 표시 규칙
+- 잔액: `{n.toLocaleString()} C` — C는 `text-[#F59E0B]` (앰버)
+- 지급(양수): `text-emerald-600` / 차감(음수): `text-red-500`
+- 금액 prefix: `+12,000 C` / `-5,000 C`
+
+### 딜시트 단계 (8 stages)
+신청 → 확정 → 가이드 → 방문 → 업로드 → 수정·컴프 → 검사 → 정산
+- 제품/기자단: 방문 단계 없음 (7 stages)
+
 ## 이전 후보 (아직 유효)
 - proposals에 initiated_by 추가 + confirm 토글화(개시자 자동확정/철회)
 - 캘린더 월 이동(‹›) — `?ym=YYYY-MM` 서버 재조회
