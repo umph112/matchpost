@@ -190,5 +190,59 @@ sql/migrations/              스키마 변경 이력(0001~). README 참고
 - 캠페인 진행일정 **공휴일 자동감지**(data.go.kr 특일정보, 현재 주말만)
 - 친구등록 인플루언서 favorites 테이블 구현(현재 예시 데이터)
 
+## 인플루언서 마이페이지 디자인 스펙
+
+> 비주얼 스펙 파일: `design/influencer-mypage-spec.html` (브라우저로 열기)
+
+### 전체 페이지 구조 (`/influencer/*`)
+
+**대시보드** (`/influencer/dashboard`) — 홈, 아래 섹션을 순서대로 포함:
+1. 🔔 액션 배너 — 새 알림·당일 정산 알림 (조건부)
+2. 📅 내 캘린더 — 이달 오픈·매칭 캠페인 날짜
+3. ⚡ 빠른 액션 — 오픈 등록 / 캠페인 검색 2버튼
+4. 💬 대시·메시지 — 최근 대화 3개 미리보기 → `/messages`
+5. 🔔 알림함 — 최근 알림 3개 + 미읽음 수 → `/notifications`
+6. 📋 내 오픈 목록 — 진행중·메이드·마감·캔슬 → `/schedule/list`
+7. 📊 **내 채널 분석** (신규) — 블로그 등급·노출 요약 카드 → `/channel-analytics`
+8. 💰 이번 달 매출 — 월간 매출 + 정산 예정 → `/earnings`
+
+**하위 독립 페이지:**
+| 페이지 | 경로 | 설명 |
+|---|---|---|
+| 채널 분석 상세 ★NEW | `/influencer/channel-analytics` | BlogAnalyticsFull — 포스팅별 키워드 노출 |
+| 오픈 등록 | `/influencer/schedule` | 광고 협업 오픈 등록 폼 |
+| 오픈 목록 | `/influencer/schedule/list` | 내 오픈 전체 + 상태 관리 |
+| 캠페인 검색 | `/influencer/search` | 광고주 캠페인 탐색·신청 |
+| 제안 | `/influencer/proposals` | 받은 제안 목록·수락·거절 |
+| 메시지 | `/influencer/messages` | 광고주와 1:1 채팅 |
+| 알림 | `/influencer/notifications` | 시스템 알림 전체 목록 |
+| 매출 | `/influencer/earnings` | 정산 내역·월별 매출 통계 |
+| 프로필 편집 | `/influencer/profile` | 기본정보·플랫폼·카테고리·블로그 URL |
+
+### 채널 분석 기능 (`BlogAnalyticsCard.tsx`)
+
+블로그 평가 데이터를 인플루언서 마이페이지에 노출하는 기능.
+수집 스크립트: `scripts/blog_analyzer.py` (네이버 API + 키워드 노출 체크 → Supabase upsert)
+
+**컴포넌트:**
+- `BlogAnalyticsSummaryCard` — 대시보드 요약 카드 (등급 뱃지 + 지표 칩 + 노출 프로그레스바)
+- `BlogAnalyticsFull` — 상세 페이지용 (포스팅별 키워드 노출, 접었다 펴기)
+- `BlogAnalyticsCompact` — 광고주 검색 결과 카드 한 줄 요약
+
+**등급 시스템 (100점 만점):**
+- 방문자 40점 / 검색 노출 35점 / 포스팅 빈도 15점 / 이웃 수 10점
+- S ≥75 / A ≥55 / B ≥35 / C ≥15 / D
+- 세분: X-1 / X-2 / X-3 (각 구간 3등분)
+
+**채널 분석 컬러 (광고주 디자인 시스템과 별도):**
+```
+Grade B·노출  bg #DCFCE7 / text #15803D
+Grade A       bg #DBEAFE / text #1D4ED8
+Grade S       bg #FEF3C7 / text #B45309
+미노출        bg #FEE2E2 / text #DC2626
+노출 바       #22C55E
+```
+
 ## 테스트 계정
-- 인플루언서: umph112 / 광고주: advertiser@test.com
+- 인플루언서: umph112 / pun0406 / merry9849 (비번 동일)
+- 광고주: advertiser@test.com

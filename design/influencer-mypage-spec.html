@@ -1,0 +1,752 @@
+<title>인플루언서 마이페이지 — MatchPost Design Spec</title>
+<style>
+/* ── TOKENS ───────────────────────────────────────────────────────── */
+:root {
+  --bg:      #ECEDF5;
+  --sur:     #FFFFFF;
+  --sur-2:   #F5F5FA;
+  --sur-3:   #EEEEF4;
+  --brd:     #E2E2EC;
+
+  --t1: #17171B;
+  --t2: #6B6B77;
+  --t3: #9A9AA5;
+
+  --acc:   #2563EB;
+  --acc-s: #DBEAFE;
+
+  --pos: #15803D; --pos-s: #DCFCE7;
+  --neg: #DC2626; --neg-s: #FEE2E2;
+  --wrn: #D97706; --wrn-s: #FEF3C7;
+
+  --gs-bg:#FEF3C7; --gs-tx:#B45309;
+  --ga-bg:#DBEAFE; --ga-tx:#1D4ED8;
+  --gb-bg:#DCFCE7; --gb-tx:#15803D;
+  --gc-bg:#F1F1F4; --gc-tx:#5C5C68;
+  --gd-bg:#F1F1F4; --gd-tx:#9A9AA5;
+
+  --ph-sh: 0 24px 64px rgba(0,0,0,.10), 0 4px 12px rgba(0,0,0,.07);
+  --new-ring: #2563EB;
+}
+
+@media (prefers-color-scheme: dark) { :root {
+  --bg:    #0D0D14; --sur: #17171F; --sur-2: #20202A; --sur-3: #20202A;
+  --brd:   #2C2C3A;
+  --t1: #E8E8F0; --t2: #8888A2; --t3: #56566C;
+  --ph-sh: 0 24px 64px rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.3);
+}}
+:root[data-theme="dark"] {
+  --bg:    #0D0D14; --sur: #17171F; --sur-2: #20202A; --sur-3: #20202A;
+  --brd:   #2C2C3A;
+  --t1: #E8E8F0; --t2: #8888A2; --t3: #56566C;
+  --ph-sh: 0 24px 64px rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.3);
+}
+:root[data-theme="light"] {
+  --bg: #ECEDF5; --sur: #FFFFFF; --sur-2: #F5F5FA; --sur-3: #EEEEF4;
+  --brd: #E2E2EC;
+  --t1: #17171B; --t2: #6B6B77; --t3: #9A9AA5;
+  --ph-sh: 0 24px 64px rgba(0,0,0,.10), 0 4px 12px rgba(0,0,0,.07);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── PAGE HEADER ──────────────────────────────────────────────────── */
+.pg-hd { max-width: 1120px; margin: 0 auto; padding: 52px 36px 44px; }
+.eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--acc); margin-bottom: 10px; }
+.pg-title { font-size: 30px; font-weight: 800; color: var(--t1); line-height: 1.15; letter-spacing: -.02em; text-wrap: balance; margin-bottom: 8px; }
+.pg-sub { font-size: 14px; color: var(--t2); }
+.spec-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-size: 11px; background: var(--sur); border: 1px solid var(--brd); color: var(--t3); padding: 4px 12px; border-radius: 100px; font-variant-numeric: tabular-nums; }
+
+/* ── DIVIDER ──────────────────────────────────────────────────────── */
+.divider { height: 1px; background: var(--brd); max-width: 1120px; margin: 0 auto 40px; }
+
+/* ── IA SECTION ───────────────────────────────────────────────────── */
+.ia-wrap { max-width: 1120px; margin: 0 auto; padding: 0 36px 52px; }
+.sec-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--t3); margin-bottom: 20px; }
+
+.ia-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 720px) { .ia-layout { grid-template-columns: 1fr; } }
+
+/* Dashboard interior schematic */
+.dash-schematic {
+  background: var(--sur);
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.dash-title {
+  font-size: 13px; font-weight: 800; color: var(--t1);
+  padding-bottom: 14px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--brd);
+  display: flex; align-items: center; gap: 8px;
+}
+.dash-route { font-size: 11px; color: var(--t3); font-family: 'SF Mono','Consolas',monospace; font-weight: 400; }
+
+.dash-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--sur-2);
+}
+.dash-row:last-child { border-bottom: none; padding-bottom: 0; }
+.dash-icon { font-size: 14px; flex-shrink: 0; width: 22px; text-align: center; }
+.dash-name { font-size: 12px; color: var(--t1); flex: 1; font-weight: 500; }
+.dash-desc { font-size: 10.5px; color: var(--t3); }
+.dash-link { font-size: 10.5px; color: var(--acc); font-family: 'SF Mono','Consolas',monospace; flex-shrink: 0; }
+.new-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  background: var(--acc); color: #fff;
+  padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+}
+
+/* Sub-pages grid */
+.pages-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-content: start;
+}
+.page-card {
+  background: var(--sur);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.page-card.is-new { border: 1.5px solid var(--acc); }
+.pc-icon { font-size: 16px; margin-bottom: 6px; }
+.pc-name { font-size: 12px; font-weight: 700; color: var(--t1); margin-bottom: 2px; }
+.pc-route { font-size: 10px; color: var(--acc); font-family: 'SF Mono','Consolas',monospace; margin-bottom: 5px; display: block; }
+.pc-desc { font-size: 10.5px; color: var(--t3); line-height: 1.5; }
+.pc-new { display: inline-block; font-size: 9px; font-weight: 700; background: var(--acc); color: #fff; padding: 1px 5px; border-radius: 4px; margin-bottom: 4px; }
+
+/* ── PHONES ROW ───────────────────────────────────────────────────── */
+.phones { display: flex; gap: 32px; padding: 0 36px 64px; max-width: 1120px; margin: 0 auto; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.ph-wrap { flex: 0 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.ph-label { font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--t3); padding-left: 4px; }
+.phone { width: 316px; height: 600px; background: var(--sur); border-radius: 38px; box-shadow: var(--ph-sh); overflow: hidden; border: 1px solid var(--brd); display: flex; flex-direction: column; }
+.sbar { display: flex; justify-content: space-between; align-items: center; padding: 11px 22px 5px; font-size: 11px; font-weight: 700; color: var(--t1); flex-shrink: 0; }
+.sbar-r { display: flex; gap: 4px; align-items: center; }
+.sbar-dot { width: 4px; height: 4px; background: var(--t2); border-radius: 50%; }
+.ph-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; background: var(--sur-2); padding-bottom: 24px; }
+.ph-scroll::-webkit-scrollbar { display: none; }
+
+/* ── IN-PHONE COMPONENTS ─────────────────────────────────────────── */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; background: var(--sur); border-bottom: 1px solid var(--brd); position: sticky; top: 0; z-index: 10; }
+.tb-logo { font-size: 13px; font-weight: 900; color: var(--acc); letter-spacing: -.02em; }
+.tb-av { width: 28px; height: 28px; border-radius: 50%; background: var(--acc); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+.s-hd { display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 6px; }
+.s-hd-t { font-size: 12px; font-weight: 700; color: var(--t1); }
+.s-hd-l { font-size: 11px; color: var(--acc); }
+
+/* ── DASHBOARD FULL ───────────────────────────────────────────────── */
+.banner-strip { margin: 10px 10px 6px; background: #1D4ED8; color: #fff; border-radius: 14px; padding: 10px 13px; display: flex; justify-content: space-between; align-items: center; }
+.bs-text { font-size: 11px; font-weight: 600; }
+.bs-arr { font-size: 11px; }
+
+.cal-block { margin: 0 10px 10px; background: var(--sur); border-radius: 16px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.cal-hd { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.cal-hd-l { font-size: 12px; font-weight: 700; }
+.cal-hd-r { font-size: 10px; color: var(--t3); }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.cal-day { text-align: center; font-size: 9px; color: var(--t3); padding: 2px 0 4px; }
+.cal-cell { text-align: center; font-size: 10px; color: var(--t2); padding: 4px 0; border-radius: 6px; position: relative; }
+.cal-cell.today { background: var(--acc); color: #fff; font-weight: 700; }
+.cal-cell.has-dot::after { content:''; display: block; width: 4px; height: 4px; border-radius: 50%; background: var(--wrn); margin: 1px auto 0; }
+.cal-cell.has-open { color: var(--acc); font-weight: 700; }
+
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 10px 10px; }
+.qb { border-radius: 14px; padding: 11px 12px; text-align: center; }
+.qb-blue { background: var(--acc); color: #fff; }
+.qb-white { background: var(--sur); box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.qb-icon { font-size: 16px; margin-bottom: 3px; }
+.qb-text { font-size: 11px; font-weight: 600; }
+.qb-text-w { color: var(--t1); }
+
+.mini-card { margin: 0 10px 8px; background: var(--sur); border-radius: 14px; padding: 11px 13px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.mc-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+.mc-t { font-size: 11px; font-weight: 700; color: var(--t1); }
+.mc-l { font-size: 10px; color: var(--acc); }
+.mc-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+.mc-av { width: 28px; height: 28px; border-radius: 50%; background: var(--acc-s); color: var(--acc); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.mc-name { font-size: 11px; font-weight: 600; color: var(--t1); }
+.mc-msg { font-size: 10px; color: var(--t3); }
+.mc-unread { font-size: 9px; background: #EF4444; color: #fff; padding: 1px 5px; border-radius: 99px; }
+
+/* summary card */
+.sc { margin: 0 10px 10px; background: var(--sur); border-radius: 18px; padding: 13px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.sc-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.sc-left { display: flex; align-items: center; gap: 7px; }
+.gr { font-size: 13px; font-weight: 800; padding: 3px 10px; border-radius: 8px; }
+.gr-b { background: var(--gb-bg); color: var(--gb-tx); }
+.gr-s { background: var(--gs-bg); color: var(--gs-tx); }
+.gr-a { background: var(--ga-bg); color: var(--ga-tx); }
+.gr-c { background: var(--gc-bg); color: var(--gc-tx); }
+.sc-plat { font-size: 10.5px; color: var(--t3); }
+.sc-date { font-size: 10px; color: var(--t3); }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.chip { font-size: 10.5px; background: var(--sur-2); border-radius: 7px; padding: 3px 8px; color: var(--t2); }
+.chip b { color: var(--t1); font-weight: 700; }
+.prog-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--t3); margin-bottom: 4px; }
+.prog-val { font-weight: 700; color: var(--pos); }
+.prog-track { height: 5px; background: var(--sur-2); border-radius: 99px; overflow: hidden; margin-bottom: 7px; }
+.prog-fill { height: 100%; border-radius: 99px; }
+.sc-more { font-size: 10px; color: var(--t3); text-align: right; }
+
+.earn-card { margin: 0 10px 10px; background: var(--sur); border-radius: 16px; padding: 13px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.earn-label { font-size: 10px; color: var(--t3); margin-bottom: 2px; }
+.earn-val { font-size: 18px; font-weight: 800; color: var(--t1); font-variant-numeric: tabular-nums; }
+.earn-arr { font-size: 12px; color: var(--t3); }
+
+/* ── FULL ANALYTICS ───────────────────────────────────────────────── */
+.fc { margin: 10px 10px 0; background: var(--sur); border-radius: 18px; padding: 13px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.fc-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 11px; }
+.fc-hd-l { display: flex; align-items: center; gap: 7px; }
+.fc-hd-name { font-size: 11px; font-weight: 700; color: var(--t1); }
+.fc-date { font-size: 10px; color: var(--t3); }
+.sg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 13px; }
+.sg-cell { background: var(--sur-2); border-radius: 11px; padding: 9px 10px; }
+.sg-label { font-size: 10px; color: var(--t3); margin-bottom: 2px; }
+.sg-val { font-size: 13px; font-weight: 700; color: var(--t1); }
+.sg-val-muted { color: var(--t3); }
+.post-hd { display: flex; align-items: baseline; gap: 5px; margin-bottom: 6px; }
+.post-hd-label { font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--t3); }
+.post-hd-sub { font-size: 10px; color: var(--t3); }
+.posts { display: flex; flex-direction: column; gap: 5px; }
+.pr { border: 1px solid var(--brd); border-radius: 10px; overflow: hidden; }
+.pr-hd { display: flex; align-items: center; gap: 5px; padding: 6px 8px; background: var(--sur); }
+.pb { font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 4px; flex-shrink: 0; }
+.pb-on  { background: var(--pos-s); color: var(--pos); }
+.pb-off { background: var(--neg-s); color: var(--neg); }
+.pr-title { font-size: 11px; color: var(--t2); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pr-rank { font-size: 10px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.rk-3  { color: var(--acc); font-weight: 800; }
+.rk-10 { color: var(--acc); font-weight: 700; }
+.pr-arr { font-size: 9px; color: var(--t3); flex-shrink: 0; }
+.pr-detail { border-top: 1px solid var(--sur-2); background: var(--sur-2); padding: 6px 8px; display: flex; flex-direction: column; gap: 5px; }
+.kw-row { display: flex; align-items: center; gap: 5px; }
+.kwb { font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 3px; flex-shrink: 0; }
+.kwb-on  { background: var(--pos-s); color: var(--pos); }
+.kwb-off { background: var(--sur-3); color: var(--t3); }
+.kw-word { font-size: 11px; color: var(--t2); flex: 1; }
+.kw-r { font-size: 10px; }
+.fc-note { font-size: 9px; color: var(--t3); margin-top: 10px; line-height: 1.5; }
+
+/* ── PROFILE SCREEN ───────────────────────────────────────────────── */
+.pf-content { padding: 12px; }
+.pf-sec { background: var(--sur); border-radius: 16px; padding: 11px 13px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.pf-sec-t { font-size: 11px; font-weight: 700; color: var(--t1); margin-bottom: 8px; }
+.pf-fl { margin-bottom: 6px; }
+.pf-fl-label { font-size: 10px; color: var(--t3); margin-bottom: 2px; }
+.pf-input { width: 100%; background: var(--sur-2); border: 1px solid var(--brd); border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--t2); }
+.save-btn { width: 100%; background: var(--acc); color: #fff; border: none; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 600; margin-bottom: 8px; cursor: pointer; }
+.ch-banner { display: flex; align-items: center; justify-content: space-between; background: var(--sur-2); border-radius: 14px; padding: 11px 13px; border: 1px solid var(--brd); }
+.ch-banner-text { font-size: 12px; font-weight: 600; color: var(--t2); }
+.ch-banner-arr  { font-size: 12px; color: var(--t3); }
+
+.back { padding: 8px 13px 2px; font-size: 11px; color: var(--t2); }
+.screen-t { font-size: 15px; font-weight: 700; color: var(--t1); padding: 0 12px 8px; }
+
+/* ── SPEC SECTION ─────────────────────────────────────────────────── */
+.spec-wrap { max-width: 1120px; margin: 0 auto; padding: 0 36px 72px; }
+.spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.spec-card { background: var(--sur); border-radius: 18px; padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.sc-title { font-size: 12px; font-weight: 700; color: var(--t1); padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--brd); }
+.gt { width: 100%; border-collapse: collapse; }
+.gt th { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--t3); padding: 3px 6px 9px; text-align: left; }
+.gt td { padding: 6px 6px; font-size: 11px; color: var(--t2); font-variant-numeric: tabular-nums; vertical-align: middle; }
+.gt tr:not(:last-child) td { border-bottom: 1px solid var(--sur-2); }
+.gt-sub { font-size: 10px; color: var(--t3); }
+.score-list { display: flex; flex-direction: column; gap: 11px; }
+.score-row { display: flex; align-items: center; gap: 10px; }
+.score-label { font-size: 12px; color: var(--t2); flex: 0 0 76px; }
+.score-track { flex: 1; height: 6px; background: var(--sur-2); border-radius: 99px; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 99px; background: var(--acc); }
+.score-n { font-size: 11px; font-weight: 700; color: var(--t1); flex: 0 0 32px; text-align: right; font-variant-numeric: tabular-nums; }
+.score-detail { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--brd); font-size: 11px; color: var(--t3); line-height: 1.75; }
+.tok-list { display: flex; flex-direction: column; gap: 7px; }
+.tok-row { display: flex; align-items: center; gap: 9px; }
+.tok-swatch { width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.08); }
+.tok-name { font-size: 11px; color: var(--t2); flex: 1; }
+.tok-hex { font-size: 11px; color: var(--t3); font-family: 'SF Mono','Consolas',monospace; }
+</style>
+
+<!-- ═══════════════════════════════════════════ PAGE HEADER -->
+<header class="pg-hd">
+  <div class="eyebrow">MatchPost — Influencer Mypage Design Spec</div>
+  <h1 class="pg-title">인플루언서 마이페이지</h1>
+  <p class="pg-sub">전체 페이지 구조 · 블로그 채널 분석 기능 UX · 컴포넌트 스펙</p>
+  <span class="spec-tag">v1.1 &nbsp;·&nbsp; 2026-08-01 &nbsp;·&nbsp; /influencer/*</span>
+</header>
+
+<!-- ═══════════════════════════════════════════ IA / PAGE STRUCTURE -->
+<div class="divider"></div>
+<div class="ia-wrap">
+  <div class="sec-eyebrow">전체 페이지 구조</div>
+  <div class="ia-layout">
+
+    <!-- Left: Dashboard interior -->
+    <div class="dash-schematic">
+      <div class="dash-title">
+        대시보드 (홈)
+        <span class="dash-route">/influencer/dashboard</span>
+      </div>
+
+      <div class="dash-row">
+        <div class="dash-icon">🔔</div>
+        <div class="dash-name">액션 배너</div>
+        <div class="dash-desc">새 알림·당일 정산 알림 (조건부 표시)</div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-icon">📅</div>
+        <div class="dash-name">내 캘린더</div>
+        <div class="dash-desc">이달 오픈·매칭 캠페인 날짜 표시</div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-icon">⚡</div>
+        <div class="dash-name">빠른 액션</div>
+        <div class="dash-desc">오픈 등록 / 캠페인 검색</div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-icon">💬</div>
+        <div class="dash-name">대시·메시지</div>
+        <div class="dash-desc">최근 대화 3개 미리보기</div>
+        <div class="dash-link">→ /messages</div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-icon">🔔</div>
+        <div class="dash-name">알림함</div>
+        <div class="dash-desc">최근 알림 3개 + 미읽음 수</div>
+        <div class="dash-link">→ /notifications</div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-icon">📋</div>
+        <div class="dash-name">내 오픈 목록</div>
+        <div class="dash-desc">진행중·메이드·마감·캔슬 상태</div>
+        <div class="dash-link">→ /schedule/list</div>
+      </div>
+      <div class="dash-row" style="background:var(--acc-s);border-radius:10px;padding:9px 10px;margin:2px 0">
+        <div class="dash-icon">📊</div>
+        <div class="dash-name" style="color:var(--acc)">내 채널 분석</div>
+        <div class="dash-desc" style="color:var(--acc);opacity:.7">등급·노출 요약 카드</div>
+        <span class="new-badge">NEW</span>
+        <div class="dash-link">→ /channel-analytics</div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-icon">💰</div>
+        <div class="dash-name">이번 달 매출</div>
+        <div class="dash-desc">월간 매출 + 정산 예정 금액</div>
+        <div class="dash-link">→ /earnings</div>
+      </div>
+    </div>
+
+    <!-- Right: Sub-pages -->
+    <div class="pages-grid">
+      <div class="page-card is-new">
+        <div class="pc-icon">📊</div>
+        <div class="pc-new">NEW</div>
+        <div class="pc-name">채널 분석 상세</div>
+        <code class="pc-route">/influencer/channel-analytics</code>
+        <div class="pc-desc">BlogAnalyticsFull — 포스팅별 키워드 노출, 등급·지표 전체</div>
+      </div>
+      <div class="page-card">
+        <div class="pc-icon">🗓</div>
+        <div class="pc-name">오픈 등록</div>
+        <code class="pc-route">/influencer/schedule</code>
+        <div class="pc-desc">광고 협업 오픈 등록 폼</div>
+      </div>
+      <div class="page-card">
+        <div class="pc-icon">📋</div>
+        <div class="pc-name">오픈 목록</div>
+        <code class="pc-route">/influencer/schedule/list</code>
+        <div class="pc-desc">내 오픈 전체 목록·상태 관리</div>
+      </div>
+      <div class="page-card">
+        <div class="pc-icon">🔍</div>
+        <div class="pc-name">캠페인 검색</div>
+        <code class="pc-route">/influencer/search</code>
+        <div class="pc-desc">광고주 캠페인 탐색·신청</div>
+      </div>
+      <div class="page-card">
+        <div class="pc-icon">📬</div>
+        <div class="pc-name">제안</div>
+        <code class="pc-route">/influencer/proposals</code>
+        <div class="pc-desc">받은 제안 목록·수락·거절</div>
+      </div>
+      <div class="page-card">
+        <div class="pc-icon">💬</div>
+        <div class="pc-name">메시지</div>
+        <code class="pc-route">/influencer/messages</code>
+        <div class="pc-desc">광고주와 1:1 채팅</div>
+      </div>
+      <div class="page-card">
+        <div class="pc-icon">🔔</div>
+        <div class="pc-name">알림</div>
+        <code class="pc-route">/influencer/notifications</code>
+        <div class="pc-desc">시스템 알림 전체 목록</div>
+      </div>
+      <div class="page-card">
+        <div class="pc-icon">💰</div>
+        <div class="pc-name">매출</div>
+        <code class="pc-route">/influencer/earnings</code>
+        <div class="pc-desc">정산 내역·월별 매출 통계</div>
+      </div>
+      <div class="page-card">
+        <div class="pc-icon">👤</div>
+        <div class="pc-name">프로필 편집</div>
+        <code class="pc-route">/influencer/profile</code>
+        <div class="pc-desc">기본정보·플랫폼·카테고리·블로그 URL</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ PHONES: 채널 분석 흐름 -->
+<div class="divider"></div>
+<div style="max-width:1120px;margin:0 auto;padding:0 36px 20px">
+  <div class="sec-eyebrow">채널 분석 UX 흐름 — 3단계</div>
+</div>
+<div class="phones">
+
+  <!-- PHONE 1: Full Dashboard -->
+  <div class="ph-wrap">
+    <div class="ph-label">① 대시보드 전체</div>
+    <div class="phone">
+      <div class="sbar">
+        <span>9:41</span>
+        <div class="sbar-r"><div class="sbar-dot"></div><div class="sbar-dot"></div><div class="sbar-dot"></div></div>
+      </div>
+      <div class="ph-scroll">
+        <div class="topbar">
+          <span class="tb-logo">MatchPost</span>
+          <div class="tb-av">P</div>
+        </div>
+
+        <!-- 액션 배너 -->
+        <div class="banner-strip">
+          <span class="bs-text">🔔 새 알림 2 · 오늘 정산 예정 1건</span>
+          <span class="bs-arr">→</span>
+        </div>
+
+        <!-- 캘린더 -->
+        <div class="cal-block">
+          <div class="cal-hd">
+            <span class="cal-hd-l">내 캘린더</span>
+            <span class="cal-hd-r">매칭 캠페인 3 · 내 오픈 2</span>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-day">일</div><div class="cal-day">월</div><div class="cal-day">화</div><div class="cal-day">수</div><div class="cal-day">목</div><div class="cal-day">금</div><div class="cal-day">토</div>
+            <div class="cal-cell"></div><div class="cal-cell"></div><div class="cal-cell has-dot">1</div><div class="cal-cell">2</div><div class="cal-cell has-open">3</div><div class="cal-cell">4</div><div class="cal-cell">5</div>
+            <div class="cal-cell">6</div><div class="cal-cell has-dot">7</div><div class="cal-cell">8</div><div class="cal-cell today">9</div><div class="cal-cell">10</div><div class="cal-cell">11</div><div class="cal-cell">12</div>
+          </div>
+        </div>
+
+        <!-- 빠른 액션 -->
+        <div class="quick-grid">
+          <div class="qb qb-blue"><div class="qb-icon">＋</div><div class="qb-text">오픈 등록</div></div>
+          <div class="qb qb-white"><div class="qb-icon">🔍</div><div class="qb-text qb-text-w">캠페인 검색</div></div>
+        </div>
+
+        <!-- 대시·메시지 -->
+        <div class="mini-card">
+          <div class="mc-hd"><span class="mc-t">💬 대시·메시지</span><span class="mc-l">전체보기 →</span></div>
+          <div class="mc-row">
+            <div class="mc-av">B</div>
+            <div style="flex:1;min-width:0">
+              <div class="mc-name">뷰티코리아</div>
+              <div class="mc-msg">협업 조건 확인해 주시겠어요?</div>
+            </div>
+            <span class="mc-unread">미응답</span>
+          </div>
+        </div>
+
+        <!-- 채널 분석 section (NEW) -->
+        <div class="s-hd">
+          <span class="s-hd-t">📊 내 채널 분석</span>
+          <span class="s-hd-l">상세보기 →</span>
+        </div>
+        <div class="sc">
+          <div class="sc-row1">
+            <div class="sc-left">
+              <span class="gr gr-b">B-1</span>
+              <span class="sc-plat">네이버 블로그</span>
+            </div>
+            <span class="sc-date">2026. 7. 31 기준</span>
+          </div>
+          <div class="chips">
+            <div class="chip">이웃 <b>3.2K</b></div>
+            <div class="chip">글 <b>847</b></div>
+            <div class="chip">평균순위 <b>8위</b></div>
+          </div>
+          <div class="prog-row">
+            <span>포스팅 검색 노출</span>
+            <span class="prog-val">8 / 10개</span>
+          </div>
+          <div class="prog-track">
+            <div class="prog-fill" style="width:80%;background:#22C55E"></div>
+          </div>
+          <div class="sc-more">상세 분석 보기 →</div>
+        </div>
+
+        <!-- 매출 -->
+        <div class="s-hd"><span class="s-hd-t">💰 이번 달 매출</span></div>
+        <div class="earn-card">
+          <div>
+            <div class="earn-label">이번 달 매출</div>
+            <div class="earn-val">350,000원</div>
+            <div style="font-size:10px;color:#F97316;margin-top:2px">정산 예정 120,000원</div>
+          </div>
+          <span class="earn-arr">상세 →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE 2: Channel Analytics Detail -->
+  <div class="ph-wrap">
+    <div class="ph-label">② 채널 분석 상세</div>
+    <div class="phone">
+      <div class="sbar">
+        <span>9:41</span>
+        <div class="sbar-r"><div class="sbar-dot"></div><div class="sbar-dot"></div><div class="sbar-dot"></div></div>
+      </div>
+      <div class="ph-scroll">
+        <div class="topbar">
+          <span class="tb-logo">MatchPost</span>
+          <div class="tb-av">P</div>
+        </div>
+        <div class="back">← 대시보드</div>
+        <div class="screen-t">내 채널 분석</div>
+        <div class="fc">
+          <div class="fc-hd">
+            <div class="fc-hd-l">
+              <span class="gr gr-b" style="font-size:11px;padding:3px 9px">B-1</span>
+              <span class="fc-hd-name">블로그 분석</span>
+            </div>
+            <span class="fc-date">2026. 7. 31 기준</span>
+          </div>
+          <div class="sg">
+            <div class="sg-cell"><div class="sg-label">이웃 수</div><div class="sg-val">3,200명</div></div>
+            <div class="sg-cell"><div class="sg-label">오늘 방문자</div><div class="sg-val sg-val-muted">비공개</div></div>
+            <div class="sg-cell"><div class="sg-label">총 글 수</div><div class="sg-val">847개</div></div>
+            <div class="sg-cell"><div class="sg-label">월 평균 포스팅</div><div class="sg-val">12회</div></div>
+          </div>
+          <div class="post-hd">
+            <span class="post-hd-label">최근 포스팅 노출</span>
+            <span class="post-hd-sub">8/10개 · 클릭 시 키워드 상세</span>
+          </div>
+          <div class="posts">
+            <div class="pr">
+              <div class="pr-hd">
+                <span class="pb pb-on">노출</span>
+                <span class="pr-title">인천 데이트 카페 추천 소월길...</span>
+                <span class="pr-rank rk-3">3위</span>
+                <span class="pr-arr">▲</span>
+              </div>
+              <div class="pr-detail">
+                <div class="kw-row">
+                  <span class="kwb kwb-on">노출</span>
+                  <span class="kw-word">#인천 데이트</span>
+                  <span class="kw-r rk-3">3위</span>
+                </div>
+                <div class="kw-row">
+                  <span class="kwb kwb-off">미노출</span>
+                  <span class="kw-word">#데이트 카페</span>
+                  <span class="kw-r" style="color:var(--t3)">—</span>
+                </div>
+              </div>
+            </div>
+            <div class="pr">
+              <div class="pr-hd">
+                <span class="pb pb-on">노출</span>
+                <span class="pr-title">강남 코스요리 맛집 추천 데이트...</span>
+                <span class="pr-rank rk-10">8위</span>
+                <span class="pr-arr">▼</span>
+              </div>
+            </div>
+            <div class="pr">
+              <div class="pr-hd">
+                <span class="pb pb-off">미노출</span>
+                <span class="pr-title">서울 주말 나들이 가볼만한 곳...</span>
+                <span class="pr-rank" style="color:var(--t3)"></span>
+                <span class="pr-arr">▼</span>
+              </div>
+            </div>
+          </div>
+          <div class="fc-note">자동 수집 데이터 · 매일 갱신<br>광고주에게도 공개됩니다</div>
+        </div>
+        <div style="height:16px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE 3: Profile -->
+  <div class="ph-wrap">
+    <div class="ph-label">③ 프로필 편집</div>
+    <div class="phone">
+      <div class="sbar">
+        <span>9:41</span>
+        <div class="sbar-r"><div class="sbar-dot"></div><div class="sbar-dot"></div><div class="sbar-dot"></div></div>
+      </div>
+      <div class="ph-scroll">
+        <div class="topbar">
+          <span class="tb-logo">MatchPost</span>
+          <div style="font-size:11px;color:var(--t3)">로그아웃</div>
+        </div>
+        <div class="pf-content">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <span style="font-size:11px;color:var(--t2)">← 뒤로</span>
+            <span style="font-size:14px;font-weight:700;color:var(--t1)">내 정보 수정</span>
+          </div>
+          <div class="pf-sec">
+            <div class="pf-sec-t">기본 정보</div>
+            <div class="pf-fl"><div class="pf-fl-label">이름</div><div class="pf-input">pun0406</div></div>
+            <div class="pf-fl"><div class="pf-fl-label">전화번호</div><div class="pf-input" style="color:var(--t3)">010-0000-0000</div></div>
+          </div>
+          <div class="pf-sec">
+            <div class="pf-sec-t">활동 플랫폼</div>
+            <div style="display:flex;gap:5px;margin-bottom:8px">
+              <span style="font-size:10px;background:var(--acc);color:#fff;border-radius:99px;padding:3px 10px">블로그</span>
+              <span style="font-size:10px;background:var(--sur-2);color:var(--t2);border-radius:99px;padding:3px 10px">인스타그램</span>
+            </div>
+            <div class="pf-input" style="font-size:10.5px;color:var(--acc)">blog.naver.com/pun0406</div>
+          </div>
+          <div class="pf-sec">
+            <div class="pf-sec-t">콘텐츠 카테고리</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <span style="font-size:10px;background:var(--acc);color:#fff;border-radius:99px;padding:3px 10px">맛집</span>
+              <span style="font-size:10px;background:var(--acc);color:#fff;border-radius:99px;padding:3px 10px">여행</span>
+              <span style="font-size:10px;background:var(--sur-2);color:var(--t2);border-radius:99px;padding:3px 10px">패션</span>
+            </div>
+          </div>
+          <button class="save-btn">저장하기</button>
+          <div class="ch-banner">
+            <span class="ch-banner-text">📊 내 채널 분석 보기</span>
+            <span class="ch-banner-arr">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ COMPONENT SPEC -->
+<div class="divider"></div>
+<div class="spec-wrap">
+  <div class="sec-eyebrow">채널 분석 컴포넌트 스펙</div>
+  <div class="spec-grid">
+
+    <div class="spec-card">
+      <div class="sc-title">등급 기준표</div>
+      <table class="gt">
+        <thead>
+          <tr><th>등급</th><th>점수</th><th>세분</th><th>방문자</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="gr gr-s" style="font-size:10px;padding:2px 8px">S</span></td>
+            <td>≥ 75</td><td class="gt-sub">S-1 ≥90 · S-2 ≥83 · S-3 ≥75</td><td class="gt-sub">5만+</td>
+          </tr>
+          <tr>
+            <td><span class="gr gr-a" style="font-size:10px;padding:2px 8px">A</span></td>
+            <td>≥ 55</td><td class="gt-sub">A-1 ≥69 · A-2 ≥62 · A-3 ≥55</td><td class="gt-sub">2만+</td>
+          </tr>
+          <tr>
+            <td><span class="gr gr-b" style="font-size:10px;padding:2px 8px">B</span></td>
+            <td>≥ 35</td><td class="gt-sub">B-1 ≥49 · B-2 ≥42 · B-3 ≥35</td><td class="gt-sub">1만+</td>
+          </tr>
+          <tr>
+            <td><span class="gr gr-c" style="font-size:10px;padding:2px 8px">C</span></td>
+            <td>≥ 15</td><td class="gt-sub">C-1 ≥29 · C-2 ≥22 · C-3 ≥15</td><td class="gt-sub">3천+</td>
+          </tr>
+          <tr>
+            <td><span class="gr" style="font-size:10px;padding:2px 8px;background:var(--gd-bg);color:var(--gd-tx)">D</span></td>
+            <td>0–14</td><td class="gt-sub">D-1 ≥10 · D-2 ≥5 · D-3</td><td class="gt-sub">3천 미만</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="spec-card">
+      <div class="sc-title">점수 구성 (100점 만점)</div>
+      <div class="score-list">
+        <div class="score-row">
+          <div class="score-label">방문자</div>
+          <div class="score-track"><div class="score-fill" style="width:40%"></div></div>
+          <div class="score-n">40점</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">검색 노출</div>
+          <div class="score-track"><div class="score-fill" style="width:35%"></div></div>
+          <div class="score-n">35점</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">포스팅 빈도</div>
+          <div class="score-track"><div class="score-fill" style="width:15%"></div></div>
+          <div class="score-n">15점</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">이웃 수</div>
+          <div class="score-track"><div class="score-fill" style="width:10%"></div></div>
+          <div class="score-n">10점</div>
+        </div>
+      </div>
+      <div class="score-detail">
+        노출 35점 = 노출률 (max 20) + 순위품질 (max 15)<br>
+        노출률: 90%+ = 20 · 70%+ = 15 · 50%+ = 10 · 30%+ = 5<br>
+        순위품질: ≤3위 = 15 · ≤10위 = 12 · ≤20위 = 8 · ≤50위 = 4
+      </div>
+    </div>
+
+    <div class="spec-card">
+      <div class="sc-title">컬러 토큰</div>
+      <div class="tok-list">
+        <div class="tok-row"><div class="tok-swatch" style="background:#2563EB"></div><div class="tok-name">Accent (--acc)</div><div class="tok-hex">#2563EB</div></div>
+        <div class="tok-row"><div class="tok-swatch" style="background:#DCFCE7;border-color:#BBF7D0"></div><div class="tok-name">Grade B · 노출 배경</div><div class="tok-hex">#DCFCE7</div></div>
+        <div class="tok-row"><div class="tok-swatch" style="background:#15803D"></div><div class="tok-name">Grade B · 노출 텍스트</div><div class="tok-hex">#15803D</div></div>
+        <div class="tok-row"><div class="tok-swatch" style="background:#FEE2E2;border-color:#FECACA"></div><div class="tok-name">미노출 배경</div><div class="tok-hex">#FEE2E2</div></div>
+        <div class="tok-row"><div class="tok-swatch" style="background:#DC2626"></div><div class="tok-name">미노출 텍스트</div><div class="tok-hex">#DC2626</div></div>
+        <div class="tok-row"><div class="tok-swatch" style="background:#22C55E"></div><div class="tok-name">노출 프로그레스 바</div><div class="tok-hex">#22C55E</div></div>
+        <div class="tok-row"><div class="tok-swatch" style="background:#FEF3C7;border-color:#FDE68A"></div><div class="tok-name">Grade S 배경</div><div class="tok-hex">#FEF3C7</div></div>
+        <div class="tok-row"><div class="tok-swatch" style="background:#DBEAFE;border-color:#BFDBFE"></div><div class="tok-name">Grade A 배경</div><div class="tok-hex">#DBEAFE</div></div>
+      </div>
+    </div>
+
+    <div class="spec-card">
+      <div class="sc-title">컴포넌트 파일</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="background:var(--sur-2);border-radius:10px;padding:11px 13px">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:4px">BlogAnalyticsSummaryCard</div>
+          <code style="font-size:10.5px;color:var(--acc);font-family:'SF Mono','Consolas',monospace;display:block;margin-bottom:5px">components/BlogAnalyticsCard.tsx</code>
+          <div style="font-size:10.5px;color:var(--t2)">대시보드 요약 카드 · /channel-analytics 링크</div>
+        </div>
+        <div style="background:var(--sur-2);border-radius:10px;padding:11px 13px">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:4px">BlogAnalyticsFull</div>
+          <code style="font-size:10.5px;color:var(--acc);font-family:'SF Mono','Consolas',monospace;display:block;margin-bottom:5px">components/BlogAnalyticsCard.tsx</code>
+          <div style="font-size:10.5px;color:var(--t2)">상세 분석 · PostRow 접었다 펴기</div>
+        </div>
+        <div style="background:var(--sur-2);border-radius:10px;padding:11px 13px">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:4px">분석 수집 스크립트</div>
+          <code style="font-size:10.5px;color:var(--acc);font-family:'SF Mono','Consolas',monospace;display:block;margin-bottom:5px">scripts/blog_analyzer.py</code>
+          <div style="font-size:10.5px;color:var(--t2)">네이버 API · 포스팅 키워드 노출 체크 · 등급 산정 · Supabase upsert</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
