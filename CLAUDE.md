@@ -192,6 +192,7 @@ sql/migrations/              스키마 변경 이력(0001~). README 참고
 
 ## 인플루언서 마이페이지 디자인 스펙
 
+> **플랫폼 방향**: 인플루언서 = 모바일 우선(mobile-first) → PC는 추후. 광고주 = PC 우선(현재 AdvertiserShell 기반).
 > 비주얼 스펙 파일: `design/influencer-mypage-spec.html` (브라우저로 열기)
 
 ### 전체 페이지 구조 (`/influencer/*`)
