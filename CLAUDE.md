@@ -70,15 +70,19 @@ sql/migrations/              스키마 변경 이력(0001~). README 참고
 - 세무자료: 세금계산서(발행주체+상대 사업자등록증) / 3.3%(신분증X, 전화번호·국세청ID) → 대시서 교환 → 딜시트 체크. 플랫폼 밖 교환 대비 갭체크+양방향 알림+셀프입력.
 - **결제 실행은 하지 않음**(기록·추적만). 향후 캠페인별 수수료 도입 시 budget_total 포함+딜시트 표기(코드 TODO(수수료)).
 
-## 다음 할 일 — 신규 디자인 구현 (2026-07-31 업데이트)
-디자인 핸드오프 `design/mypage-pc/README.md` (Screen 2-5 + 로고 스펙 추가됨)
+## 디자인 구현 현황 (2026-08-01 업데이트)
+디자인 핸드오프 `design/mypage-pc/README.md` (Screen 2-5 + 로고 스펙)
 
-- [ ] **① 로고 교체** — AdvertiserShell.tsx 인라인 SVG → `/logo/matchpost-mark.svg` + Archivo 워드마크 (SVG 파일은 `public/logo/`에 저장 완료)
-- [ ] **② Screen 4** — 캠페인 등록 폼(`campaigns/new`): `[.adv-pc_&]:columns-2` → `grid-cols-[1fr_320px]` + 우측 sticky 사이드바 (로직 변경 없음)
-- [ ] **③ Screen 2** — 캠페인 목록(`campaigns/page.tsx`): 7열 PC 표 + 필터 탭(전체/진행중/마감/완료/취소)
-- [ ] **④ Screen 5** — 인플루언서 찾기(`search/page.tsx`): 284px 필터 사이드바 + 날짜별/인플루언서별 그룹 결과 카드
-- [ ] **⑤ Screen 3** — 딜시트(`campaigns/[id]`): DB 마이그레이션 0012 후 구현 (가장 공수 큼)
-  - `proposals` + `campaigns` 스키마 추가 → `sql/migrations/0012_dealsheet.sql` 작성 필요
+- ✅ **① 로고 교체** — mark.svg + Archivo 워드마크 (커밋 cb3966b)
+- ✅ **② Screen 4** — 캠페인 등록 폼 `grid-cols-[1fr_320px]` + sticky 사이드바 (커밋 cb3966b)
+- ✅ **③ Screen 2** — 캠페인 목록 7열 PC 표 + 필터 탭 (커밋 cb3966b)
+- ✅ **④ Screen 5** — 인플루언서 찾기 284px 필터 사이드바 + 날짜별/인플루언서별 그룹 결과 카드
+- ✅ **⑤ Screen 3** — 딜시트 (`campaigns/[id]`): 8단계 진행바, 채널 그룹 표, 하단 정산 바
+  - `sql/migrations/0012_dealsheet.sql` 작성 완료 → **Supabase SQL Editor에서 실행 필요**
+  - `proposals`: stage/visit_at/upload_url/inspection_url/inspection_at/inspection_status/tax_doc_type/tax_doc_received/settlement_status/performance_metrics
+  - `campaigns`: upload_deadline/inspection_deadline/settlement_date
+
+⚠️ **DB 실행 미완료**: 0010 / 0011 / 0012 모두 Supabase SQL Editor에서 실행 필요
 
 ## 이전 후보 (아직 유효)
 - proposals에 initiated_by 추가 + confirm 토글화(개시자 자동확정/철회)

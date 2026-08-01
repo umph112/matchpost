@@ -26,3 +26,5 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0008_campaign_detail_templates.sql` — 상세 내용 저장 양식(광고주별, 신규 테이블 + RLS)
 - `0009_campaigns_guide_file.sql` — 가이드 파일 업로드(컬럼 + campaign-guides 버킷)
 - `0010_schedules_open_detail.sql` — 오픈 상세(채널·희망페이·메모) 컬럼
+- `0011_campaigns_images.sql` — 캠페인 이미지(image_urls·cover_image_url) 컬럼 + Storage 버킷
+- `0012_dealsheet.sql` — 딜시트: proposals 진행단계 8개 컬럼 + campaigns 일정 3개 컬럼
