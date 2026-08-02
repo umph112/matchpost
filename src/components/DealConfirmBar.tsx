@@ -86,7 +86,7 @@ export default function DealConfirmBar({
     : myConfirmed
     ? { text: '상대 확정 대기중', color: 'text-amber-600' }
     : otherConfirmed
-    ? { text: '내 확정 필요', color: 'text-blue-600' }
+    ? { text: '내 확정 필요', color: 'text-amber-600' }
     : { text: '협의중', color: 'text-gray-500' }
 
   return (

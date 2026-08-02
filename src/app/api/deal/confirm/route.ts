@@ -33,14 +33,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '이 협업의 당사자가 아니에요.' }, { status: 403 })
   }
 
-  // 진행일 체크 — campaign.date 또는 schedule.date 중 하나라도 있어야 확정 가능
+  // 진행일 체크 — 특정일(date) 또는 기간(start/end) 중 하나라도 있어야 확정 가능
+  // campaigns: date | dates[]길이>0 | content_start
+  // schedules: date | date_end
   let hasDate = false
   if (proposal.campaign_id) {
-    const { data: c } = await admin.from('campaigns').select('date').eq('id', proposal.campaign_id).single()
-    hasDate = !!c?.date
+    const { data: c } = await admin
+      .from('campaigns')
+      .select('date, dates, content_start')
+      .eq('id', proposal.campaign_id)
+      .single()
+    hasDate = !!c?.date || (Array.isArray(c?.dates) && c.dates.length > 0) || !!c?.content_start
   } else if (proposal.schedule_id) {
-    const { data: s } = await admin.from('schedules').select('date').eq('id', proposal.schedule_id).single()
-    hasDate = !!s?.date
+    const { data: s } = await admin
+      .from('schedules')
+      .select('date, date_end')
+      .eq('id', proposal.schedule_id)
+      .single()
+    hasDate = !!s?.date || !!s?.date_end
   }
   if (!hasDate) {
     return NextResponse.json(
