@@ -3,9 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 // 협업 확정 토글: 내 쪽 confirmed를 현재값의 반대로 업데이트.
-// 개시자(initiated_by)는 proposal insert 시 이미 true로 생성된다.
+// 양쪽 모두 각자 확정 버튼을 눌러야 하며, 개시자 자동 확정 없음.
 // ⚠️ 진행일(캠페인 date 또는 오픈 date)이 없으면 확정 불가.
-// ⚠️ 양쪽 모두 true가 되는 순간 DB 트리거가 연락처 공개 + 축하 크레딧 처리.
+// ⚠️ 양쪽 모두 true가 되는 순간 DB 트리거가 축하 크레딧 처리.
 export async function POST(req: Request) {
   const { proposalId } = await req.json()
   if (!proposalId) return NextResponse.json({ error: 'proposalId가 필요해요.' }, { status: 400 })
@@ -27,7 +27,6 @@ export async function POST(req: Request) {
     .single()
   if (!proposal) return NextResponse.json({ error: '제안을 찾을 수 없어요.' }, { status: 404 })
 
-  // 당사자 판별
   const isAdvertiser = user.id === proposal.advertiser_id
   const isInfluencer = user.id === proposal.influencer_id
   if (!isAdvertiser && !isInfluencer) {
@@ -37,18 +36,10 @@ export async function POST(req: Request) {
   // 진행일 체크 — campaign.date 또는 schedule.date 중 하나라도 있어야 확정 가능
   let hasDate = false
   if (proposal.campaign_id) {
-    const { data: c } = await admin
-      .from('campaigns')
-      .select('date')
-      .eq('id', proposal.campaign_id)
-      .single()
+    const { data: c } = await admin.from('campaigns').select('date').eq('id', proposal.campaign_id).single()
     hasDate = !!c?.date
   } else if (proposal.schedule_id) {
-    const { data: s } = await admin
-      .from('schedules')
-      .select('date')
-      .eq('id', proposal.schedule_id)
-      .single()
+    const { data: s } = await admin.from('schedules').select('date').eq('id', proposal.schedule_id).single()
     hasDate = !!s?.date
   }
   if (!hasDate) {
@@ -58,10 +49,8 @@ export async function POST(req: Request) {
     )
   }
 
-  // 토글
-  const currentValue = isAdvertiser
-    ? proposal.advertiser_confirmed
-    : proposal.influencer_confirmed
+  // 내 쪽 confirmed 토글
+  const currentValue = isAdvertiser ? proposal.advertiser_confirmed : proposal.influencer_confirmed
   const patch = isAdvertiser
     ? { advertiser_confirmed: !currentValue }
     : { influencer_confirmed: !currentValue }
