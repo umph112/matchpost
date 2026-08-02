@@ -7,10 +7,10 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: '로그인이 필요해요.' }, { status: 401 })
 
   const { data } = await supabase
-    .from('credits')
+    .from('credit_balances')
     .select('balance')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
   return NextResponse.json({ balance: data?.balance ?? 0 })
 }

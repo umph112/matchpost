@@ -16,6 +16,9 @@
   - ✅ AdvertiserShell 기본값 — UA 기반 모바일 판별(화면 너비 자동감지 제거), 새 기기도 PC 모드 기본
 - ✅ **캠페인 이미지** — 등록 폼 최대 5장 업로드, 대표사진 선택, 상세페이지 앨범 표시 (migration 0011)
 - ⚠️ **DB**: 마이그레이션 0010(`schedules` 채널·희망페이·메모), 0011(`campaigns` image_urls·cover_image_url) 실행 필요. Storage `campaign-images` 버킷(Public) 생성 필요. ⚠️ Vercel env에 네이버 키(NAVER_API_CLIENT_ID/SECRET) 추가 필요(배포판 장소검색·오픈 조인).
+- ✅ **크레딧 원장(credit_ledger)** — `IMPLEMENT-1-SCHEMA.md` 1번 항목 스키마·서버 액션 구현 완료(화면 없음). `sql/migrations/0018_credit_ledger.sql`: append-only 원장(`credit_ledger`, wallet free/paid, reason_code) + `credit_balances` 뷰(잔액은 합계로만 파생, 캐시 컬럼 없음) + `credit_ledger_charge/grant/refund/penalty/decay` 함수 + 이벤트 트리거 4개(캠페인생성/오픈등록/대시발송/양쪽확정). **기존 0013_credits.sql(잔액 캐시+트리거) 완전 교체** — 잔액은 `kind='admin', reason_code='migration'` 행으로 이관 후 구 테이블 삭제. `src/lib/credits/ledger.ts`(TS 서버 액션 레이어), `src/lib/creditConfig.ts` 갱신. 기존 3개 API(`signup`, `credits/balance`, `credits/admin-grant`)와 `admin/credits` 화면 쿼리도 새 스키마로 이관(화면 UI는 무변경). 가입 환영 크레딧이 기존 10만/5만 → **양쪽 30,000으로 변경**됨.
+  - ⚠️ **DB**: 마이그레이션 **0018 Supabase SQL Editor에서 실행 필요**. 실행 전 기존 `credits` 테이블 잔액이 있으면 자동 이관되고 나서 구 테이블이 삭제되므로, 실행 후 `admin/credits` 화면에서 잔액 이관이 정상 반영됐는지 확인할 것.
+  - 이번 차수에서 훅을 안 붙인 reason_code(다음 차수에서 연결): `unlock_profile`(프로필 유료열람 기능 자체 미구현), `deal_complete`(정산 흐름 `settleCampaign` — 지시서 8번), `review`/`invite` 보상, `visit_weekly`/`visit_monthly`/`comeback`/휴면배치(크론 인프라 없음).
 
 ## 🚨 최우선 원칙
 - **MatchPost와 KPGTR(manian)은 완전히 별개의 앱/프로젝트다.** 코드·파일·DB를 섞지 않는다. 필요한 연동은 **API를 통한 느슨한 결합만** 허용(나중에 콘텐츠 등을 API로 주고받는 정도). 각자 독립 배포·운영.

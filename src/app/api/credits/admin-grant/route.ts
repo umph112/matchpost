@@ -28,12 +28,22 @@ export async function POST(req: Request) {
   )
 
   const isGrant = amount > 0
-  const { error } = await admin.rpc(isGrant ? 'grant_credits' : 'deduct_credits', {
-    p_user_id: targetUserId,
-    p_amount: Math.abs(amount),
-    p_action: isGrant ? 'admin_grant' : 'admin_deduct',
-    p_description: description || (isGrant ? '관리자 수동 지급' : '관리자 수동 차감'),
-  })
+  const { error } = isGrant
+    ? await admin.rpc('credit_ledger_grant', {
+        p_user_id: targetUserId,
+        p_amount: Math.abs(amount),
+        p_kind: 'admin',
+        p_reason_code: 'admin_grant',
+        p_memo: description || '관리자 수동 지급',
+        p_admin_id: user.id,
+      })
+    : await admin.rpc('credit_ledger_charge', {
+        p_user_id: targetUserId,
+        p_amount: Math.abs(amount),
+        p_reason_code: 'admin_deduct',
+        p_memo: description || '관리자 수동 차감',
+        p_kind: 'admin',
+      })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

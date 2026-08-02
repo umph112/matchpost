@@ -15,10 +15,19 @@ type UserRow = {
 
 type TxRow = {
   id: string
-  amount: bigint
+  amount: number
   action: string
   description: string | null
   reference_id: string | null
+  created_at: string
+}
+
+type RawLedgerRow = {
+  id: string
+  delta: number
+  reason_code: string
+  memo: string | null
+  ref_id: string | null
   created_at: string
 }
 
@@ -53,7 +62,7 @@ export default function AdminCreditsPage() {
       .select('user_id, email')
 
     const { data: balances } = await supabase
-      .from('credits')
+      .from('credit_balances')
       .select('user_id, balance')
 
     const privMap = Object.fromEntries((privs ?? []).map(p => [p.user_id, p.email]))
@@ -78,12 +87,19 @@ export default function AdminCreditsPage() {
     setGrantDesc('')
     setTxLoading(true)
     const { data } = await supabase
-      .from('credit_transactions')
-      .select('id, amount, action, description, reference_id, created_at')
+      .from('credit_ledger')
+      .select('id, delta, reason_code, memo, ref_id, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50)
-    setTxs((data as TxRow[]) ?? [])
+    setTxs(((data ?? []) as RawLedgerRow[]).map(row => ({
+      id: row.id,
+      amount: row.delta,
+      action: row.reason_code,
+      description: row.memo,
+      reference_id: row.ref_id,
+      created_at: row.created_at,
+    })))
     setTxLoading(false)
   }
 

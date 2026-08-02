@@ -60,12 +60,13 @@ export async function POST(req: Request) {
     await admin.from('advertiser_profiles').insert({ user_id: uid })
   }
 
-  // 4) 가입 환영 크레딧 지급 (광고주 10만 / 인플루언서 5만)
-  await admin.rpc('grant_credits', {
+  // 4) 가입 환영 크레딧 지급 (양쪽 30,000 — CREDIT_AMOUNTS.WELCOME)
+  await admin.rpc('credit_ledger_grant', {
     p_user_id: uid,
-    p_amount: isInfluencer ? 50000 : 100000,
-    p_action: isInfluencer ? 'welcome_influencer' : 'welcome_advertiser',
-    p_description: '가입 환영 크레딧',
+    p_amount: 30000,
+    p_kind: 'welcome',
+    p_reason_code: 'welcome',
+    p_memo: '가입 환영 크레딧',
   })
 
   return NextResponse.json({ ok: true, role })

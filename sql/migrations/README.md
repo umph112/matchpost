@@ -28,3 +28,9 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0010_schedules_open_detail.sql` — 오픈 상세(채널·희망페이·메모) 컬럼
 - `0011_campaigns_images.sql` — 캠페인 이미지(image_urls·cover_image_url) 컬럼 + Storage 버킷
 - `0012_dealsheet.sql` — 딜시트: proposals 진행단계 8개 컬럼 + campaigns 일정 3개 컬럼
+- `0013_credits.sql` — (0018에서 완전 교체됨) 크레딧 잔액 캐시 컬럼 + 트리거
+- `0014_reviews.sql` — 상호 리뷰(reviews) + 블라인드 공개 트리거 + match_score 집계
+- `0015_blog_analytics.sql` — 블로그 크롤링 지표(blog_analytics)
+- `0016_blog_keyword_rankings.sql` — blog_analytics 키워드 노출 순위 컬럼
+- `0017_blog_post_rankings.sql` — blog_analytics 포스팅 단위 키워드 노출 + 등급
+- `0018_credit_ledger.sql` — 크레딧 원장(credit_ledger, append-only) + user_visit_log + 잔액뷰 + charge/grant/refund/penalty/decay 함수. 0013 완전 대체(잔액은 이관 후 구 테이블 제거)
