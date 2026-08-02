@@ -34,3 +34,4 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0016_blog_keyword_rankings.sql` — blog_analytics 키워드 노출 순위 컬럼
 - `0017_blog_post_rankings.sql` — blog_analytics 포스팅 단위 키워드 노출 + 등급
 - `0018_credit_ledger.sql` — 크레딧 원장(credit_ledger, append-only) + user_visit_log + 잔액뷰 + charge/grant/refund/penalty/decay 함수. 0013 완전 대체(잔액은 이관 후 구 테이블 제거)
+- `0019_schedules_open_group.sql` — schedules.open_group_id 추가. 오픈 1건이 여러 날짜(행)로 나뉘어도 그룹의 첫 행에서만 크레딧 차감·지급되도록 0018의 오픈 트리거 함수 교체

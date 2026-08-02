@@ -17,7 +17,8 @@
 - ✅ **캠페인 이미지** — 등록 폼 최대 5장 업로드, 대표사진 선택, 상세페이지 앨범 표시 (migration 0011)
 - ⚠️ **DB**: 마이그레이션 0010(`schedules` 채널·희망페이·메모), 0011(`campaigns` image_urls·cover_image_url) 실행 필요. Storage `campaign-images` 버킷(Public) 생성 필요. ⚠️ Vercel env에 네이버 키(NAVER_API_CLIENT_ID/SECRET) 추가 필요(배포판 장소검색·오픈 조인).
 - ✅ **크레딧 원장(credit_ledger)** — `IMPLEMENT-1-SCHEMA.md` 1번 항목 스키마·서버 액션 구현 완료(화면 없음). `sql/migrations/0018_credit_ledger.sql`: append-only 원장(`credit_ledger`, wallet free/paid, reason_code) + `credit_balances` 뷰(잔액은 합계로만 파생, 캐시 컬럼 없음) + `credit_ledger_charge/grant/refund/penalty/decay` 함수 + 이벤트 트리거 4개(캠페인생성/오픈등록/대시발송/양쪽확정). **기존 0013_credits.sql(잔액 캐시+트리거) 완전 교체** — 잔액은 `kind='admin', reason_code='migration'` 행으로 이관 후 구 테이블 삭제. `src/lib/credits/ledger.ts`(TS 서버 액션 레이어), `src/lib/creditConfig.ts` 갱신. 기존 3개 API(`signup`, `credits/balance`, `credits/admin-grant`)와 `admin/credits` 화면 쿼리도 새 스키마로 이관(화면 UI는 무변경). 가입 환영 크레딧이 기존 10만/5만 → **양쪽 30,000으로 변경**됨.
-  - ⚠️ **DB**: 마이그레이션 **0018 Supabase SQL Editor에서 실행 필요**. 실행 전 기존 `credits` 테이블 잔액이 있으면 자동 이관되고 나서 구 테이블이 삭제되므로, 실행 후 `admin/credits` 화면에서 잔액 이관이 정상 반영됐는지 확인할 것.
+  - ⚠️ **DB**: 마이그레이션 **0018·0019 모두 Supabase SQL Editor에서 순서대로 실행 필요**. 0018 실행 전 기존 `credits` 테이블 잔액이 있으면 자동 이관되고 나서 구 테이블이 삭제되므로, 실행 후 `admin/credits` 화면에서 잔액 이관이 정상 반영됐는지 확인할 것.
+  - `0019_schedules_open_group.sql` — `schedules.open_group_id` 추가. "오픈 1건=1,000C, 날짜 수 무관" 정책을 지키기 위해 같은 그룹의 첫 행에서만 차감·응원 지급하도록 오픈 트리거 함수 교체. 현재 인플루언서 오픈 등록 폼(`influencer/schedule/page.tsx`)은 한 번에 한 날짜만 insert하므로 즉시 동작에 영향 없음(각 행이 default로 자기 자신만의 group_id를 받음) — 나중에 오픈 등록이 여러 날짜를 한 번에 묶어 넣는 폼으로 바뀌면 그 삽입 코드가 여러 행에 **같은 open_group_id를 명시적으로 넘겨야** 이 정책이 실제로 작동한다.
   - 이번 차수에서 훅을 안 붙인 reason_code(다음 차수에서 연결): `unlock_profile`(프로필 유료열람 기능 자체 미구현), `deal_complete`(정산 흐름 `settleCampaign` — 지시서 8번), `review`/`invite` 보상, `visit_weekly`/`visit_monthly`/`comeback`/휴면배치(크론 인프라 없음).
 
 ## 🚨 최우선 원칙
