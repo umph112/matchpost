@@ -21,7 +21,7 @@ export default async function ScheduleListPage() {
   const statusLabel = (status: string) => {
     if (status === 'open') return { label: '모집 중', color: 'bg-green-100 text-green-600' }
     if (status === 'negotiating') return { label: '협의 중', color: 'bg-orange-100 text-orange-600' }
-    if (status === 'booked') return { label: '확정', color: 'bg-blue-100 text-blue-600' }
+    if (status === 'booked') return { label: '확정', color: 'bg-[#FEF3C7] text-[#B45309]' }
     return { label: status, color: 'bg-gray-100 text-gray-500' }
   }
 
@@ -53,7 +53,7 @@ export default async function ScheduleListPage() {
         {schedule.predefined_categories?.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-3">
             {schedule.predefined_categories.map((cat: string) => (
-              <span key={cat} className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+              <span key={cat} className="text-xs bg-[#FEF3C7] text-[#B45309] px-2 py-0.5 rounded-full">
                 {cat}
               </span>
             ))}
@@ -86,7 +86,7 @@ export default async function ScheduleListPage() {
         </div>
         <Link
           href="/influencer/schedule"
-          className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="bg-[#F59E0B] text-white text-sm px-4 py-2 rounded-lg hover:bg-[#D97706] transition"
         >
           + 일정 추가
         </Link>
@@ -99,7 +99,7 @@ export default async function ScheduleListPage() {
           <p className="text-gray-500 mb-4">아직 등록된 일정이 없어요</p>
           <Link
             href="/influencer/schedule"
-            className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+            className="bg-[#F59E0B] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#D97706] transition"
           >
             첫 일정 등록하기
           </Link>

@@ -35,7 +35,7 @@ export default function AdvertiserProposalsPage() {
 
   const statusInfo = (status: string) => {
     if (status === 'pending') return { label: '검토 중', color: 'bg-orange-100 text-orange-600' }
-    if (status === 'accepted') return { label: '수락됨', color: 'bg-blue-100 text-blue-600' }
+    if (status === 'accepted') return { label: '수락됨', color: 'bg-[#FEF3C7] text-[#B45309]' }
     if (status === 'rejected') return { label: '거절됨', color: 'bg-red-100 text-red-500' }
     if (status === 'completed') return { label: '완료', color: 'bg-green-100 text-green-600' }
     return { label: status, color: 'bg-gray-100 text-gray-500' }
@@ -59,7 +59,7 @@ export default function AdvertiserProposalsPage() {
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${
               filter === f
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#F59E0B] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -78,7 +78,7 @@ export default function AdvertiserProposalsPage() {
           <p className="text-gray-500 mb-4">아직 보낸 제안이 없어요</p>
           <Link
             href="/advertiser/search"
-            className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+            className="bg-[#F59E0B] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#D97706] transition"
           >
             인플루언서 찾기
           </Link>

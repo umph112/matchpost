@@ -6,6 +6,7 @@ import HomeCalendar from '@/components/HomeCalendar'
 import MyOpensList from '@/components/MyOpensList'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
 import { BlogAnalyticsSummaryCard } from '@/components/BlogAnalyticsCard'
+import { initial } from '@/lib/initial'
 
 export const dynamic = 'force-dynamic'
 
@@ -178,7 +179,7 @@ export default async function InfluencerMyPage() {
         {bannerBits.length > 0 && (
           <Link
             href="/influencer/notifications"
-            className="flex items-center justify-between bg-blue-600 text-white rounded-2xl px-4 py-3 shadow-sm hover:bg-blue-700 transition"
+            className="flex items-center justify-between bg-[#F59E0B] text-white rounded-2xl px-4 py-3 shadow-sm hover:bg-[#D97706] transition"
           >
             <span className="text-sm font-medium">🔔 {bannerBits.join(' · ')}</span>
             <span>→</span>
@@ -191,7 +192,7 @@ export default async function InfluencerMyPage() {
             <h1 className="text-lg font-bold text-gray-900">내 캘린더</h1>
             <p className="text-xs text-gray-500">
               <span className="text-amber-600 font-medium">매칭 캠페인 {camps.length}</span> ·{' '}
-              <span className="text-blue-600 font-medium">내 오픈 {monthOpenCount}</span>
+              <span className="text-[#B45309] font-medium">내 오픈 {monthOpenCount}</span>
             </p>
           </div>
           <HomeCalendar year={year} month={month} countsByDate={countsByDate} isLoggedIn={true} />
@@ -201,7 +202,7 @@ export default async function InfluencerMyPage() {
         <section className="grid grid-cols-2 gap-3">
           <Link
             href="/influencer/schedule"
-            className="bg-blue-600 text-white rounded-2xl p-4 shadow-sm hover:bg-blue-700 transition text-center"
+            className="bg-[#F59E0B] text-white rounded-2xl p-4 shadow-sm hover:bg-[#D97706] transition text-center"
           >
             <div className="text-2xl mb-1">＋</div>
             <p className="font-semibold text-sm">오픈 등록</p>
@@ -219,7 +220,7 @@ export default async function InfluencerMyPage() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-gray-800">💬 대시 · 메시지</h2>
-            <Link href="/influencer/messages" className="text-xs text-blue-600 hover:underline">
+            <Link href="/influencer/messages" className="text-xs text-[#B45309] hover:underline">
               전체보기 →
             </Link>
           </div>
@@ -233,8 +234,8 @@ export default async function InfluencerMyPage() {
                   href={`/influencer/messages?receiverId=${c.otherId}`}
                   className="flex items-center bg-white rounded-2xl p-3 shadow-sm hover:shadow-md transition"
                 >
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3">
-                    {nameById[c.otherId]?.[0] ?? '?'}
+                  <div className="w-10 h-10 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold mr-3">
+                    {initial(nameById[c.otherId])}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm text-gray-800">{nameById[c.otherId] ?? '상대방'}</p>
@@ -266,7 +267,7 @@ export default async function InfluencerMyPage() {
                 </span>
               )}
             </h2>
-            <Link href="/influencer/notifications" className="text-xs text-blue-600 hover:underline">
+            <Link href="/influencer/notifications" className="text-xs text-[#B45309] hover:underline">
               전체보기 →
             </Link>
           </div>
@@ -279,7 +280,7 @@ export default async function InfluencerMyPage() {
                   key={n.id}
                   href="/influencer/notifications"
                   className={`flex items-start gap-3 rounded-2xl p-3 shadow-sm transition ${
-                    n.is_read ? 'bg-white' : 'bg-blue-50 hover:bg-blue-100'
+                    n.is_read ? 'bg-white' : 'bg-[#FEF3C7] hover:bg-[#FDE68A]'
                   }`}
                 >
                   <span className="text-lg shrink-0">{NOTIF_ICON[n.type] ?? '🔔'}</span>
@@ -287,7 +288,7 @@ export default async function InfluencerMyPage() {
                     <p className={`text-sm ${n.is_read ? 'text-gray-700' : 'font-semibold text-gray-900'}`}>{n.title}</p>
                     {n.body && <p className="text-xs text-gray-400 truncate">{n.body}</p>}
                   </div>
-                  {!n.is_read && <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />}
+                  {!n.is_read && <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0 mt-1.5" />}
                 </Link>
               ))}
             </div>
@@ -303,7 +304,7 @@ export default async function InfluencerMyPage() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-gray-800">📊 내 채널 분석</h2>
-            <Link href="/influencer/channel-analytics" className="text-xs text-blue-600 hover:underline">
+            <Link href="/influencer/channel-analytics" className="text-xs text-[#B45309] hover:underline">
               상세보기 →
             </Link>
           </div>

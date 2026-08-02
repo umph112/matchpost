@@ -2,7 +2,7 @@ export default function PendingPage() {
   return (
     <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
       {/* 로고 */}
-      <h1 className="text-3xl font-bold text-blue-600 mb-8">MatchPost</h1>
+      <h1 className="text-3xl font-bold text-[#17171B] mb-8">MatchPost</h1>
 
       {/* 아이콘 */}
       <div className="text-6xl mb-6">⏳</div>
@@ -18,7 +18,7 @@ export default function PendingPage() {
       </p>
 
       {/* 안내 박스 */}
-      <div className="bg-blue-50 rounded-lg p-4 text-left text-sm text-blue-700">
+      <div className="bg-[#FEF3C7] rounded-lg p-4 text-left text-sm text-[#B45309]">
         <p className="font-medium mb-2">📋 승인 절차 안내</p>
         <p>1. 관리자에게 증빙서류 제출</p>
         <p>2. 서류 검토 (1~3 영업일)</p>

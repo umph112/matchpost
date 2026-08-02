@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import CampaignCalendar from '@/components/CampaignCalendar'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
+import { initial } from '@/lib/initial'
 
 export const dynamic = 'force-dynamic'
 
@@ -336,7 +337,7 @@ export default async function AdvertiserMyPage() {
               convPreview.map((c) => (
                 <Link key={c.otherId} href="/advertiser/messages" className="flex items-center gap-[11px] px-[18px] py-3 border-b border-[#F5F5F7] hover:bg-[#FAFAFB]">
                   <div className="w-[34px] h-[34px] rounded-full bg-[#FEF3C7] text-[#B45309] text-[13px] font-extrabold flex items-center justify-center shrink-0">
-                    {nameById[c.otherId]?.[0] ?? '?'}
+                    {initial(nameById[c.otherId])}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-[13px] font-semibold truncate">{nameById[c.otherId] ?? '상대방'}</div>

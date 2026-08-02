@@ -45,7 +45,7 @@ export default function InfluencerProposalsPage() {
 
   const statusInfo = (status: string) => {
     if (status === 'pending') return { label: '검토 중', color: 'bg-orange-100 text-orange-600' }
-    if (status === 'accepted') return { label: '수락됨', color: 'bg-blue-100 text-blue-600' }
+    if (status === 'accepted') return { label: '수락됨', color: 'bg-[#FEF3C7] text-[#B45309]' }
     if (status === 'rejected') return { label: '거절됨', color: 'bg-red-100 text-red-500' }
     if (status === 'completed') return { label: '완료', color: 'bg-green-100 text-green-600' }
     return { label: status, color: 'bg-gray-100 text-gray-500' }
@@ -69,7 +69,7 @@ export default function InfluencerProposalsPage() {
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${
               filter === f
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#F59E0B] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -134,7 +134,7 @@ export default function InfluencerProposalsPage() {
                 </button>
                 <button
                   onClick={() => handleResponse(proposal.id, 'accepted')}
-                  className="py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition"
+                  className="py-2 rounded-lg text-sm font-medium bg-[#F59E0B] text-white hover:bg-[#D97706] transition"
                 >
                   수락
                 </button>

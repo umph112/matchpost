@@ -41,7 +41,7 @@ export default async function AdvertiserDashboard() {
           </h1>
           <p className="text-gray-500 text-sm mt-1">원하는 인플루언서를 찾아보세요!</p>
         </div>
-        <div className="text-2xl font-bold text-blue-600">MatchPost</div>
+        <div className="text-2xl font-bold text-[#B45309]">MatchPost</div>
       </div>
 
       {/* 제안 현황 카드 */}
@@ -51,7 +51,7 @@ export default async function AdvertiserDashboard() {
           <p className="text-sm text-gray-500 mt-1">검토 중</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm text-center">
-          <p className="text-3xl font-bold text-blue-600">{acceptedProposals}</p>
+          <p className="text-3xl font-bold text-[#B45309]">{acceptedProposals}</p>
           <p className="text-sm text-gray-500 mt-1">진행 중</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm text-center">
@@ -62,10 +62,10 @@ export default async function AdvertiserDashboard() {
 
       {/* 빠른 메뉴 */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <a href="/advertiser/search" className="bg-blue-600 text-white rounded-2xl p-5 shadow-sm hover:bg-blue-700 transition">
+        <a href="/advertiser/search" className="bg-[#F59E0B] text-white rounded-2xl p-5 shadow-sm hover:bg-[#D97706] transition">
           <div className="text-2xl mb-2">🔍</div>
           <p className="font-semibold">인플루언서 찾기</p>
-          <p className="text-blue-100 text-sm mt-1">일정 · 장소 · 키워드 검색</p>
+          <p className="text-white/80 text-sm mt-1">일정 · 장소 · 키워드 검색</p>
         </a>
         <a href="/advertiser/proposals" className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition">
           <div className="text-2xl mb-2">📋</div>
@@ -98,7 +98,7 @@ export default async function AdvertiserDashboard() {
                 <div className="text-right">
                   <p className="text-sm font-bold text-gray-800">{p.budget?.toLocaleString()}원</p>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    p.status === 'accepted' ? 'bg-blue-100 text-blue-600' :
+                    p.status === 'accepted' ? 'bg-[#FEF3C7] text-[#B45309]' :
                     p.status === 'pending' ? 'bg-orange-100 text-orange-600' :
                     p.status === 'completed' ? 'bg-green-100 text-green-600' :
                     'bg-red-100 text-red-500'

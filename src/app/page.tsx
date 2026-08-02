@@ -55,24 +55,24 @@ export default async function HomePage() {
       {/* 상단바 */}
       <nav className="bg-white border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-blue-600">
+          <Link href="/" className="text-xl font-bold text-[#17171B]">
             MatchPost
           </Link>
           {user ? (
             <Link
               href="/influencer/dashboard"
-              className="text-sm font-medium text-gray-600 hover:text-blue-600"
+              className="text-sm font-medium text-gray-600 hover:text-[#B45309]"
             >
               내 대시보드 →
             </Link>
           ) : (
             <div className="flex gap-2">
-              <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-blue-600 px-3 py-1.5">
+              <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-[#B45309] px-3 py-1.5">
                 로그인
               </Link>
               <Link
                 href="/signup"
-                className="text-sm font-medium bg-blue-600 text-white rounded-lg px-3 py-1.5 hover:bg-blue-700"
+                className="text-sm font-medium bg-[#F59E0B] text-white rounded-lg px-3 py-1.5 hover:bg-[#D97706]"
               >
                 시작하기
               </Link>

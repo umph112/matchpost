@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { initial } from '@/lib/initial'
 
 function UsersContent() {
   const [users, setUsers] = useState<any[]>([])
@@ -94,7 +95,7 @@ function UsersContent() {
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${
               filter === f
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#F59E0B] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -123,8 +124,8 @@ function UsersContent() {
             <div key={user.id} className="bg-white rounded-2xl p-5 shadow-sm">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3">
-                    {user.name?.[0] ?? '?'}
+                  <div className="w-10 h-10 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold mr-3">
+                    {initial(user.name)}
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800">{user.name}</p>
@@ -163,7 +164,7 @@ function UsersContent() {
                   </button>
                   <button
                     onClick={() => handleApprove(user.id)}
-                    className="py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition"
+                    className="py-2 rounded-lg text-sm font-medium bg-[#F59E0B] text-white hover:bg-[#D97706] transition"
                   >
                     승인
                   </button>

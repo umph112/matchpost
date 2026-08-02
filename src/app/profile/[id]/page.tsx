@@ -1,5 +1,6 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import Link from 'next/link'
+import { initial } from '@/lib/initial'
 console.log('파일 실행됨')
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
@@ -39,8 +40,8 @@ console.log('profile:', profile)
 
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-4">
         <div className="flex items-center mb-4">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl font-bold mr-4">
-            {profile.name?.[0] ?? '?'}
+          <div className="w-16 h-16 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] text-2xl font-bold mr-4">
+            {initial(profile.name)}
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
@@ -74,7 +75,7 @@ console.log('profile:', profile)
                 </p>
                 <Link
                   href={"/advertiser/proposals/new?scheduleId=" + schedule.id + "&influencerId=" + profile.id}
-                  className="w-full block text-center bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                  className="w-full block text-center bg-[#F59E0B] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#D97706] transition"
                 >
                   협업 제안하기
                 </Link>

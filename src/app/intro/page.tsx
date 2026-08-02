@@ -5,17 +5,17 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white">
       {/* 네비게이션 */}
       <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-blue-600">MatchPost</h1>
+        <h1 className="text-2xl font-bold text-[#17171B]">MatchPost</h1>
         <div className="flex gap-3">
           <Link
             href="/login"
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition"
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-[#B45309] transition"
           >
             로그인
           </Link>
           <Link
             href="/signup"
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="px-4 py-2 text-sm font-medium bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition"
           >
             시작하기
           </Link>
@@ -24,12 +24,12 @@ export default function LandingPage() {
 
       {/* 히어로 섹션 */}
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <div className="inline-block bg-blue-50 text-blue-600 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+        <div className="inline-block bg-[#FEF3C7] text-[#B45309] text-sm font-medium px-4 py-1.5 rounded-full mb-6">
           🎉 인플루언서 · 광고주 매칭 플랫폼
         </div>
         <h2 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
           내 일정에 맞는<br />
-          <span className="text-blue-600">협업 기회</span>를 찾아보세요
+          <span className="text-[#B45309]">협업 기회</span>를 찾아보세요
         </h2>
         <p className="text-xl text-gray-500 mb-10 leading-relaxed">
           인플루언서는 내 일정을 등록하고,<br />
@@ -38,7 +38,7 @@ export default function LandingPage() {
         <div className="flex gap-4 justify-center">
           <Link
             href="/signup"
-            className="px-8 py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition text-lg"
+            className="px-8 py-3.5 bg-[#F59E0B] text-white font-semibold rounded-xl hover:bg-[#D97706] transition text-lg"
           >
             무료로 시작하기
           </Link>
@@ -107,7 +107,7 @@ export default function LandingPage() {
                   { step: '04', title: '수입 관리', desc: '수입 현황을 한눈에 확인하고 세금 자료를 다운받아요' },
                 ].map(item => (
                   <div key={item.step} className="flex items-start">
-                    <span className="text-blue-600 font-bold text-sm mr-4 mt-0.5 w-6">{item.step}</span>
+                    <span className="text-[#B45309] font-bold text-sm mr-4 mt-0.5 w-6">{item.step}</span>
                     <div>
                       <p className="font-semibold text-gray-800">{item.title}</p>
                       <p className="text-sm text-gray-500 mt-0.5">{item.desc}</p>
@@ -131,7 +131,7 @@ export default function LandingPage() {
                   { step: '04', title: '협업 완료', desc: '계약을 확정하고 콘텐츠 제작을 시작해요' },
                 ].map(item => (
                   <div key={item.step} className="flex items-start">
-                    <span className="text-blue-600 font-bold text-sm mr-4 mt-0.5 w-6">{item.step}</span>
+                    <span className="text-[#B45309] font-bold text-sm mr-4 mt-0.5 w-6">{item.step}</span>
                     <div>
                       <p className="font-semibold text-gray-800">{item.title}</p>
                       <p className="text-sm text-gray-500 mt-0.5">{item.desc}</p>
@@ -145,17 +145,17 @@ export default function LandingPage() {
       </section>
 
       {/* CTA 섹션 */}
-      <section className="bg-blue-600 py-20">
+      <section className="bg-[#F59E0B] py-20">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h3 className="text-3xl font-bold text-white mb-4">
             지금 바로 시작해보세요
           </h3>
-          <p className="text-blue-100 mb-8 text-lg">
+          <p className="text-white/80 mb-8 text-lg">
             인플루언서와 광고주 모두 무료로 가입할 수 있어요
           </p>
           <Link
             href="/signup"
-            className="inline-block px-10 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition text-lg"
+            className="inline-block px-10 py-4 bg-white text-[#B45309] font-bold rounded-xl hover:bg-[#FEF3C7] transition text-lg"
           >
             무료로 시작하기 →
           </Link>

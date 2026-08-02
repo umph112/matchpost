@@ -52,7 +52,7 @@ export default async function ChannelAnalyticsPage() {
             </p>
             <Link
               href="/influencer/profile"
-              className="inline-block mt-2 text-sm text-blue-600 hover:underline"
+              className="inline-block mt-2 text-sm text-[#B45309] hover:underline"
             >
               프로필 설정하기 →
             </Link>

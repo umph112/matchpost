@@ -85,7 +85,7 @@ export default function NotificationsPage() {
           )}
         </div>
         {unread > 0 && (
-          <button onClick={markAllRead} className="text-sm text-blue-600 hover:underline">
+          <button onClick={markAllRead} className="text-sm text-[#B45309] hover:underline">
             모두 읽음
           </button>
         )}
@@ -106,7 +106,7 @@ export default function NotificationsPage() {
             key={n.id}
             onClick={() => openItem(n)}
             className={`w-full text-left flex items-start gap-3 rounded-2xl p-4 shadow-sm transition ${
-              n.is_read ? 'bg-white' : 'bg-blue-50 hover:bg-blue-100'
+              n.is_read ? 'bg-white' : 'bg-[#FEF3C7] hover:bg-[#FDE68A]'
             }`}
           >
             <span className="text-xl shrink-0">{ICON[n.type] ?? '🔔'}</span>
@@ -115,7 +115,7 @@ export default function NotificationsPage() {
               {n.body && <p className="text-xs text-gray-500 mt-0.5 truncate">{n.body}</p>}
               <p className="text-[11px] text-gray-400 mt-1">{timeAgo(n.created_at)}</p>
             </div>
-            {!n.is_read && <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />}
+            {!n.is_read && <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0 mt-1.5" />}
           </button>
         ))}
       </div>

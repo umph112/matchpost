@@ -78,10 +78,10 @@ export default function HomeCalendar({
                 key={idx}
                 onClick={() => handleDayClick(dateStr, c)}
                 className={`aspect-square rounded-xl border text-left p-1.5 flex flex-col transition ${
-                  isToday ? 'border-blue-400 bg-blue-50' : 'border-gray-100'
+                  isToday ? 'border-amber-400 bg-[#FEF3C7]' : 'border-gray-100'
                 } ${has ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default'}`}
               >
-                <span className={`text-xs font-medium ${isToday ? 'text-blue-600' : 'text-gray-600'}`}>
+                <span className={`text-xs font-medium ${isToday ? 'text-[#B45309]' : 'text-gray-600'}`}>
                   {day}
                 </span>
                 <div className="mt-auto space-y-0.5">

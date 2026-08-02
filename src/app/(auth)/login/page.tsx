@@ -53,7 +53,7 @@ export default function LoginPage() {
     <div className="bg-white rounded-2xl shadow-sm p-8">
       {/* 로고 */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-blue-600">MatchPost</h1>
+        <h1 className="text-3xl font-bold text-[#17171B]">MatchPost</h1>
         <p className="text-gray-500 mt-2">인플루언서 · 광고주 매칭 플랫폼</p>
       </div>
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
           placeholder="example@email.com"
         />
       </div>
@@ -87,7 +87,7 @@ export default function LoginPage() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
           placeholder="비밀번호 입력"
         />
       </div>
@@ -96,7 +96,7 @@ export default function LoginPage() {
       <button
         onClick={handleLogin}
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+        className="w-full bg-[#F59E0B] text-white py-2.5 rounded-lg font-medium hover:bg-[#D97706] transition disabled:opacity-50"
       >
         {loading ? '로그인 중...' : '로그인'}
       </button>
@@ -104,7 +104,7 @@ export default function LoginPage() {
       {/* 회원가입 링크 */}
       <p className="text-center text-sm text-gray-500 mt-4">
         아직 계정이 없으신가요?{' '}
-        <Link href="/signup" className="text-blue-600 font-medium hover:underline">
+        <Link href="/signup" className="text-[#B45309] font-medium hover:underline">
           회원가입
         </Link>
       </p>

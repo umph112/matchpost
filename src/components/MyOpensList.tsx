@@ -14,7 +14,7 @@ type Open = {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  진행중: 'bg-blue-100 text-blue-600',
+  진행중: 'bg-[#FEF3C7] text-[#B45309]',
   메이드: 'bg-green-100 text-green-600',
   마감: 'bg-gray-100 text-gray-500',
   캔슬: 'bg-red-100 text-red-500',
@@ -43,7 +43,7 @@ export default function MyOpensList({ opens }: { opens: Open[] }) {
         <button
           onClick={() => setOnlyActive((v) => !v)}
           className={`text-xs px-3 py-1.5 rounded-full font-medium transition ${
-            onlyActive ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            onlyActive ? 'bg-[#F59E0B] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
           }`}
         >
           진행중만

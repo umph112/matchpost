@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { CREDIT_ACTION_LABELS } from '@/lib/creditConfig'
+import { initial } from '@/lib/initial'
 
 type UserRow = {
   id: string
@@ -172,7 +173,7 @@ export default function AdminCreditsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-amber-100 text-amber-700 font-bold text-sm flex items-center justify-center">
-                      {user.name?.[0] ?? '?'}
+                      {initial(user.name)}
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-800">{user.name}</p>

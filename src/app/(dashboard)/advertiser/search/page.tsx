@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
 import MatchScore from '@/components/MatchScore'
 import { BlogAnalyticsCompact } from '@/components/BlogAnalyticsCard'
+import { initial } from '@/lib/initial'
 
 const REGIONS = ['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '강원', '충남', '충북', '전남', '전북', '경남', '경북', '제주']
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
@@ -146,7 +147,7 @@ export default function AdvertiserSearchPage() {
     >
       <div className="flex items-center gap-2.5">
         <div className="w-9 h-9 rounded-full bg-[#DBEAFE] text-[#1D4ED8] text-[13px] font-bold flex items-center justify-center shrink-0">
-          {schedule.profiles?.name?.[0] ?? '?'}
+          {initial(schedule.profiles?.name)}
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold text-[#17171B] truncate">

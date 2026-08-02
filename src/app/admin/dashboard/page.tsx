@@ -44,7 +44,7 @@ export default async function AdminDashboard() {
           <p className="text-gray-500 text-sm mt-1">MatchPost 운영 현황</p>
         </div>
         <div className="flex items-center gap-4">
-  <div className="text-2xl font-bold text-blue-600">MatchPost</div>
+  <div className="text-2xl font-bold text-[#17171B]">MatchPost</div>
   <LogoutButton />
 </div>
       </div>
@@ -85,7 +85,7 @@ export default async function AdminDashboard() {
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">전체 제안</p>
-          <p className="text-3xl font-bold text-blue-600">{allProposals?.length ?? 0}</p>
+          <p className="text-3xl font-bold text-[#B45309]">{allProposals?.length ?? 0}</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">등록된 일정</p>
@@ -95,10 +95,10 @@ export default async function AdminDashboard() {
 
       {/* 빠른 메뉴 */}
       <div className="grid grid-cols-2 gap-4">
-        <Link href="/admin/users" className="bg-blue-600 text-white rounded-2xl p-5 shadow-sm hover:bg-blue-700 transition">
+        <Link href="/admin/users" className="bg-[#F59E0B] text-white rounded-2xl p-5 shadow-sm hover:bg-[#D97706] transition">
           <div className="text-2xl mb-2">👥</div>
           <p className="font-semibold">회원 관리</p>
-          <p className="text-blue-100 text-sm mt-1">승인 및 회원 목록</p>
+          <p className="text-white/80 text-sm mt-1">승인 및 회원 목록</p>
         </Link>
         <Link href="/admin/users?filter=pending" className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition">
           <div className="text-2xl mb-2">⏳</div>

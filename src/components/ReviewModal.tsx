@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-const ADV_TAGS = ['콘텐츠 퀄리티', '마감 준수', '가이드 이행', '소통 원활', '또 함께하고 싶어요']
-const INF_TAGS = ['가이드 명확', '결제 약속 이행', '소통 원활', '전문적인 파트너', '재계약 의향']
+// 광고주를 평가 (인플루언서가 입력)
+const ADV_TAGS = ['결제가 신속해요', '가이드가 명확해요', '요구가 합리적이었어요', '소통이 빨라요', '다시 함께하고 싶어요']
+// 인플루언서를 평가 (광고주가 입력)
+const INF_TAGS = ['일정을 잘 지켜요', '소통이 빨라요', '콘텐츠 퀄리티가 좋아요', '다시 함께하고 싶어요']
 
 type Props = {
   proposalId: string
@@ -61,7 +63,7 @@ export default function ReviewModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white rounded-2xl w-full max-w-[400px] overflow-hidden shadow-xl">
+      <div className="bg-white rounded-2xl w-full max-w-[460px] overflow-hidden shadow-xl">
         {/* 헤더 */}
         <div className="px-5 pt-5 pb-4 border-b border-[#F1F1F4]">
           <p className="text-[11px] text-[#9A9AA5] mb-0.5">협업 완료</p>
@@ -93,7 +95,7 @@ export default function ReviewModal({
 
           {/* 태그 */}
           <div>
-            <p className="text-[11px] font-semibold text-[#9A9AA5] mb-2">어떤 점이 좋았나요? (복수 선택)</p>
+            <p className="text-[11px] font-semibold text-[#9A9AA5] mb-2">어떤 점이 좋았나요? (복수 선택, 3명 이상이 같은 태그를 고르면 프로필에 표시돼요)</p>
             <div className="flex flex-wrap gap-1.5">
               {tagOptions.map((tag) => (
                 <button
@@ -113,7 +115,7 @@ export default function ReviewModal({
 
           {/* 코멘트 */}
           <div>
-            <p className="text-[11px] font-semibold text-[#9A9AA5] mb-2">한 줄 코멘트 (선택)</p>
+            <p className="text-[11px] font-semibold text-[#9A9AA5] mb-2">비공개 코멘트 (선택 · 이용자에게만 보여요)</p>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -133,10 +135,10 @@ export default function ReviewModal({
               disabled={submitting}
               className="w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 transition disabled:opacity-40"
             >
-              {submitting ? '제출 중...' : '평가 제출'}
+              {submitting ? '제출 중...' : '평가 보내고 1,000C 받기'}
             </button>
-            <p className="text-[10.5px] text-[#9A9AA5] text-center">
-              상대방도 평가를 완료해야 공개됩니다 (블라인드)
+            <p className="text-[10.5px] text-[#9A9AA5] text-center leading-snug">
+              내가 남긴 평가는 상대에게 공개되지 않습니다. 여러 건이 모이면 평균 만 프로필에 표시라요. 제출 이후는 수정할 수 없습니다.
             </p>
             <button
               onClick={onClose}

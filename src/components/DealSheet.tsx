@@ -5,10 +5,56 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import ReviewModal from './ReviewModal'
 import MatchScore from './MatchScore'
+import SettleConfirmModal from './SettleConfirmModal'
+import { initial } from '@/lib/initial'
 
 // 8-stage pipeline (지역=8단계, 제품/기자단=방문 제외 7단계)
 const ALL_STAGES = ['신청', '확정', '가이드', '방문', '업로드', '수정/컴프', '검사', '정산'] as const
 type Stage = (typeof ALL_STAGES)[number]
+
+// 체크포인트가 있는 단계 → checkpoint kind (방문·수정컴프 제외)
+const STAGE_TO_CP: Record<string, string> = {
+  '가이드': 'guide',
+  '업로드': 'draft',
+  '검사':   'publish',
+  '정산':   'payment',
+}
+
+type DealCheckpoint = {
+  id: string
+  proposal_id: string
+  kind: string
+  due_original: string | null
+  due_adjusted: string | null
+  completed_at: string | null
+  late_days: number
+}
+
+function formatMD(d: string) {
+  const dt = new Date(d)
+  return `${dt.getMonth() + 1}/${dt.getDate()}`
+}
+
+function DeadlineChip({ cp }: { cp: DealCheckpoint }) {
+  const dateStr = cp.due_adjusted ?? cp.due_original
+  if (!dateStr || cp.completed_at) return null
+  const due = new Date(dateStr)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const diff = Math.ceil((due.getTime() - today.getTime()) / 86400000)
+  const isDelayed = cp.due_original && cp.due_adjusted && cp.due_original !== cp.due_adjusted
+  const isOverdue = diff < 0 || cp.late_days > 0
+  const isUrgent = !isOverdue && diff <= 3
+  const bg = isOverdue ? '#FEE2E2' : isUrgent ? '#FEF3C7' : '#F1F1F4'
+  const col = isOverdue ? '#DC2626' : isUrgent ? '#B45309' : '#7C7C88'
+  const dDay = diff < 0 ? `D+${Math.abs(diff)}` : diff === 0 ? 'D-day' : `D-${diff}`
+  return (
+    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded mt-1.5"
+      style={{ background: bg, color: col }}>
+      {isDelayed && <span className="opacity-60 mr-0.5">{formatMD(cp.due_original!)}→</span>}
+      {formatMD(dateStr)} · {dDay}
+    </span>
+  )
+}
 
 // Channel group styles (Screen 3 spec)
 const CH_GROUP: Record<string, { label: string; bg: string; text: string }> = {
@@ -47,6 +93,7 @@ type Proposal = {
   tax_doc_type: string | null
   tax_doc_received: boolean | null
   settlement_status: string | null
+  settled_at: string | null
   // joined
   profile: { id: string; name: string | null; avatar_url: string | null } | null
   influencer_profile: { follower_count: number | null; platforms: string[] | null; match_score: number | null; review_count: number | null } | null
@@ -76,7 +123,6 @@ function stageIndex(stage: string | null): number {
 function stageColor(stage: string | null): string {
   const idx = stageIndex(stage)
   if (idx >= 7) return '#22C55E'
-  if (idx >= 5) return '#3B82F6'
   if (idx >= 2) return '#F59E0B'
   return '#C4C4CE'
 }
@@ -94,11 +140,14 @@ export default function DealSheet({
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [proposals_, setProposals] = useState<Proposal[]>(proposals)
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set())
+  const [checkpoints, setCheckpoints] = useState<Record<string, Record<string, DealCheckpoint>>>({})
   const [reviewModal, setReviewModal] = useState<{
     proposalId: string; revieweeId: string; revieweeName: string
   } | null>(null)
+  const [settleModal, setSettleModal] = useState(false)
 
   useEffect(() => {
+    const ids = proposals_.map((p) => p.id)
     supabase
       .from('reviews')
       .select('proposal_id')
@@ -106,6 +155,21 @@ export default function DealSheet({
       .then(({ data }) => {
         if (data) setReviewedIds(new Set(data.map((r) => r.proposal_id)))
       })
+    if (ids.length > 0) {
+      supabase
+        .from('deal_checkpoints')
+        .select('*')
+        .in('proposal_id', ids)
+        .then(({ data }) => {
+          if (!data) return
+          const map: Record<string, Record<string, DealCheckpoint>> = {}
+          for (const cp of data) {
+            if (!map[cp.proposal_id]) map[cp.proposal_id] = {}
+            map[cp.proposal_id][cp.kind] = cp
+          }
+          setCheckpoints(map)
+        })
+    }
   }, [userId])
 
   const isLocation = campaign.campaign_type === '지역'
@@ -216,11 +280,18 @@ export default function DealSheet({
     </div>
   )
 
+  const settleTargets = selectedProposals.filter(
+    (p) => p.advertiser_confirmed && p.influencer_confirmed && !p.settled_at,
+  )
+
   const proposalRow = (p: Proposal) => {
     const sidx = stageIndex(p.stage)
     const pct = Math.round(((sidx + 1) / stages.length) * 100)
     const color = stageColor(p.stage)
     const isConfirmed = p.advertiser_confirmed && p.influencer_confirmed
+    const cpKind = p.stage ? STAGE_TO_CP[p.stage] : null
+    const cp = cpKind ? checkpoints[p.id]?.[cpKind] : null
+    const isSettled = !!p.settled_at
 
     return (
       <div
@@ -239,7 +310,7 @@ export default function DealSheet({
         {/* 인플루언서 */}
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-7 h-7 rounded-full bg-[#FEF3C7] text-[#B45309] text-[11px] font-bold flex items-center justify-center shrink-0">
-            {p.profile?.name?.[0] ?? '?'}
+            {initial(p.profile?.name)}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
@@ -268,7 +339,7 @@ export default function DealSheet({
           <span className="text-[11.5px] font-semibold text-[#3C3C46]">
             {p.stage ?? '신청'}
           </span>
-          {isConfirmed && sidx < stages.length - 1 && (
+          {isConfirmed && !isSettled && sidx < stages.length - 1 && (
             <button
               onClick={() => advanceStage(p.id)}
               className="ml-1 text-[10px] text-[#B45309] hover:text-[#D97706] font-bold"
@@ -300,6 +371,7 @@ export default function DealSheet({
               />
             ))}
           </div>
+          {cp && <DeadlineChip cp={cp} />}
         </div>
 
         {/* 업로드 URL */}
@@ -309,7 +381,7 @@ export default function DealSheet({
               href={p.upload_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11.5px] text-[#3B82F6] underline truncate block"
+              className="text-[11.5px] text-[#B45309] underline truncate block"
             >
               {p.upload_url.replace(/^https?:\/\//, '')}
             </a>
@@ -356,17 +428,23 @@ export default function DealSheet({
 
         {/* 정산 */}
         <div className="text-right flex flex-col items-end gap-1">
-          <select
-            value={p.settlement_status ?? '미정산'}
-            onChange={(e) => setSettlement(p.id, e.target.value)}
-            className={`text-[11px] font-bold rounded px-2 py-0.5 border-0 cursor-pointer focus:outline-none ${
-              SETTLEMENT_STYLE[p.settlement_status ?? '미정산'] ?? ''
-            }`}
-          >
-            <option value="미정산">미정산</option>
-            <option value="정산중">정산중</option>
-            <option value="완료">완료</option>
-          </select>
+          {isSettled ? (
+            <span className="text-[11px] font-bold bg-[#DCFCE7] text-[#15803D] rounded px-2 py-0.5">
+              정산완료
+            </span>
+          ) : (
+            <select
+              value={p.settlement_status ?? '미정산'}
+              onChange={(e) => setSettlement(p.id, e.target.value)}
+              className={`text-[11px] font-bold rounded px-2 py-0.5 border-0 cursor-pointer focus:outline-none ${
+                SETTLEMENT_STYLE[p.settlement_status ?? '미정산'] ?? ''
+              }`}
+            >
+              <option value="미정산">미정산</option>
+              <option value="정산중">정산중</option>
+              <option value="완료">완료</option>
+            </select>
+          )}
           {p.stage === stages[stages.length - 1] && isConfirmed && !reviewedIds.has(p.id) && (
             <button
               onClick={() =>
@@ -405,6 +483,26 @@ export default function DealSheet({
           }}
         />
       )}
+
+      {settleModal && settleTargets.length > 0 && (
+        <SettleConfirmModal
+          proposals={settleTargets}
+          campaign={campaign}
+          onClose={() => setSettleModal(false)}
+          onDone={(settledIds) => {
+            setProposals((prev) =>
+              prev.map((p) =>
+                settledIds.includes(p.id)
+                  ? { ...p, settled_at: new Date().toISOString(), settlement_status: '완료' }
+                  : p,
+              ),
+            )
+            setSelected(new Set())
+            setSettleModal(false)
+          }}
+        />
+      )}
+
       {/* ── 헤더 ── */}
       <div className="flex items-start justify-between gap-4 mb-5">
         <div>
@@ -559,7 +657,7 @@ export default function DealSheet({
         </div>
       )}
 
-      {/* ── 하단 정산 바 (선택된 인플루언서 있을 때) ── */}
+      {/* ── 하단 정산 바 ── */}
       {selected.size > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#17171B] text-white px-6 py-4 flex items-center gap-4 shadow-[0_-4px_24px_rgba(0,0,0,.35)]">
           <span className="text-[13px] font-semibold">{selected.size}명 선택</span>
@@ -567,17 +665,14 @@ export default function DealSheet({
             합계 {(selectedBudget / 10000).toLocaleString()}만원
           </span>
           <div className="ml-auto flex items-center gap-2">
-            <button
-              onClick={() => {
-                if (confirm(`선택한 ${selected.size}명의 정산을 '완료'로 처리할까요?`)) {
-                  selectedProposals.forEach((p) => setSettlement(p.id, '완료'))
-                  setSelected(new Set())
-                }
-              }}
-              className="bg-[#F59E0B] hover:bg-[#D97706] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition shadow-[0_1px_2px_rgba(245,158,11,.35)]"
-            >
-              정산 처리
-            </button>
+            {settleTargets.length > 0 && (
+              <button
+                onClick={() => setSettleModal(true)}
+                className="bg-[#F59E0B] hover:bg-[#D97706] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition"
+              >
+                정산 완료로 기록
+              </button>
+            )}
             <button
               onClick={() => setSelected(new Set())}
               className="text-[#9A9AA5] hover:text-white text-[12px] px-3"

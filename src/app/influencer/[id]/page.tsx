@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { initial } from '@/lib/initial'
 
 export default async function InfluencerProfilePage({
   params,
@@ -44,14 +45,14 @@ export default async function InfluencerProfilePage({
 
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-4">
         <div className="flex items-center mb-4">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl font-bold mr-4">
-            {profile.name?.[0] ?? '?'}
+          <div className="w-16 h-16 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] text-2xl font-bold mr-4">
+            {initial(profile.name)}
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
             <div className="flex gap-2 mt-1">
               {influencerProfile?.platforms?.map((p: string) => (
-                <span key={p} className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                <span key={p} className="text-xs bg-[#FEF3C7] text-[#B45309] px-2 py-0.5 rounded-full">
                   {p}
                 </span>
               ))}
@@ -87,19 +88,19 @@ export default async function InfluencerProfilePage({
         <div className="flex gap-3">
           {influencerProfile?.instagram_url && (
             <a href={influencerProfile.instagram_url} target="_blank" rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline">
+              className="text-sm text-[#B45309] hover:underline">
               인스타그램 →
             </a>
           )}
           {influencerProfile?.youtube_url && (
             <a href={influencerProfile.youtube_url} target="_blank" rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline">
+              className="text-sm text-[#B45309] hover:underline">
               유튜브 →
             </a>
           )}
           {influencerProfile?.blog_url && (
             <a href={influencerProfile.blog_url} target="_blank" rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline">
+              className="text-sm text-[#B45309] hover:underline">
               블로그 →
             </a>
           )}
@@ -128,7 +129,7 @@ export default async function InfluencerProfilePage({
                 )}
                 <div className="flex flex-wrap gap-1 mb-2">
                   {schedule.predefined_categories?.map((cat: string) => (
-                    <span key={cat} className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{cat}</span>
+                    <span key={cat} className="text-xs bg-[#FEF3C7] text-[#B45309] px-2 py-0.5 rounded-full">{cat}</span>
                   ))}
                   {schedule.free_tags?.map((tag: string) => (
                     <span key={tag} className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{"#" + tag}</span>
@@ -137,7 +138,7 @@ export default async function InfluencerProfilePage({
                 {isAdvertiser && (
                   <Link
                     href={"/advertiser/proposals/new?scheduleId=" + schedule.id + "&influencerId=" + profile.id}
-                    className="mt-3 w-full block text-center bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                    className="mt-3 w-full block text-center bg-[#F59E0B] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#D97706] transition"
                   >
                     💌 이 일정에 제안하기
                   </Link>

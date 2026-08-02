@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import { initial } from '@/lib/initial'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -109,10 +110,10 @@ function NewProposalForm() {
 
       {/* 인플루언서 & 일정 정보 */}
       {schedule && influencer && (
-        <div className="bg-blue-50 rounded-2xl p-5 mb-4">
+        <div className="bg-[#FEF3C7] rounded-2xl p-5 mb-4">
           <div className="flex items-center mb-3">
-            <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-blue-700 font-bold mr-3">
-              {influencer.name?.[0] ?? '?'}
+            <div className="w-10 h-10 bg-[#FDE68A] rounded-full flex items-center justify-center text-[#B45309] font-bold mr-3">
+              {initial(influencer.name)}
             </div>
             <div>
               <p className="font-semibold text-gray-800">{influencer.name}</p>
@@ -139,7 +140,7 @@ function NewProposalForm() {
               onClick={() => setCollaborationType(type)}
               className={`py-2.5 rounded-lg text-sm font-medium transition border-2 ${
                 collaborationType === type
-                  ? 'border-blue-600 bg-blue-50 text-blue-600'
+                  ? 'border-[#F59E0B] bg-[#FEF3C7] text-[#B45309]'
                   : 'border-gray-200 text-gray-500 hover:border-gray-300'
               }`}
             >
@@ -157,7 +158,7 @@ function NewProposalForm() {
             type="number"
             value={budget}
             onChange={(e) => setBudget(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8"
+            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 pr-8"
             placeholder="예: 500000"
           />
           <span className="absolute right-3 top-2.5 text-sm text-gray-400">원</span>
@@ -171,7 +172,7 @@ function NewProposalForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={5}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
           placeholder="협업 내용, 브랜드 소개, 원하는 콘텐츠 방향 등을 자유롭게 작성해주세요."
         />
       </div>
@@ -180,7 +181,7 @@ function NewProposalForm() {
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50"
+        className="w-full bg-[#F59E0B] text-white py-3 rounded-xl font-medium hover:bg-[#D97706] transition disabled:opacity-50"
       >
         {loading ? '전송 중...' : '💌 제안 보내기'}
       </button>

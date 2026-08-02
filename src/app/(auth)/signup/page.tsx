@@ -112,12 +112,12 @@ export default function SignupPage() {
   }
 
   const inputCls =
-    'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+    'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400'
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-blue-600">MatchPost</h1>
+        <h1 className="text-3xl font-bold text-[#17171B]">MatchPost</h1>
         <p className="text-gray-500 mt-2">회원가입</p>
       </div>
 
@@ -129,7 +129,7 @@ export default function SignupPage() {
             onClick={() => setRole('influencer')}
             className={`py-3 rounded-lg border-2 text-sm font-medium transition ${
               role === 'influencer'
-                ? 'border-blue-600 bg-blue-50 text-blue-600'
+                ? 'border-[#F59E0B] bg-[#FEF3C7] text-[#B45309]'
                 : 'border-gray-200 text-gray-500 hover:border-gray-300'
             }`}
           >
@@ -139,7 +139,7 @@ export default function SignupPage() {
             onClick={() => setRole('advertiser')}
             className={`py-3 rounded-lg border-2 text-sm font-medium transition ${
               role === 'advertiser'
-                ? 'border-blue-600 bg-blue-50 text-blue-600'
+                ? 'border-[#F59E0B] bg-[#FEF3C7] text-[#B45309]'
                 : 'border-gray-200 text-gray-500 hover:border-gray-300'
             }`}
           >
@@ -179,14 +179,14 @@ export default function SignupPage() {
             <div className="mb-4">
               {/* 메이저 */}
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                메이저 분야 <span className="text-blue-600 font-normal">(1개 필수)</span>
+                메이저 분야 <span className="text-[#B45309] font-normal">(1개 필수)</span>
               </label>
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {INFLUENCER_CATEGORIES.map((cat) => (
                   <button key={cat} onClick={() => selectMajor(cat)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                       majorCategory === cat
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-[#F59E0B] text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}>{cat}</button>
                 ))}
@@ -205,7 +205,7 @@ export default function SignupPage() {
                     <button key={cat} onClick={() => toggleSub(cat)} disabled={disabled}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                         on
-                          ? 'bg-blue-500 text-white'
+                          ? 'bg-[#F59E0B] text-white'
                           : disabled
                           ? 'bg-gray-50 text-gray-300 cursor-not-allowed'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -256,7 +256,7 @@ export default function SignupPage() {
           </div>
 
           <button onClick={handleSignup} disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50">
+            className="w-full bg-[#F59E0B] text-white py-2.5 rounded-lg font-medium hover:bg-[#D97706] transition disabled:opacity-50">
             {loading ? '가입 중...' : '회원가입'}
           </button>
 
@@ -270,7 +270,7 @@ export default function SignupPage() {
 
       <p className="text-center text-sm text-gray-500 mt-4">
         이미 계정이 있으신가요?{' '}
-        <Link href="/login" className="text-blue-600 font-medium hover:underline">
+        <Link href="/login" className="text-[#B45309] font-medium hover:underline">
           로그인
         </Link>
       </p>

@@ -149,7 +149,7 @@ export default function InfluencerProfilePage() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
         </div>
         <div>
@@ -158,7 +158,7 @@ export default function InfluencerProfilePage() {
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
         </div>
       </div>
@@ -170,7 +170,7 @@ export default function InfluencerProfilePage() {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={4}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
           placeholder="광고주에게 보여질 자기 소개를 작성해주세요."
         />
       </div>
@@ -185,7 +185,7 @@ export default function InfluencerProfilePage() {
               onClick={() => togglePlatform(p)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                 selectedPlatforms.includes(p)
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#F59E0B] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -195,13 +195,13 @@ export default function InfluencerProfilePage() {
         </div>
         <div className="space-y-2">
           <input type="text" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
             placeholder="인스타그램 URL" />
           <input type="text" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
             placeholder="유튜브 URL" />
           <input type="text" value={blogUrl} onChange={(e) => setBlogUrl(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
             placeholder="블로그 URL" />
         </div>
       </div>
@@ -216,7 +216,7 @@ export default function InfluencerProfilePage() {
               onClick={() => toggleCategory(cat)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                 selectedCategories.includes(cat)
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#F59E0B] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -233,7 +233,7 @@ export default function InfluencerProfilePage() {
           type="number"
           value={followerCount}
           onChange={(e) => setFollowerCount(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
           placeholder="총 팔로워 수 입력"
         />
       </div>
@@ -245,7 +245,7 @@ export default function InfluencerProfilePage() {
           type="text"
           value={portfolioUrl}
           onChange={(e) => setPortfolioUrl(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
           placeholder="포트폴리오 링크 입력"
         />
       </div>
@@ -254,7 +254,7 @@ export default function InfluencerProfilePage() {
       <button
         onClick={handleSave}
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50"
+        className="w-full bg-[#F59E0B] text-white py-3 rounded-xl font-medium hover:bg-[#D97706] transition disabled:opacity-50"
       >
         {loading ? '저장 중...' : '저장하기'}
       </button>

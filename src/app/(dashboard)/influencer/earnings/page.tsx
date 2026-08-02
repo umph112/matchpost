@@ -69,13 +69,13 @@ export default function EarningsPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `수입내역_${period}.csv`
+    a.download = `매출내역_${period}.csv`
     a.click()
   }
 
   const statusColor = (status: string) => {
     if (status === '예정') return 'bg-orange-100 text-orange-600'
-    if (status === '진행중') return 'bg-blue-100 text-blue-600'
+    if (status === '진행중') return 'bg-[#FEF3C7] text-[#B45309]'
     if (status === '완료') return 'bg-gray-100 text-gray-600'
     if (status === '결제완료') return 'bg-green-100 text-green-600'
     return 'bg-gray-100 text-gray-500'
@@ -89,11 +89,11 @@ export default function EarningsPage() {
           <Link href="/influencer/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">
             ← 뒤로
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">수입 관리</h1>
+          <h1 className="text-xl font-bold text-gray-900">매출 관리</h1>
         </div>
         <button
           onClick={handleDownloadCSV}
-          className="text-sm text-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition"
+          className="text-sm text-[#B45309] border border-[#FCD34D] px-3 py-1.5 rounded-lg hover:bg-[#FEF3C7] transition"
         >
           📥 CSV 다운로드
         </button>
@@ -107,7 +107,7 @@ export default function EarningsPage() {
             onClick={() => setPeriod(p)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition ${
               period === p
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#F59E0B] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -119,8 +119,8 @@ export default function EarningsPage() {
       {/* 요약 카드 */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-2xl p-5 shadow-sm col-span-2">
-          <p className="text-sm text-gray-500 mb-1">총 수입</p>
-          <p className="text-3xl font-bold text-blue-600">{totalAmount.toLocaleString()}원</p>
+          <p className="text-sm text-gray-500 mb-1">총 매출</p>
+          <p className="text-3xl font-bold text-[#B45309]">{totalAmount.toLocaleString()}원</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">예정 수입</p>
@@ -153,7 +153,7 @@ export default function EarningsPage() {
             onClick={() => setFilter(s)}
             className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition ${
               filter === s
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#F59E0B] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -168,7 +168,7 @@ export default function EarningsPage() {
 
         {!loading && filteredEarnings.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-400">수입 내역이 없어요</p>
+            <p className="text-gray-400">매출 내역이 없어요</p>
           </div>
         )}
 
@@ -186,7 +186,7 @@ export default function EarningsPage() {
                 {e.due_date && ` · 지급예정 ${new Date(e.due_date).toLocaleDateString('ko-KR')}`}
               </p>
               {e.tax_invoice_issued && (
-                <span className="text-xs text-blue-500">세금계산서 발행</span>
+                <span className="text-xs text-[#B45309]">세금계산서 발행</span>
               )}
             </div>
             <div className="text-right">

@@ -104,7 +104,7 @@ export default function SchedulePage() {
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
           placeholder="예: 강남 카페 방문 포스팅"
         />
       </div>
@@ -116,7 +116,7 @@ export default function SchedulePage() {
           type="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
       </div>
 
@@ -130,7 +130,7 @@ export default function SchedulePage() {
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
             />
           </div>
           <div>
@@ -139,7 +139,7 @@ export default function SchedulePage() {
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
             />
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function SchedulePage() {
               type="text"
               value={locationCity}
               onChange={(e) => setLocationCity(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
               placeholder="예: 서울 강남구"
             />
           </div>
@@ -165,7 +165,7 @@ export default function SchedulePage() {
               type="text"
               value={locationDistrict}
               onChange={(e) => setLocationDistrict(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
               placeholder="예: 역삼동"
             />
           </div>
@@ -182,7 +182,7 @@ export default function SchedulePage() {
               onClick={() => setPlatform(p)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                 platform === p
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#F59E0B] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -202,7 +202,7 @@ export default function SchedulePage() {
               onClick={() => toggleCategory(cat)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                 selectedCategories.includes(cat)
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#F59E0B] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -219,7 +219,7 @@ export default function SchedulePage() {
           type="text"
           value={freeTags}
           onChange={(e) => setFreeTags(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
           placeholder="예: 팝업스토어, 신제품, 뷰티"
         />
       </div>
@@ -234,7 +234,7 @@ export default function SchedulePage() {
           <button
             onClick={() => setIsPublic(!isPublic)}
             className={`w-12 h-6 rounded-full transition ${
-              isPublic ? 'bg-blue-600' : 'bg-gray-300'
+              isPublic ? 'bg-[#F59E0B]' : 'bg-gray-300'
             }`}
           >
             <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform mx-0.5 ${
@@ -248,7 +248,7 @@ export default function SchedulePage() {
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50"
+        className="w-full bg-[#F59E0B] text-white py-3 rounded-xl font-medium hover:bg-[#D97706] transition disabled:opacity-50"
       >
         {loading ? '등록 중...' : '일정 등록하기'}
       </button>

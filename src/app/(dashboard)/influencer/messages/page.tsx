@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, Suspense, type ChangeEvent } from 'react'
+import { initial } from '@/lib/initial'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -14,6 +15,7 @@ function MessagesContent() {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const searchParams = useSearchParams()
@@ -50,7 +52,9 @@ function MessagesContent() {
   }, [])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    }
   }, [messages])
 
   const fetchConversations = async (userId: string) => {
@@ -167,8 +171,8 @@ function MessagesContent() {
           <button onClick={() => setSelectedConversation(null)} className="mr-4 text-gray-400 hover:text-gray-600">
             ← 뒤로
           </button>
-          <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3">
-            {selectedConversation.otherName?.[0] ?? '?'}
+          <div className="w-9 h-9 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold mr-3">
+            {initial(selectedConversation.otherName)}
           </div>
           <p className="font-semibold text-gray-800">{selectedConversation.otherName}</p>
         </div>
@@ -180,7 +184,7 @@ function MessagesContent() {
           />
         )}
 
-        <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-3 mb-4">
           {messages.length === 0 && (
             <p className="text-center text-gray-400 text-sm py-8">아직 메시지가 없어요. 먼저 인사해보세요!</p>
           )}
@@ -191,17 +195,17 @@ function MessagesContent() {
             >
               <div className={`max-w-xs px-4 py-2.5 rounded-2xl text-sm ${
                 msg.sender_id === currentUser?.id
-                  ? 'bg-blue-600 text-white rounded-br-sm'
+                  ? 'bg-[#17171B] text-white rounded-br-sm'
                   : 'bg-gray-100 text-gray-800 rounded-bl-sm'
               }`}>
                 {msg.file_url && (
                   <a href={msg.file_url} target="_blank" rel="noopener noreferrer" download={msg.file_name}
-                    className={`flex items-center gap-1.5 mb-1 underline ${msg.sender_id === currentUser?.id ? 'text-blue-100' : 'text-blue-600'}`}>
+                    className={`flex items-center gap-1.5 mb-1 underline ${msg.sender_id === currentUser?.id ? 'text-white/70' : 'text-[#B45309]'}`}>
                     📎 <span className="truncate max-w-[180px]">{msg.file_name}</span>
                   </a>
                 )}
                 {msg.content}
-                <p className={`text-xs mt-1 ${msg.sender_id === currentUser?.id ? 'text-blue-200' : 'text-gray-400'}`}>
+                <p className={`text-xs mt-1 ${msg.sender_id === currentUser?.id ? 'text-white/50' : 'text-gray-400'}`}>
                   {new Date(msg.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
@@ -222,12 +226,12 @@ function MessagesContent() {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
             placeholder="메시지 입력..."
           />
           <button
             onClick={sendMessage}
-            className="bg-blue-600 text-white px-4 py-2.5 rounded-xl hover:bg-blue-700 transition"
+            className="bg-[#F59E0B] text-white px-4 py-2.5 rounded-xl hover:bg-[#D97706] transition"
           >
             전송
           </button>
@@ -242,7 +246,7 @@ function MessagesContent() {
         <Link href="/influencer/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">
           ← 뒤로
         </Link>
-        <h1 className="text-xl font-bold text-gray-900">메시지</h1>
+        <h1 className="text-xl font-bold text-gray-900">대화</h1>
       </div>
 
       {loading && <p className="text-center text-gray-400 py-16">불러오는 중...</p>}
@@ -260,8 +264,8 @@ function MessagesContent() {
           onClick={() => selectConversation(conv)}
           className="w-full bg-white rounded-2xl p-4 shadow-sm mb-3 flex items-center hover:shadow-md transition text-left"
         >
-          <div className="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3">
-            {conv.otherName?.[0] ?? '?'}
+          <div className="w-11 h-11 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold mr-3">
+            {initial(conv.otherName)}
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-800">{conv.otherName}</p>
