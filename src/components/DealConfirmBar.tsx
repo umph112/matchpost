@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-// 채팅 상단 협업 확정 바 — 광고주/인플루언서 각 1회 [협업 확정] → 둘 다 누르면 최종 확정
+// 협업 확정 바 — 내 쪽 confirmed 토글.
+// 개시자(initiated_by == 내 역할)는 proposal 생성 시 이미 true 상태.
+// 양쪽 모두 true → 연락처 공개. 누군가 철회 → 연락처 재비공개.
 export default function DealConfirmBar({
   proposalId,
   currentUserId,
@@ -15,14 +17,12 @@ export default function DealConfirmBar({
   const [title, setTitle] = useState('')
   const [busy, setBusy] = useState(false)
   const [contact, setContact] = useState<{ name: string; phone: string; email: string } | null>(null)
+  const [errMsg, setErrMsg] = useState('')
   const supabase = createClient()
 
   const load = async () => {
     const { data } = await supabase.from('proposals').select('*').eq('id', proposalId).single()
-    if (!data) {
-      setProposal(null)
-      return
-    }
+    if (!data) { setProposal(null); return }
     setProposal(data)
     if (data.campaign_id) {
       const { data: c } = await supabase.from('campaigns').select('title').eq('id', data.campaign_id).single()
@@ -33,19 +33,13 @@ export default function DealConfirmBar({
     }
   }
 
-  useEffect(() => {
-    load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [proposalId])
+  useEffect(() => { load() }, [proposalId])
 
   const done = proposal ? proposal.advertiser_confirmed && proposal.influencer_confirmed : false
 
-  // 양쪽 확정 완료 시 상대 연락처 공개 (서버 라우트가 당사자·확정 여부 재검증)
+  // 양쪽 확정 완료 시 연락처 공개, 한 쪽이라도 철회하면 재비공개
   useEffect(() => {
-    if (!done) {
-      setContact(null)
-      return
-    }
+    if (!done) { setContact(null); return }
     let alive = true
     fetch('/api/deal/contact', {
       method: 'POST',
@@ -53,13 +47,8 @@ export default function DealConfirmBar({
       body: JSON.stringify({ proposalId }),
     })
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (alive && data && !data.error) setContact(data)
-      })
-    return () => {
-      alive = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      .then((data) => { if (alive && data && !data.error) setContact(data) })
+    return () => { alive = false }
   }, [done, proposalId])
 
   if (!proposal) return null
@@ -67,15 +56,24 @@ export default function DealConfirmBar({
   const isAdvertiser = currentUserId === proposal.advertiser_id
   const myConfirmed = isAdvertiser ? proposal.advertiser_confirmed : proposal.influencer_confirmed
   const otherConfirmed = isAdvertiser ? proposal.influencer_confirmed : proposal.advertiser_confirmed
+  const isInitiator = proposal.initiated_by
+    ? proposal.initiated_by === (isAdvertiser ? 'advertiser' : 'influencer')
+    : null
 
-  const confirm = async () => {
+  const toggle = async () => {
     setBusy(true)
-    await fetch('/api/deal/confirm', {
+    setErrMsg('')
+    const res = await fetch('/api/deal/confirm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ proposalId }),
     })
-    await load()
+    if (!res.ok) {
+      const json = await res.json()
+      setErrMsg(json.error ?? '오류가 발생했어요.')
+    } else {
+      await load()
+    }
     setBusy(false)
   }
 
@@ -87,17 +85,35 @@ export default function DealConfirmBar({
           <p className="text-sm font-semibold text-gray-800 truncate">{title}</p>
           <p className="text-[11px] text-gray-500 mt-0.5">
             나 {myConfirmed ? '✅' : '⬜'} · 상대 {otherConfirmed ? '✅' : '⬜'}
+            {isInitiator && <span className="ml-1 text-amber-600">(개시자)</span>}
           </p>
         </div>
+
         {done ? (
-          <span className="shrink-0 text-sm font-bold text-green-600">협업 확정 ✅</span>
+          <div className="shrink-0 flex flex-col items-end gap-1">
+            <span className="text-sm font-bold text-green-600">협업 확정 ✅</span>
+            <button
+              onClick={toggle}
+              disabled={busy}
+              className="text-[11px] text-gray-400 hover:text-red-500 underline disabled:opacity-50"
+            >
+              {busy ? '처리 중...' : '확정 철회'}
+            </button>
+          </div>
         ) : myConfirmed ? (
-          <span className="shrink-0 text-xs text-gray-500 text-right">
-            확인 완료<br />상대 대기중
-          </span>
+          <div className="shrink-0 flex flex-col items-end gap-1">
+            <span className="text-xs text-gray-500 text-right">확인 완료<br />상대 대기중</span>
+            <button
+              onClick={toggle}
+              disabled={busy}
+              className="text-[11px] text-gray-400 hover:text-red-500 underline disabled:opacity-50"
+            >
+              {busy ? '처리 중...' : '철회'}
+            </button>
+          </div>
         ) : (
           <button
-            onClick={confirm}
+            onClick={toggle}
             disabled={busy}
             className="shrink-0 bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-600 disabled:opacity-50"
           >
@@ -105,6 +121,10 @@ export default function DealConfirmBar({
           </button>
         )}
       </div>
+
+      {errMsg && (
+        <p className="mt-2 text-[11px] text-red-500 font-medium">{errMsg}</p>
+      )}
 
       {done && contact && (contact.phone || contact.email) && (
         <div className="mt-3 pt-3 border-t border-green-200">
