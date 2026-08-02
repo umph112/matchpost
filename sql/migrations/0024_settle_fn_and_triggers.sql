@@ -90,14 +90,15 @@ begin
   -- ── 4. trust_score — VIEW이므로 no-op ───────────────────────────────
 
   -- ── 5. 평가 요청 즉시 알림 + D+3·D+7 예약 ──────────────────────────
+  -- type: 기존 notifications.type NOT NULL 컬럼 충족
   insert into notifications
-    (user_id, kind, title, body, link, ref_type, ref_id, state, notification_group)
+    (user_id, type, kind, title, body, link, ref_type, ref_id, state, notification_group)
   values
-    (v.advertiser_id, 'review_request',
+    (v.advertiser_id, 'review_request', 'review_request',
      '상대방을 평가해주세요', '7일 이내 평가 시 크레딧 1,000C가 지급됩니다.',
      '/advertiser/campaigns', 'proposal', p_proposal_id, 'unread',
      'review:' || p_proposal_id),
-    (v.influencer_id, 'review_request',
+    (v.influencer_id, 'review_request', 'review_request',
      '상대방을 평가해주세요', '7일 이내 평가 시 크레딧 1,000C가 지급됩니다.',
      '/advertiser/campaigns', 'proposal', p_proposal_id, 'unread',
      'review:' || p_proposal_id);
