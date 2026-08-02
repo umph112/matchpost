@@ -71,7 +71,6 @@ function NewProposalForm() {
       collaboration_type: collaborationType,
       status: 'pending',
       initiated_by: 'advertiser',
-      advertiser_confirmed: true,
     })
 
     if (insertError) {
