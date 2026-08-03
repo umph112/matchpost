@@ -50,7 +50,7 @@ export default function EarningsPage() {
       .is('paid_confirmed_at', null)
       .is('paid_disputed_at', null)
 
-    setPendingConfirm((pending as PendingProposal[]) ?? [])
+    setPendingConfirm((pending as unknown as PendingProposal[]) ?? [])
     setLoading(false)
   }
 
