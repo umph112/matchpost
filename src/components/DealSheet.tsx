@@ -94,6 +94,8 @@ type Proposal = {
   tax_doc_received: boolean | null
   settlement_status: string | null
   settled_at: string | null
+  paid_confirmed_at: string | null
+  paid_disputed_at: string | null
   // joined
   profile: { id: string; name: string | null; avatar_url: string | null } | null
   influencer_profile: { follower_count: number | null; platforms: string[] | null; match_score: number | null; review_count: number | null } | null
@@ -283,6 +285,27 @@ export default function DealSheet({
   const settleTargets = selectedProposals.filter(
     (p) => p.advertiser_confirmed && p.influencer_confirmed && !p.settled_at,
   )
+  const reSettleTargets = selectedProposals.filter(
+    (p) => !!p.settled_at && !!p.paid_disputed_at,
+  )
+
+  const handleReSettle = async () => {
+    const now = new Date().toISOString()
+    for (const p of reSettleTargets) {
+      await supabase
+        .from('proposals')
+        .update({ settled_at: now, paid_disputed_at: null, paid_confirmed_at: null })
+        .eq('id', p.id)
+    }
+    setProposals((prev) =>
+      prev.map((p) =>
+        reSettleTargets.some((r) => r.id === p.id)
+          ? { ...p, settled_at: now, paid_disputed_at: null, paid_confirmed_at: null }
+          : p,
+      ),
+    )
+    setSelected(new Set())
+  }
 
   const proposalRow = (p: Proposal) => {
     const sidx = stageIndex(p.stage)
@@ -428,7 +451,11 @@ export default function DealSheet({
 
         {/* 정산 */}
         <div className="text-right flex flex-col items-end gap-1">
-          {isSettled ? (
+          {isSettled && p.paid_disputed_at ? (
+            <span className="text-[11px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded px-2 py-0.5">
+              재정산 필요
+            </span>
+          ) : isSettled ? (
             <span className="text-[11px] font-bold bg-[#DCFCE7] text-[#15803D] rounded px-2 py-0.5">
               정산완료
             </span>
@@ -665,6 +692,14 @@ export default function DealSheet({
             합계 {(selectedBudget / 10000).toLocaleString()}만원
           </span>
           <div className="ml-auto flex items-center gap-2">
+            {reSettleTargets.length > 0 && (
+              <button
+                onClick={handleReSettle}
+                className="bg-[#DC2626] hover:bg-[#B91C1C] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition"
+              >
+                재정산 완료로 기록
+              </button>
+            )}
             {settleTargets.length > 0 && (
               <button
                 onClick={() => setSettleModal(true)}

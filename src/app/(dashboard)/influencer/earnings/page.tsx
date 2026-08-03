@@ -3,31 +3,54 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import PaidConfirmModal from '@/components/PaidConfirmModal'
 
 const STATUS_FILTERS = ['전체', '예정', '진행중', '완료', '결제완료']
+
+type PendingProposal = {
+  id: string
+  budget: number | null
+  settled_at: string | null
+  campaign: { title: string } | null
+  advertiser_profile: { name: string | null } | null
+}
 
 export default function EarningsPage() {
   const [earnings, setEarnings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('전체')
   const [period, setPeriod] = useState('이번달')
+  const [pendingConfirm, setPendingConfirm] = useState<PendingProposal[]>([])
+  const [confirmModal, setConfirmModal] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
-    fetchEarnings()
+    fetchAll()
   }, [])
 
-  const fetchEarnings = async () => {
+  const fetchAll = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { data } = await supabase
+    // 기존 earnings
+    const { data: earningsData } = await supabase
       .from('earnings')
       .select('*, proposals(collaboration_type)')
       .eq('influencer_id', user.id)
       .order('created_at', { ascending: false })
 
-    setEarnings(data ?? [])
+    setEarnings(earningsData ?? [])
+
+    // 수금 확인 대기: settled_at 있고 paid_confirmed_at/paid_disputed_at 없는 proposals
+    const { data: pending } = await supabase
+      .from('proposals')
+      .select('id, budget, settled_at, campaign:campaigns(title), advertiser_profile:profiles!proposals_advertiser_id_fkey(name)')
+      .eq('influencer_id', user.id)
+      .not('settled_at', 'is', null)
+      .is('paid_confirmed_at', null)
+      .is('paid_disputed_at', null)
+
+    setPendingConfirm((pending as PendingProposal[]) ?? [])
     setLoading(false)
   }
 
@@ -50,6 +73,8 @@ export default function EarningsPage() {
   const pendingAmount = filteredByPeriod.filter(e => e.status === '예정').reduce((sum, e) => sum + e.amount, 0)
   const completedAmount = filteredByPeriod.filter(e => e.status === '결제완료').reduce((sum, e) => sum + e.amount, 0)
 
+  const pendingConfirmTotal = pendingConfirm.reduce((s, p) => s + (p.budget ?? 0), 0)
+
   const categoryTotals = filteredByPeriod.reduce((acc: Record<string, number>, e) => {
     acc[e.category] = (acc[e.category] ?? 0) + e.amount
     return acc
@@ -65,7 +90,7 @@ export default function EarningsPage() {
       e.tax_invoice_issued ? '발행' : '미발행'
     ])
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -83,8 +108,21 @@ export default function EarningsPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
+      {confirmModal && pendingConfirm.length > 0 && (
+        <PaidConfirmModal
+          proposals={pendingConfirm}
+          onClose={() => setConfirmModal(false)}
+          onDone={(confirmedIds, disputedIds) => {
+            setPendingConfirm((prev) =>
+              prev.filter((p) => !confirmedIds.includes(p.id) && !disputedIds.includes(p.id))
+            )
+            setConfirmModal(false)
+          }}
+        />
+      )}
+
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Link href="/influencer/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">
             ← 뒤로
@@ -98,6 +136,22 @@ export default function EarningsPage() {
           📥 CSV 다운로드
         </button>
       </div>
+
+      {/* 수금 확인 대기 배너 */}
+      {pendingConfirm.length > 0 && (
+        <button
+          onClick={() => setConfirmModal(true)}
+          className="w-full mb-5 flex items-center justify-between bg-[#FEF3C7] border border-[#FCD34D] rounded-2xl px-4 py-3 hover:bg-[#FDE68A] transition"
+        >
+          <div className="text-left">
+            <p className="text-xs font-semibold text-[#B45309]">수금 확인 대기</p>
+            <p className="text-sm font-bold text-[#17171B]">
+              {pendingConfirmTotal.toLocaleString()}원 · {pendingConfirm.length}건
+            </p>
+          </div>
+          <span className="text-[#B45309] font-bold text-sm">확인 →</span>
+        </button>
+      )}
 
       {/* 기간 선택 */}
       <div className="flex gap-2 mb-6">
@@ -162,7 +216,7 @@ export default function EarningsPage() {
         ))}
       </div>
 
-      {/* 수입 목록 */}
+      {/* 매출 목록 */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {loading && <p className="text-center text-gray-400 py-8">불러오는 중...</p>}
 
