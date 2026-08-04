@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { recordVisit } from '@/lib/visits/track'
 
 export default async function DashboardLayout({
   children,
@@ -12,6 +13,8 @@ export default async function DashboardLayout({
   if (!user) {
     redirect('/login')
   }
+
+  recordVisit(user.id).catch(() => {})
 
   return (
     <div className="min-h-screen bg-gray-50">

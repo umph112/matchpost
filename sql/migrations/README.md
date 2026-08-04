@@ -35,3 +35,14 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0017_blog_post_rankings.sql` — blog_analytics 포스팅 단위 키워드 노출 + 등급
 - `0018_credit_ledger.sql` — 크레딧 원장(credit_ledger, append-only) + user_visit_log + 잔액뷰 + charge/grant/refund/penalty/decay 함수. 0013 완전 대체(잔액은 이관 후 구 테이블 제거)
 - `0019_schedules_open_group.sql` — schedules.open_group_id 추가. 오픈 1건이 여러 날짜(행)로 나뉘어도 그룹의 첫 행에서만 크레딧 차감·지급되도록 0018의 오픈 트리거 함수 교체
+- `0020`~`0033` — (IMPLEMENT-3/4) proposals.initiated_by, celebrate 중복방지, schedules.date_end, settle 스키마/함수, paid_confirm_attempts, reports, sanctions, cancellations, proposals schedule_slot, connections, messages.checkpoint_kind, contact_fields, blog_score_version. 상세는 각 파일 참고
+- `0034_append_only_guards.sql` — credit_ledger UPDATE/DELETE 트리거로 차단(append-only를 DB 레벨에서 강제)
+- `0035_reviews_lock_individual.sql` — reviews_select를 reviewer_id 본인만으로 좁힘(개별 리뷰는 본인 포함 아무에게도 비공개) + admin select 정책
+- `0036_campaign_payment_terms.sql` — campaigns.payment_term_type/payment_term_value 추가(예정일 직접입력 대신 규칙으로 받음)
+- `0037_payment_due_changes.sql` — 결제 예정일 변경 이력(append-only) 테이블
+- `0038_tax_consent_tables.sql` — tax_consents/tax_export_log(admin만 SELECT)
+- `0039_visit_tracking.sql` — profiles.last_visited_at 추가
+- `0040_checkpoint_due_dates.sql` — resolve_payment_due_date() + trg_fn_create_checkpoints/settle_campaign 갱신(체크포인트 마감일 자동 채움 + 결제예정일 자동확정)
+- `0041_trust_score_cache.sql` — trust_score를 VIEW→TABLE로 전환 + refresh_trust_score() 배치 갱신 함수
+- `0042_batch_functions.sql` — run_dormant_decay_batch/run_payment_reminder_batch/run_visit_weekly_batch/run_visit_monthly_batch (크론 연결은 다음 차수)
+- `0043_perf_indexes.sql` — proposals(campaign_id,stage) / schedules(influencer_id,date) / notifications(user_id,state) 인덱스

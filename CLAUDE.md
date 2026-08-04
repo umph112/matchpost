@@ -74,19 +74,48 @@ sql/migrations/              스키마 변경 이력(0001~). README 참고
 - 세무자료: 세금계산서(발행주체+상대 사업자등록증) / 3.3%(신분증X, 전화번호·국세청ID) → 대시서 교환 → 딜시트 체크. 플랫폼 밖 교환 대비 갭체크+양방향 알림+셀프입력.
 - **결제 실행은 하지 않음**(기록·추적만). 향후 캠페인별 수수료 도입 시 budget_total 포함+딜시트 표기(코드 TODO(수수료)).
 
-## 디자인 구현 현황 (2026-08-01 업데이트)
-디자인 핸드오프 `design/mypage-pc/README.md` (Screen 2-5 + 로고 스펙)
+## 구현 현황 (2026-08-03 업데이트)
 
+### 완료된 마이그레이션 (0001~0033 모두 Supabase 실행 완료)
+- 0012: 딜시트 스키마 (proposals stage/upload_url/inspection 등, campaigns 일정)
+- 0023: deal_checkpoints (가이드/업로드/검사/정산 체크포인트 + 기한)
+- 0025: paid_confirmed_at, paid_disputed_at (수금 확인), settlement_attempts
+- 0026: reports (신고, 8종 type)
+- 0027: sanctions (제재 0~5단계, user_sanction_level 뷰)
+- 0028: cancellations (협의 취소)
+- 0029: proposals.start_at + duration_min
+- 0030: connections (상호 등록, active_connections 뷰)
+- 0031: messages.checkpoint_kind
+- 0032: profiles/campaigns manager_phone + company_phone
+- 0033: blog_score_history (score_version, crawled_on, unique 인덱스)
+
+### IMPLEMENT-3 완료 (커밋 ab2b0af, 5f748a6, 0343332)
+- ✅ Item 1: DealSheet 진행바 + DeadlineChip (D-N/D+N, 지연 날짜→날짜 표시)
+- ✅ Item 2: SettleConfirmModal (광고주 정산 기록, 3.3% 원천징수 토글)
+- ✅ Item 3: PaidConfirmModal (인플루언서 수금 확인) + earnings 페이지 amber 배너
+- ✅ Item 4: DealSheet 재정산 루프 — "재정산 필요" 뱃지 + "재정산 완료로 기록" 버튼
+- ✅ Item 5: ReviewModal width 460, 태그 개편, 1000C 보상 문구
+- ✅ Item 6: blue→amber 전면 정리 (오픈 일정/HomeCalendar 파란색 유지)
+- ✅ Item 7: initial() 유틸, 채팅 scrollTop 수정, 메시지→대화, 수입→매출
+
+### IMPLEMENT-4 완료 (커밋 9496587, dc3912d)
+- ✅ SQL 마이그레이션 0026~0033 생성 + Supabase 실행 완료
+
+### 미완료
+- Item 8 (IMPLEMENT-3): `scripts/blog_analyzer.py` 블로그 평가 스크립트 개편
+
+### 디자인 구현 (2026-08-01 기준)
 - ✅ **① 로고 교체** — mark.svg + Archivo 워드마크 (커밋 cb3966b)
-- ✅ **② Screen 4** — 캠페인 등록 폼 `grid-cols-[1fr_320px]` + sticky 사이드바 (커밋 cb3966b)
-- ✅ **③ Screen 2** — 캠페인 목록 7열 PC 표 + 필터 탭 (커밋 cb3966b)
-- ✅ **④ Screen 5** — 인플루언서 찾기 284px 필터 사이드바 + 날짜별/인플루언서별 그룹 결과 카드
-- ✅ **⑤ Screen 3** — 딜시트 (`campaigns/[id]`): 8단계 진행바, 채널 그룹 표, 하단 정산 바
-  - `sql/migrations/0012_dealsheet.sql` 작성 완료 → **Supabase SQL Editor에서 실행 필요**
-  - `proposals`: stage/visit_at/upload_url/inspection_url/inspection_at/inspection_status/tax_doc_type/tax_doc_received/settlement_status/performance_metrics
-  - `campaigns`: upload_deadline/inspection_deadline/settlement_date
+- ✅ **② Screen 4** — 캠페인 등록 폼 `grid-cols-[1fr_320px]` + sticky 사이드바
+- ✅ **③ Screen 2** — 캠페인 목록 7열 PC 표 + 필터 탭
+- ✅ **④ Screen 5** — 인플루언서 찾기 284px 필터 사이드바
+- ✅ **⑤ Screen 3** — 딜시트: 8단계 진행바, 채널 그룹 표, 하단 정산 바
 
-⚠️ **DB 실행 미완료**: 0010 / 0011 / 0012 모두 Supabase SQL Editor에서 실행 필요
+### 주의: 푸시 전 빌드 체크 필수
+```bash
+npx tsc --noEmit   # 에러 0건 확인 후 git push
+```
+(2026-08-03 earnings/page.tsx 타입 에러로 Vercel 배포 실패 사례 있었음)
 
 ## 디자인 시스템 (새 페이지 작성 시 반드시 준수)
 

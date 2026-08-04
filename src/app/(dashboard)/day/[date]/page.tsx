@@ -33,7 +33,9 @@ export default async function DayDetailPage({
   // 캠페인(광고주)
   const { data: campaigns } = await supabase
     .from('campaigns')
-    .select('*')
+    .select(
+      'id, title, advertiser_id, location_city, location_district, start_time, end_time, predefined_categories, free_tags, details'
+    )
     .eq('date', date)
     .eq('is_public', true)
     .eq('status', 'open')
@@ -41,7 +43,9 @@ export default async function DayDetailPage({
   // 오픈(인플루언서)
   const { data: opens } = await supabase
     .from('schedules')
-    .select('*')
+    .select(
+      'id, title, influencer_id, location_city, location_district, start_time, end_time, predefined_categories, free_tags'
+    )
     .eq('date', date)
     .eq('is_public', true)
     .eq('status', 'open')

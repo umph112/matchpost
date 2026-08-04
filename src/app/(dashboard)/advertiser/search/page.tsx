@@ -67,7 +67,11 @@ export default function AdvertiserSearchPage() {
     setLoading(true)
     setSearched(true)
 
-    let q = supabase.from('schedules').select('*').eq('is_public', true).eq('status', 'open')
+    let q = supabase
+      .from('schedules')
+      .select('id, influencer_id, date, channels, location_city, location_district, fee')
+      .eq('is_public', true)
+      .eq('status', 'open')
 
     if (date) q = q.eq('date', date)
     if (regions.length > 0) q = q.or(regions.map((r) => `location_city.ilike.%${r}%`).join(','))

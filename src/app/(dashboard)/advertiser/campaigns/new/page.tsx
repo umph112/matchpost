@@ -106,9 +106,14 @@ export default function NewCampaignPage() {
   const [contentEnd, setContentEnd] = useState('')       // 콘텐츠 등록기간 종료
   const [recruitTarget, setRecruitTarget] = useState('') // 모집 인원(목표)
 
-  // 결제 예정일(달력 지정 또는 규칙 직접입력) + 결제방식(복수 선택)
-  const [paymentDueDate, setPaymentDueDate] = useState('')
-  const [paymentDueRule, setPaymentDueRule] = useState('')
+  // 결제 조건(규칙) + 결제방식(복수 선택)
+  // 예정일은 직접입력받지 않는다 — 게재 완료 시점에 규칙으로 자동 산출된다(고정일 제외)
+  const [paymentTermType, setPaymentTermType] = useState<'after_publish_next_month' | 'after_publish_days' | 'fixed_date'>(
+    'after_publish_next_month',
+  )
+  const [paymentTermValue, setPaymentTermValue] = useState('10') // 익월 N일 or 게재 후 N일
+  const [paymentDueDate, setPaymentDueDate] = useState('') // fixed_date일 때만 사용
+  const [paymentDueRule, setPaymentDueRule] = useState('') // 선택적 보충 메모
   const [paymentMethods, setPaymentMethods] = useState<string[]>([])
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -256,6 +261,8 @@ export default function NewCampaignPage() {
     setLocationCity(c.location_city || '')
     setLocationDistrict(c.location_district || '')
     // 결제
+    setPaymentTermType(c.payment_term_type || 'after_publish_next_month')
+    setPaymentTermValue(c.payment_term_value != null ? String(c.payment_term_value) : '10')
     setPaymentDueDate(c.payment_due_date || '')
     setPaymentDueRule(c.payment_due_rule || '')
     setPaymentMethods(c.payment_methods || [])
@@ -480,8 +487,11 @@ export default function NewCampaignPage() {
       content_start: contentStart || null,
       content_end: contentEnd || null,
       recruit_target: recruitTarget ? parseInt(recruitTarget) : null,
-      // 결제 예정일(날짜 또는 규칙) + 결제방식(복수 → 대시에서 최종 결정)
-      payment_due_date: paymentDueDate || null,
+      // 결제 조건(규칙, 필수) + 결제방식(복수 → 대시에서 최종 결정)
+      // 예정일은 fixed_date일 때만 직접입력값을 쓰고, 그 외엔 게재 완료 시 규칙으로 자동 산출된다
+      payment_term_type: paymentTermType,
+      payment_term_value: paymentTermType === 'fixed_date' ? null : parseInt(paymentTermValue) || null,
+      payment_due_date: paymentTermType === 'fixed_date' ? paymentDueDate || null : null,
       payment_due_rule: paymentDueRule || null,
       payment_methods: paymentMethods,
       predefined_categories: selectedCategories,
@@ -1007,22 +1017,51 @@ export default function NewCampaignPage() {
         )}
       </div>
 
-      {/* 결제 예정일 + 결제방식 */}
+      {/* 결제 조건 + 결제방식 */}
       <div className={card}>
-        <label className="block text-sm font-medium text-gray-700 mb-2">결제 예정일</label>
-        <input
-          type="date"
-          value={paymentDueDate}
-          onChange={(e) => setPaymentDueDate(e.target.value)}
+        <label className="block text-sm font-medium text-gray-700 mb-2">결제 조건</label>
+        <select
+          value={paymentTermType}
+          onChange={(e) => setPaymentTermType(e.target.value as typeof paymentTermType)}
           className={input}
-        />
-        <p className="text-xs text-gray-400 my-2 text-center">또는 결제 규칙을 직접 입력</p>
+        >
+          <option value="after_publish_next_month">게재 후 익월 O일</option>
+          <option value="after_publish_days">게재 후 O일 이내</option>
+          <option value="fixed_date">고정일 지정</option>
+        </select>
+
+        {paymentTermType === 'fixed_date' ? (
+          <input
+            type="date"
+            value={paymentDueDate}
+            onChange={(e) => setPaymentDueDate(e.target.value)}
+            className={`${input} mt-2`}
+          />
+        ) : (
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="number"
+              min={1}
+              max={paymentTermType === 'after_publish_next_month' ? 31 : 90}
+              value={paymentTermValue}
+              onChange={(e) => setPaymentTermValue(e.target.value)}
+              className={`${input} w-24`}
+            />
+            <span className="text-sm text-gray-500">
+              {paymentTermType === 'after_publish_next_month' ? '일 (익월)' : '일 이내'}
+            </span>
+          </div>
+        )}
+
+        <p className="text-xs text-gray-400 mt-2">
+          예정일은 게재 완료 시점에 이 조건으로 자동 산출돼요. 직접 날짜를 지정하지 않아요.
+        </p>
         <input
           type="text"
           value={paymentDueRule}
           onChange={(e) => setPaymentDueRule(e.target.value)}
-          className={input}
-          placeholder="예: 원고 업로드 익월 10일 / 세금계산서 발행 후 30일"
+          className={`${input} mt-2`}
+          placeholder="보충 메모 (선택, 예: 세금계산서 발행 후 결제)"
         />
 
         <label className="block text-sm font-medium text-gray-700 mt-4 mb-2">결제방식 (복수 선택 가능)</label>
@@ -1152,9 +1191,14 @@ export default function NewCampaignPage() {
               ))}
             </div>
           )}
-          {(paymentDueDate || paymentDueRule) && (
-            <p className="text-[11.5px] text-[#7C7C88] mt-2">{paymentDueDate || paymentDueRule}</p>
-          )}
+          <p className="text-[11.5px] text-[#7C7C88] mt-2">
+            {paymentTermType === 'fixed_date'
+              ? paymentDueDate || '고정일 미지정'
+              : paymentTermType === 'after_publish_next_month'
+                ? `게재 후 익월 ${paymentTermValue || '—'}일`
+                : `게재 후 ${paymentTermValue || '—'}일 이내`}
+          </p>
+          {paymentDueRule && <p className="text-[11px] text-[#9A9AA5] mt-0.5">{paymentDueRule}</p>}
         </div>
 
         {/* 등록 전 확인 체크리스트 */}

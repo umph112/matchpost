@@ -26,7 +26,13 @@ export default function InfluencerSearchPage() {
     setLoading(true)
     setSearched(true)
 
-    let query = supabase.from('campaigns').select('*').eq('is_public', true).eq('status', 'open')
+    let query = supabase
+      .from('campaigns')
+      .select(
+        'id, title, date, location_city, location_district, start_time, end_time, predefined_categories, free_tags, details, advertiser_id'
+      )
+      .eq('is_public', true)
+      .eq('status', 'open')
     if (date) query = query.eq('date', date)
     if (locationCity) query = query.ilike('location_city', `%${locationCity}%`)
     if (locationDistrict) query = query.ilike('location_district', `%${locationDistrict}%`)

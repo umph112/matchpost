@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
   const { data: proposal } = await admin
     .from('proposals')
-    .select('advertiser_id, influencer_id, advertiser_confirmed, influencer_confirmed')
+    .select('advertiser_id, influencer_id, advertiser_confirmed, influencer_confirmed, contact_hidden_at')
     .eq('id', proposalId)
     .single()
   if (!proposal) return NextResponse.json({ error: '제안을 찾을 수 없어요.' }, { status: 404 })
@@ -38,6 +38,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '협의 완료 후 연락처가 공개돼요.' }, { status: 403 })
   }
 
+  // 정산 완료 5일 후 재차단
+  if (proposal.contact_hidden_at && new Date(proposal.contact_hidden_at).getTime() < Date.now()) {
+    return NextResponse.json({ error: '정산 후 5일이 지나 연락처가 비공개로 전환됐어요.' }, { status: 403 })
+  }
+
   const { data: priv } = await admin
     .from('user_private')
     .select('real_name, phone, email')
@@ -45,6 +50,8 @@ export async function POST(req: Request) {
     .single()
 
   const { data: prof } = await admin.from('profiles').select('name').eq('id', otherId).single()
+
+  await admin.from('contact_reveal_log').insert({ proposal_id: proposalId, viewer_id: user.id })
 
   return NextResponse.json({
     name: priv?.real_name || prof?.name || '상대방',
