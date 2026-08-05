@@ -46,3 +46,6 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0041_trust_score_cache.sql` — trust_score를 VIEW→TABLE로 전환 + refresh_trust_score() 배치 갱신 함수
 - `0042_batch_functions.sql` — run_dormant_decay_batch/run_payment_reminder_batch/run_visit_weekly_batch/run_visit_monthly_batch (크론 연결은 다음 차수)
 - `0043_perf_indexes.sql` — proposals(campaign_id,stage) / schedules(influencer_id,date) / notifications(user_id,state) 인덱스
+- `0044_reviews_rename_to_spec.sql` — reviews 컬럼명을 IMPLEMENT-2-SETTLE.md 스펙에 맞춤(rater_id/ratee_id/role/stars/private_note) + closed_at 추가, 트리거·refresh_trust_score() 컬럼 참조 갱신
+- `0045_notifications_done_state.sql` — notifications.state CHECK 제약 추가 + "행위로만 done" 배선(평가 제출 시 본인 review 그룹 done, 정산 등록 시 payment_reminder done) + 관련 인덱스 3개
+- `0046_settle_campaign_security.sql` — settle_campaign() EXECUTE 권한을 service_role로만 제한(anon 키로 다른 SECURITY DEFINER 함수 직접 호출되는 것 확인해서 잠금). 호출자 소유권 확인은 src/lib/deals/settle.ts에서 선행

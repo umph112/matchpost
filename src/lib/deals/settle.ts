@@ -1,5 +1,6 @@
 'use server'
 
+import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
 export type SettleResult = { ok: true } | { ok: false; error: string }
@@ -18,6 +19,20 @@ export async function settleCampaign(
   proposalId: string,
   opts?: SettleOptions,
 ): Promise<SettleResult> {
+  // settle_campaign은 service_role 전용으로 잠겨 있어(0046) 여기서 먼저 소유권을 확인해야 한다.
+  const auth = await createClient()
+  const { data: { user } } = await auth.auth.getUser()
+  if (!user) return { ok: false, error: '로그인이 필요해요.' }
+
+  const { data: proposal } = await auth
+    .from('proposals')
+    .select('advertiser_id')
+    .eq('id', proposalId)
+    .maybeSingle()
+  if (!proposal || proposal.advertiser_id !== user.id) {
+    return { ok: false, error: '정산 권한이 없어요.' }
+  }
+
   const db = createServiceClient()
 
   const { error } = await db.rpc('settle_campaign', {

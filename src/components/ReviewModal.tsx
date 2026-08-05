@@ -46,12 +46,12 @@ export default function ReviewModal({
     setError('')
     const { error: err } = await supabase.from('reviews').insert({
       proposal_id: proposalId,
-      reviewer_id: reviewerId,
-      reviewee_id: revieweeId,
-      reviewer_role: reviewerRole,
-      rating,
+      rater_id: reviewerId,
+      ratee_id: revieweeId,
+      role: reviewerRole,
+      stars: rating,
       tags,
-      comment: comment.trim() || null,
+      private_note: comment.trim() || null,
     })
     setSubmitting(false)
     if (err) { setError(err.message); return }

@@ -153,7 +153,7 @@ export default function DealSheet({
     supabase
       .from('reviews')
       .select('proposal_id')
-      .eq('reviewer_id', userId)
+      .eq('rater_id', userId)
       .then(({ data }) => {
         if (data) setReviewedIds(new Set(data.map((r) => r.proposal_id)))
       })

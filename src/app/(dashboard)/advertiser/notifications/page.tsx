@@ -33,8 +33,9 @@ export default function AdvertiserNotificationsPage() {
     if (!user) return
     const { data } = await supabase
       .from('notifications')
-      .select('*')
+      .select('id, type, title, body, link, is_read, state, created_at')
       .eq('user_id', user.id)
+      .neq('state', 'done')
       .order('created_at', { ascending: false })
       .limit(100)
     setItems(data ?? [])
@@ -48,12 +49,18 @@ export default function AdvertiserNotificationsPage() {
   const markAllRead = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false)
+    await supabase.from('notifications')
+      .update({ is_read: true, state: 'read', read_at: new Date().toISOString() })
+      .eq('user_id', user.id).eq('is_read', false).neq('state', 'done')
     load()
   }
 
   const openItem = async (n: any) => {
-    if (!n.is_read) await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
+    if (!n.is_read) {
+      await supabase.from('notifications')
+        .update({ is_read: true, state: 'read', read_at: new Date().toISOString() })
+        .eq('id', n.id).neq('state', 'done')
+    }
     if (n.link) router.push(n.link)
     else load()
   }
