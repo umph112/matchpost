@@ -6,8 +6,12 @@ import { createClient } from '@/lib/supabase/client'
 import ReviewModal from './ReviewModal'
 import MatchScore from './MatchScore'
 import SettleConfirmModal from './SettleConfirmModal'
+import ReportModal from './ReportModal'
+import CancelRequestModal from './CancelRequestModal'
 import { initial } from '@/lib/initial'
 import { reSettleCampaign } from '@/lib/deals/settle'
+import { requestCancellation, acceptCancellation, CANCEL_REASONS, type CancelReason } from '@/lib/cancellations/actions'
+import { proposeConnection } from '@/lib/connections/actions'
 
 // 8-stage pipeline (지역=8단계, 제품/기자단=방문 제외 7단계)
 const ALL_STAGES = ['신청', '확정', '가이드', '방문', '업로드', '수정/컴프', '검사', '정산'] as const
@@ -148,6 +152,58 @@ export default function DealSheet({
     proposalId: string; revieweeId: string; revieweeName: string
   } | null>(null)
   const [settleModal, setSettleModal] = useState(false)
+  const [reportModal, setReportModal] = useState<string | null>(null)
+  const [cancelModal, setCancelModal] = useState<string | null>(null)
+  const [pendingCancellations, setPendingCancellations] = useState<
+    Record<string, { id: string; by_id: string; reason: string }>
+  >({})
+  const [cancelError, setCancelError] = useState('')
+  const [connections, setConnections] = useState<
+    Record<string, { id: string; a_id: string; a_ok: boolean; b_ok: boolean }>
+  >({})
+  const [connectionBusy, setConnectionBusy] = useState<string | null>(null)
+  const [connectionError, setConnectionError] = useState('')
+
+  const loadConnections = () => {
+    supabase
+      .from('connections')
+      .select('id, a_id, b_id, a_ok, b_ok')
+      .or(`a_id.eq.${userId},b_id.eq.${userId}`)
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, { id: string; a_id: string; a_ok: boolean; b_ok: boolean }> = {}
+        for (const c of data) {
+          const otherId = c.a_id === userId ? c.b_id : c.a_id
+          map[otherId] = { id: c.id, a_id: c.a_id, a_ok: c.a_ok, b_ok: c.b_ok }
+        }
+        setConnections(map)
+      })
+  }
+
+  const handleProposeConnection = async (influencerId: string) => {
+    setConnectionBusy(influencerId)
+    setConnectionError('')
+    const res = await proposeConnection(influencerId)
+    setConnectionBusy(null)
+    if (!res.ok) { setConnectionError(res.error); return }
+    loadConnections()
+  }
+
+  const loadCancellations = () => {
+    const ids = proposals_.map((p) => p.id)
+    if (ids.length === 0) return
+    supabase
+      .from('cancellations')
+      .select('id, deal_id, by_id, reason')
+      .in('deal_id', ids)
+      .is('agreed', null)
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, { id: string; by_id: string; reason: string }> = {}
+        for (const c of data) map[c.deal_id] = { id: c.id, by_id: c.by_id, reason: c.reason }
+        setPendingCancellations(map)
+      })
+  }
 
   useEffect(() => {
     const ids = proposals_.map((p) => p.id)
@@ -173,7 +229,36 @@ export default function DealSheet({
           setCheckpoints(map)
         })
     }
+    loadCancellations()
+    loadConnections()
+
+    // 체크포인트는 대화창에서 파일을 "가이드/원고/게재로 등록"하면 트리거가 자동 완료 처리한다(0056) —
+    // 딜시트를 열어둔 채로도 바로 보이도록 실시간 구독
+    const channel = supabase
+      .channel(`deal-checkpoints-${userId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'deal_checkpoints' },
+        (payload) => {
+          const cp = (payload.new ?? payload.old) as DealCheckpoint
+          if (!ids.includes(cp.proposal_id)) return
+          setCheckpoints((prev) => ({
+            ...prev,
+            [cp.proposal_id]: { ...prev[cp.proposal_id], [cp.kind]: payload.new as DealCheckpoint },
+          }))
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [userId])
+
+  const handleAcceptCancellation = async (cancellationId: string) => {
+    setCancelError('')
+    const res = await acceptCancellation(cancellationId)
+    if (!res.ok) { setCancelError(res.error); return }
+    loadCancellations()
+  }
 
   const isLocation = campaign.campaign_type === '지역'
   const stages = isLocation ? ALL_STAGES : ALL_STAGES.filter((s) => s !== '방문')
@@ -322,10 +407,12 @@ export default function DealSheet({
     const cp = cpKind ? checkpoints[p.id]?.[cpKind] : null
     const isSettled = !!p.settled_at
 
+    const pendingCancel = pendingCancellations[p.id]
+
     return (
+      <div key={p.id} className="border-b border-[#F5F5F7] last:border-b-0">
       <div
-        key={p.id}
-        className="grid items-center px-4 py-3 border-b border-[#F5F5F7] last:border-b-0 hover:bg-[#FAFAFB] transition gap-2"
+        className="grid items-center px-4 py-3 hover:bg-[#FAFAFB] transition gap-2"
         style={{ gridTemplateColumns: COL }}
       >
         {/* checkbox */}
@@ -497,11 +584,72 @@ export default function DealSheet({
           )}
         </div>
       </div>
+
+      {/* 취소 요청 / 신고 — 진행 중인 요청이 있으면 상태를, 없으면 액션 링크를 보여줌 */}
+      <div className="flex items-center gap-3 px-4 pb-2 -mt-1">
+        {pendingCancel ? (
+          pendingCancel.by_id === userId ? (
+            <span className="text-[10px] text-[#9A9AA5]">
+              취소 요청함({pendingCancel.reason}) — 상대 수락 대기 중
+            </span>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[#DC2626] font-semibold">
+                상대가 취소를 요청했어요({pendingCancel.reason})
+              </span>
+              <button
+                onClick={() => handleAcceptCancellation(pendingCancel.id)}
+                className="text-[10px] font-bold text-[#B45309] hover:underline"
+              >
+                취소 요청 수락
+              </button>
+            </div>
+          )
+        ) : (
+          !isSettled && (
+            <button
+              onClick={() => setCancelModal(p.id)}
+              className="text-[10px] text-[#9A9AA5] hover:text-[#7C7C88] hover:underline"
+            >
+              협업 취소 요청
+            </button>
+          )
+        )}
+        <button
+          onClick={() => setReportModal(p.id)}
+          className="text-[10px] text-[#9A9AA5] hover:text-red-600 hover:underline"
+        >
+          운영팀에 알리기
+        </button>
+        {isSettled && (() => {
+          const conn = connections[p.influencer_id]
+          const active = conn && conn.a_ok && conn.b_ok
+          const proposedByMe = conn && !active && ((conn.a_id === userId && conn.a_ok) || (conn.a_id !== userId && conn.b_ok))
+          if (active) return <span className="text-[10px] text-[#15803D]">상호 등록됨 — 대시 없이 메시지 가능</span>
+          if (proposedByMe) return <span className="text-[10px] text-[#9A9AA5]">상호 등록 제안함 — 상대 수락 대기</span>
+          return (
+            <button
+              onClick={() => handleProposeConnection(p.influencer_id)}
+              disabled={connectionBusy === p.influencer_id}
+              className="text-[10px] text-[#9A9AA5] hover:text-[#B45309] hover:underline"
+            >
+              {connectionBusy === p.influencer_id ? '제안 중...' : '서로 등록 제안'}
+            </button>
+          )
+        })()}
+      </div>
+      </div>
     )
   }
 
   return (
     <div className="pb-20">
+      {cancelError && (
+        <p className="px-4 py-2 text-[12px] text-red-500">{cancelError}</p>
+      )}
+      {connectionError && (
+        <p className="px-4 py-2 text-[12px] text-red-500">{connectionError}</p>
+      )}
       {reviewModal && (
         <ReviewModal
           proposalId={reviewModal.proposalId}
@@ -513,6 +661,25 @@ export default function DealSheet({
           onDone={() => {
             setReviewedIds((prev) => new Set([...prev, reviewModal.proposalId]))
             setReviewModal(null)
+          }}
+        />
+      )}
+
+      {reportModal && (
+        <ReportModal
+          proposalId={reportModal}
+          onClose={() => setReportModal(null)}
+          onDone={() => setReportModal(null)}
+        />
+      )}
+
+      {cancelModal && (
+        <CancelRequestModal
+          proposalId={cancelModal}
+          onClose={() => setCancelModal(null)}
+          onDone={() => {
+            setCancelModal(null)
+            loadCancellations()
           }}
         />
       )}

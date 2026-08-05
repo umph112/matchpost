@@ -214,6 +214,9 @@ export default async function AdvertiserMyPage() {
           <Link href="/advertiser/search" className="flex items-center gap-1.5 h-[38px] px-[15px] rounded-[9px] border border-[#E2E2E8] bg-white text-[13px] font-semibold text-[#3C3C46] hover:bg-[#F6F6F7]">
             🔍 인플루언서 찾기
           </Link>
+          <Link href="/advertiser/connections" className="flex items-center gap-1.5 h-[38px] px-[15px] rounded-[9px] border border-[#E2E2E8] bg-white text-[13px] font-semibold text-[#3C3C46] hover:bg-[#F6F6F7]">
+            ⭐ 내 인플루언서
+          </Link>
           <Link href="/advertiser/campaigns/new" className="flex items-center gap-1.5 h-[38px] px-4 rounded-[9px] bg-[#F59E0B] text-white text-[13px] font-bold hover:bg-[#D97706] shadow-[0_1px_2px_rgba(245,158,11,0.35)]">
             ＋ 캠페인 등록
           </Link>

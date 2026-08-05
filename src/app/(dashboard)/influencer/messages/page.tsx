@@ -18,6 +18,7 @@ function MessagesContent() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [checkpointKind, setCheckpointKind] = useState<'draft' | 'publish' | ''>('draft')
   const searchParams = useSearchParams()
   const proposalId = searchParams.get('proposalId')
   const receiverId = searchParams.get('receiverId')
@@ -158,6 +159,7 @@ function MessagesContent() {
         file_url: j.url,
         file_name: j.name,
         file_type: j.type,
+        checkpoint_kind: (selectedConversation.proposalId ?? proposalId) && checkpointKind ? checkpointKind : null,
       })
     }
     setUploading(false)
@@ -214,6 +216,18 @@ function MessagesContent() {
           <div ref={messagesEndRef} />
         </div>
 
+        {(selectedConversation.proposalId ?? proposalId) && (
+          <div className="flex items-center gap-2 text-[11px] text-gray-500 mb-1.5">
+            <span>다음 파일을 등록:</span>
+            {([['draft', '원고'], ['publish', '게재'], ['', '체크포인트 아님']] as const).map(([v, label]) => (
+              <label key={v} className="flex items-center gap-1">
+                <input type="radio" name="checkpointKind" checked={checkpointKind === v}
+                  onChange={() => setCheckpointKind(v)} className="w-3 h-3 accent-amber-500" />
+                {label}
+              </label>
+            ))}
+          </div>
+        )}
         <div className="flex gap-2">
           <input ref={fileRef} type="file" onChange={handleFile} className="hidden"
             accept=".pdf,.doc,.docx,.hwp,.hwpx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.zip" />

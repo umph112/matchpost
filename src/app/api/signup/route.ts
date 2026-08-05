@@ -5,10 +5,13 @@ import { NextResponse } from 'next/server'
 // (베타 진입 시 이메일 인증·본인인증 등 보안 절차 추가 예정)
 export async function POST(req: Request) {
   const body = await req.json()
-  const { role, name, activityName, email, phone, password, categories } = body
+  const { role, name, activityName, email, phone, managerPhone, companyPhone, password, categories } = body
 
   if (!role || !name || !email || !password) {
     return NextResponse.json({ error: '필수 항목이 누락됐어요.' }, { status: 400 })
+  }
+  if (role === 'advertiser' && !managerPhone) {
+    return NextResponse.json({ error: '담당자 휴대폰이 필요해요.' }, { status: 400 })
   }
 
   const admin = createClient(
@@ -36,6 +39,8 @@ export async function POST(req: Request) {
     name: isInfluencer ? activityName : name,
     role,
     status: isInfluencer ? 'approved' : 'pending',
+    manager_phone: !isInfluencer ? managerPhone : null,
+    company_phone: !isInfluencer ? (companyPhone || null) : null,
   })
   if (profErr) {
     await admin.auth.admin.deleteUser(uid) // 롤백

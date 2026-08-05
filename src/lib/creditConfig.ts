@@ -16,7 +16,7 @@ export const CREDIT_AMOUNTS = {
 
   OPEN_SCHEDULE:       1_000,  // 오픈 등록 (차감, 인플루언서)
   CREATE_CAMPAIGN:     5_000,  // 캠페인 등록 (차감, 광고주)
-  SEND_PROPOSAL:         500,  // 대시 발송 (차감, 광고주)
+  SEND_PROPOSAL:         500,  // 대시 발송 (차감, 광고주) — 0057부터 베타 기간 무료라 실제로는 안 빠짐
   UNLOCK_PROFILE:      1_000,  // 프로필 상세 열람 (차감, 광고주) — 기능 미구현, 금액만 확정
 
   DORMANT_14:            500,  // 휴면 14일 (1회)

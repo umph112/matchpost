@@ -11,8 +11,10 @@ type PendingProposal = {
   id: string
   budget: number | null
   settled_at: string | null
-  campaign: { title: string } | null
-  advertiser_profile: { name: string | null } | null
+  advertiser_id: string
+  campaign: { title: string; manager_phone: string | null; company_phone: string | null } | null
+  advertiser_profile: { name: string | null; manager_phone: string | null; company_phone: string | null } | null
+  company_name?: string | null
 }
 
 export default function EarningsPage() {
@@ -44,13 +46,28 @@ export default function EarningsPage() {
     // 수금 확인 대기: settled_at 있고 paid_confirmed_at/paid_disputed_at 없는 proposals
     const { data: pending } = await supabase
       .from('proposals')
-      .select('id, budget, settled_at, campaign:campaigns(title), advertiser_profile:profiles!proposals_advertiser_id_fkey(name)')
+      .select(`
+        id, budget, settled_at, advertiser_id,
+        campaign:campaigns(title, manager_phone, company_phone),
+        advertiser_profile:profiles!proposals_advertiser_id_fkey(name, manager_phone, company_phone)
+      `)
       .eq('influencer_id', user.id)
       .not('settled_at', 'is', null)
       .is('paid_confirmed_at', null)
       .is('paid_disputed_at', null)
 
-    setPendingConfirm((pending as unknown as PendingProposal[]) ?? [])
+    const rows = (pending as unknown as PendingProposal[]) ?? []
+    const advIds = [...new Set(rows.map((r) => r.advertiser_id))]
+    if (advIds.length > 0) {
+      const { data: advProfiles } = await supabase
+        .from('advertiser_profiles')
+        .select('user_id, company_name')
+        .in('user_id', advIds)
+      const companyByAdv = Object.fromEntries((advProfiles ?? []).map((a) => [a.user_id, a.company_name]))
+      rows.forEach((r) => { r.company_name = companyByAdv[r.advertiser_id] ?? null })
+    }
+
+    setPendingConfirm(rows)
     setLoading(false)
   }
 

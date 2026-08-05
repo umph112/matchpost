@@ -7,8 +7,9 @@ type PendingProposal = {
   id: string
   budget: number | null
   settled_at: string | null
-  campaign: { title: string } | null
-  advertiser_profile: { name: string | null } | null
+  campaign: { title: string; manager_phone: string | null; company_phone: string | null } | null
+  advertiser_profile: { name: string | null; manager_phone: string | null; company_phone: string | null } | null
+  company_name?: string | null
 }
 
 export default function PaidConfirmModal({
@@ -34,6 +35,17 @@ export default function PaidConfirmModal({
         month: 'long', day: 'numeric',
       })
     : ''
+
+  // 담당자 휴대폰 › 회사 대표번호 순 — 대표번호는 담당자에게 안 닿아 미수 상황엔 소용없다
+  const contactPhone =
+    proposals[0]?.campaign?.manager_phone ??
+    proposals[0]?.advertiser_profile?.manager_phone ??
+    proposals[0]?.campaign?.company_phone ??
+    proposals[0]?.advertiser_profile?.company_phone ??
+    ''
+  const contactLabel = [proposals[0]?.company_name, proposals[0]?.advertiser_profile?.name]
+    .filter(Boolean)
+    .join(' · ')
 
   // 정상 입금은 아무 액션도 요구하지 않는다 — 오버레이 클릭이든 버튼이든, "닫기" 자체가 확인이다.
   const confirmAndClose = async () => {
@@ -117,6 +129,19 @@ export default function PaidConfirmModal({
           >
             입금된 게 없어요 — 브랜드에 알리기
           </button>
+          {contactPhone ? (
+            <a
+              href={`tel:${contactPhone}`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center justify-center gap-1.5 w-full py-2.5 text-sm font-semibold text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition"
+            >
+              📞 {contactLabel && `${contactLabel} · `}{contactPhone}
+            </a>
+          ) : (
+            <p className="text-[11px] text-gray-400 text-center">
+              담당자 번호가 등록되지 않았어요 — 대시로 문의해주세요.
+            </p>
+          )}
           <button
             onClick={confirmAndClose}
             disabled={loading}

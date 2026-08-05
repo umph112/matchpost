@@ -12,6 +12,8 @@ export default function SignupPage() {
   const [activityName, setActivityName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [managerPhone, setManagerPhone] = useState('')
+  const [companyPhone, setCompanyPhone] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [majorCategory, setMajorCategory] = useState('')
@@ -63,7 +65,7 @@ export default function SignupPage() {
         return
       }
     } else {
-      if (!name || !email || !phone || !password) {
+      if (!name || !email || !phone || !managerPhone || !password) {
         setError('필수 항목을 모두 입력해주세요.')
         return
       }
@@ -91,6 +93,8 @@ export default function SignupPage() {
         activityName,
         email,
         phone,
+        managerPhone: !isInfluencer ? managerPhone : undefined,
+        companyPhone: !isInfluencer ? companyPhone : undefined,
         password,
         categories: isInfluencer ? buildCategories() : [], // index 0 = 메이저
       }),
@@ -235,6 +239,27 @@ export default function SignupPage() {
               className={inputCls} placeholder="010-0000-0000" />
             <p className="text-xs text-gray-400 mt-1">추후 본인인증(네이버·카카오·PASS)에 사용될 예정이에요.</p>
           </div>
+
+          {/* 담당자 연락처 (광고주 전용) */}
+          {role === 'advertiser' && (
+            <>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">담당자 휴대폰</label>
+                <input type="tel" value={managerPhone} onChange={(e) => setManagerPhone(e.target.value)}
+                  className={inputCls} placeholder="010-0000-0000" />
+                <p className="text-xs text-gray-400 mt-1">
+                  캠페인 등록 시 기본값으로 쓰여요. 미수금 발생 시 인플루언서에게 이 번호가 먼저 안내됩니다.
+                </p>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  회사 대표번호 <span className="text-gray-400 font-normal">(선택)</span>
+                </label>
+                <input type="tel" value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)}
+                  className={inputCls} placeholder="02-000-0000" />
+              </div>
+            </>
+          )}
 
           {/* 비밀번호 */}
           <div className="mb-4">

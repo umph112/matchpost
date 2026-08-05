@@ -11,10 +11,10 @@ export async function POST(req: Request) {
   // 관리자 확인
   const { data: profile } = await supabase
     .from('profiles')
-    .select('is_admin')
+    .select('role')
     .eq('id', user.id)
     .single()
-  if (!profile?.is_admin) return NextResponse.json({ error: '관리자 권한이 필요해요.' }, { status: 403 })
+  if (profile?.role !== 'admin') return NextResponse.json({ error: '관리자 권한이 필요해요.' }, { status: 403 })
 
   const { targetUserId, amount, description } = await req.json()
   if (!targetUserId || amount === undefined || amount === 0) {

@@ -52,3 +52,11 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0047_lock_privileged_functions.sql` — credit_ledger_* 5종, run_dormant_decay_batch/run_payment_reminder_batch/run_visit_weekly_batch/run_visit_monthly_batch, refresh_trust_score, resolve_payment_due_date — 0046과 같은 이유로 EXECUTE를 service_role로만 제한
 - `0048_re_settle_campaign.sql` — 재정산 루프 제대로 구현. settlement_attempts(0025, 그동안 미사용)를 실제로 써서 회차 기록, settled_at은 절대 안 건드림, payment 체크포인트를 "신고 없이 확정된 날" 기준으로 재계산, 3회째부터 운영팀 에스컬레이션 알림. 0046/0047과 같은 이유로 EXECUTE 잠금
 - `0049_blog_history_tables.sql` — blog_analytics_history / blog_post_rankings 테이블 신설(IMPLEMENT-3-SCREENS.md 10장 ⑤⑥) + blog_analytics.missing_metrics/grade_score 컬럼 추가
+- `0050_admin_role_unify_and_blog_history.sql` — 관리자 판정을 profiles.role='admin'으로 통일(is_admin은 한 번도 true였던 적 없는 죽은 컬럼이었음을 실측 확인). RLS 4건(reviews/payment_due_changes/tax_consents/tax_export_log/trust_score) + re_settle_campaign 에스컬레이션 대상 교체. blog_score_history(0033)는 폐기, blog_analytics_history를 정본으로 확정 + score_version 컬럼 추가
+- `0051_reports_functions.sql` — 신고(reports) 접수/해결/재오픈/관리자종결·이관 + 14일 자동종결·7일 리마인드 배치. file_report()가 서버에서 counterpart_id·stage·snapshot 직접 유도
+- `0052_sanctions_recalc.sql` — 제재(sanctions) 자동 산정 배치. 결제 지연 "비율" 기준 0~3단계만 자동(4·5단계는 수동판단 영역이라 배치가 안 건드림), 해제는 미해결신고 없음 + 최근 3건 연속 정시일 때만
+- `0053_cancellations_functions.sql` — 취소(cancellations) 요청/수락 + 3일 자동확정·90일 카운트리셋 배치. settlement_attempts처럼 그동안 미사용이던 이력 스키마를 실사용으로 전환
+- `0054_proposal_time_overlap.sql` — 협업 시간 설정(set_proposal_time) + 겹침 체크. proposals.start_at/duration_min(0029, 그동안 미사용) 실사용, 확정 최종 관문(/api/deal/confirm)에서 재검사
+- `0055_connections_functions.sql` — 상호등록(connections) 제안/수락/해제. 실제 정산 완료한 사이만 제안 가능(스팸 방지)
+- `0056_message_checkpoint_trigger.sql` — messages.checkpoint_kind(0031, 'guide'만 허용하던 제약)를 guide/draft/publish로 확장 + 대화 파일 전송 시 딜시트 체크포인트 자동완료 트리거
+- `0057_dash_fee_beta_free.sql` — 대시 발송 과금(500C, 문서엔 100C로 적혀 있었으나 실제 운영값은 500C) 베타 기간 한시 중단. 트리거 삭제 대신 함수 내부 조건(v_dash_fee_enabled)으로 꺼서 재개 용이

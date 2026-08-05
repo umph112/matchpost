@@ -31,6 +31,11 @@ export default async function AdminDashboard() {
     .from('proposals')
     .select('*')
 
+  const { count: openReportsCount } = await supabase
+    .from('reports')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'open')
+
   const { data: allSchedules } = await supabase
     .from('schedules')
     .select('*')
@@ -109,6 +114,13 @@ export default async function AdminDashboard() {
           <div className="text-2xl mb-2">🪙</div>
           <p className="font-semibold text-gray-800">크레딧 관리</p>
           <p className="text-gray-400 text-sm mt-1">회원별 잔액 조회 · 지급 · 차감 · 이력</p>
+        </Link>
+        <Link href="/admin/reports" className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition col-span-2">
+          <div className="text-2xl mb-2">🚨</div>
+          <p className="font-semibold text-gray-800">신고 관리</p>
+          <p className="text-gray-400 text-sm mt-1">
+            {openReportsCount ? `처리 대기 ${openReportsCount}건` : '접수된 신고 없음'}
+          </p>
         </Link>
       </div>
     </div>

@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
   const { data: proposal } = await admin
     .from('proposals')
-    .select('advertiser_id, influencer_id, advertiser_confirmed, influencer_confirmed, campaign_id, schedule_id')
+    .select('advertiser_id, influencer_id, advertiser_confirmed, influencer_confirmed, campaign_id, schedule_id, start_at, duration_min')
     .eq('id', proposalId)
     .single()
   if (!proposal) return NextResponse.json({ error: '제안을 찾을 수 없어요.' }, { status: 404 })
@@ -64,6 +64,40 @@ export async function POST(req: Request) {
   const patch = isAdvertiser
     ? { advertiser_confirmed: !currentValue }
     : { influencer_confirmed: !currentValue }
+
+  const nextAdvertiser = isAdvertiser ? !currentValue : proposal.advertiser_confirmed
+  const nextInfluencer = isInfluencer ? !currentValue : proposal.influencer_confirmed
+  const willBeFullyConfirmed = nextAdvertiser && nextInfluencer
+
+  // 시간이 설정된 협업만 겹침을 본다 — 확정되는 순간 그 시간대를 점유하므로 최종 관문에서 재검사
+  if (willBeFullyConfirmed && proposal.start_at) {
+    const duration = proposal.duration_min ?? 60
+    const start = new Date(proposal.start_at)
+    const end = new Date(start.getTime() + duration * 60000)
+
+    const { data: others } = await admin
+      .from('proposals')
+      .select('start_at, duration_min')
+      .neq('id', proposalId)
+      .eq('advertiser_confirmed', true)
+      .eq('influencer_confirmed', true)
+      .not('start_at', 'is', null)
+      .or(
+        `advertiser_id.eq.${proposal.advertiser_id},influencer_id.eq.${proposal.advertiser_id},advertiser_id.eq.${proposal.influencer_id},influencer_id.eq.${proposal.influencer_id}`
+      )
+
+    const conflict = (others ?? []).find((o) => {
+      const oStart = new Date(o.start_at as string)
+      const oEnd = new Date(oStart.getTime() + (o.duration_min ?? 60) * 60000)
+      return oStart < end && start < oEnd
+    })
+
+    if (conflict) {
+      const t = new Date(conflict.start_at as string)
+      const label = `${t.getMonth() + 1}/${t.getDate()} ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
+      return NextResponse.json({ error: `${label} 협업과 겹쳐요.` }, { status: 409 })
+    }
+  }
 
   const { error } = await admin.from('proposals').update(patch).eq('id', proposalId)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

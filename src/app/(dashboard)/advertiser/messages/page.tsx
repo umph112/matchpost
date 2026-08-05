@@ -19,6 +19,7 @@ export default function AdvertiserMessagesPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [markAsGuide, setMarkAsGuide] = useState(true)
   const supabase = createClient()
   const searchParams = useSearchParams()
   const toParam = searchParams.get('to')
@@ -163,6 +164,7 @@ export default function AdvertiserMessagesPage() {
         file_url: j.url,
         file_name: j.name,
         file_type: j.type,
+        checkpoint_kind: markAsGuide && selectedConversation.proposalId ? 'guide' : null,
       })
     }
     setUploading(false)
@@ -221,6 +223,13 @@ export default function AdvertiserMessagesPage() {
           <div ref={messagesEndRef} />
         </div>
 
+        {selectedConversation.proposalId && (
+          <label className="flex items-center gap-1.5 text-[11px] text-gray-500 mb-1.5">
+            <input type="checkbox" checked={markAsGuide} onChange={(e) => setMarkAsGuide(e.target.checked)}
+              className="w-3 h-3 accent-amber-500" />
+            다음 파일을 가이드로 등록(딜시트 가이드 단계 자동 완료)
+          </label>
+        )}
         <div className="flex gap-2">
           <input ref={fileRef} type="file" onChange={handleFile} className="hidden"
             accept=".pdf,.doc,.docx,.hwp,.hwpx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.zip" />

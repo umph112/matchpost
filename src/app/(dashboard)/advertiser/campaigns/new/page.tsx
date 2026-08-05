@@ -116,6 +116,13 @@ export default function NewCampaignPage() {
   const [paymentDueRule, setPaymentDueRule] = useState('') // 선택적 보충 메모
   const [paymentMethods, setPaymentMethods] = useState<string[]>([])
 
+  // 담당자 연락처 — 계정 기본값(profiles)을 불러와 채우고, 이 캠페인만 다르게 덮어쓸 수 있다
+  const [accountManagerPhone, setAccountManagerPhone] = useState('')
+  const [accountCompanyPhone, setAccountCompanyPhone] = useState('')
+  const [overridePhone, setOverridePhone] = useState(false)
+  const [managerPhone, setManagerPhone] = useState('')
+  const [companyPhone, setCompanyPhone] = useState('')
+
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [details, setDetails] = useState('')
   // 가이드 파일 (PDF·워드·한글 등)
@@ -182,6 +189,16 @@ export default function NewCampaignPage() {
         .eq('advertiser_id', user.id)
         .order('created_at', { ascending: false })
       setDetailTemplates(tpls || [])
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('manager_phone, company_phone')
+        .eq('id', user.id)
+        .single()
+      setAccountManagerPhone(profile?.manager_phone ?? '')
+      setAccountCompanyPhone(profile?.company_phone ?? '')
+      setManagerPhone(profile?.manager_phone ?? '')
+      setCompanyPhone(profile?.company_phone ?? '')
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -494,6 +511,9 @@ export default function NewCampaignPage() {
       payment_due_date: paymentTermType === 'fixed_date' ? paymentDueDate || null : null,
       payment_due_rule: paymentDueRule || null,
       payment_methods: paymentMethods,
+      // 담당자 연락처 — 비면 profiles 계정 값을 인플루언서 화면에서 그대로 씀(campaigns.manager_phone ?? profiles.manager_phone)
+      manager_phone: overridePhone ? (managerPhone.trim() || null) : null,
+      company_phone: overridePhone ? (companyPhone.trim() || null) : null,
       predefined_categories: selectedCategories,
       details: details || null,
       guide_url: guideUrl || null,
@@ -1075,6 +1095,57 @@ export default function NewCampaignPage() {
         {paymentMethods.length > 1 && (
           <p className="text-xs text-amber-600 mt-2">복수 선택됨 — 인플루언서가 대시에서 최종 결정해요.</p>
         )}
+
+        {/* 담당자 연락처 */}
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <label className="block text-sm font-medium text-gray-700 mb-2">담당자 연락처</label>
+          {!overridePhone ? (
+            <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5">
+              <p className="text-sm text-gray-600">
+                {accountManagerPhone || '가입 정보에 휴대폰이 없어요'}
+                {accountCompanyPhone && ` · ${accountCompanyPhone}`}
+              </p>
+              <button
+                type="button"
+                onClick={() => setOverridePhone(true)}
+                className="text-xs font-medium text-amber-600 hover:underline shrink-0 ml-2"
+              >
+                이 캠페인만 다르게
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <input
+                type="tel"
+                value={managerPhone}
+                onChange={(e) => setManagerPhone(e.target.value)}
+                placeholder="담당자 휴대폰 (필수)"
+                className={input}
+              />
+              <input
+                type="tel"
+                value={companyPhone}
+                onChange={(e) => setCompanyPhone(e.target.value)}
+                placeholder="회사 대표번호 (선택)"
+                className={input}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setOverridePhone(false)
+                  setManagerPhone(accountManagerPhone)
+                  setCompanyPhone(accountCompanyPhone)
+                }}
+                className="text-xs text-gray-400 hover:underline self-start"
+              >
+                가입 정보 값으로 되돌리기
+              </button>
+            </div>
+          )}
+          <p className="text-xs text-gray-400 mt-2">
+            양쪽 확정 뒤에만 인플루언서에게 보여요. 미수금이 생기면 인플루언서에게 이 휴대폰 번호가 먼저 안내됩니다.
+          </p>
+        </div>
       </div>
 
       {/* 상세 내용 */}
