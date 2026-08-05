@@ -7,6 +7,7 @@ import ReviewModal from './ReviewModal'
 import MatchScore from './MatchScore'
 import SettleConfirmModal from './SettleConfirmModal'
 import { initial } from '@/lib/initial'
+import { reSettleCampaign } from '@/lib/deals/settle'
 
 // 8-stage pipeline (지역=8단계, 제품/기자단=방문 제외 7단계)
 const ALL_STAGES = ['신청', '확정', '가이드', '방문', '업로드', '수정/컴프', '검사', '정산'] as const
@@ -289,21 +290,26 @@ export default function DealSheet({
     (p) => !!p.settled_at && !!p.paid_disputed_at,
   )
 
+  const [resettleError, setResettleError] = useState('')
+
   const handleReSettle = async () => {
-    const now = new Date().toISOString()
+    setResettleError('')
+    const done: string[] = []
     for (const p of reSettleTargets) {
-      await supabase
-        .from('proposals')
-        .update({ settled_at: now, paid_disputed_at: null, paid_confirmed_at: null })
-        .eq('id', p.id)
+      const res = await reSettleCampaign(p.id)
+      if (res.ok) {
+        done.push(p.id)
+      } else {
+        setResettleError(res.error)
+      }
     }
-    setProposals((prev) =>
-      prev.map((p) =>
-        reSettleTargets.some((r) => r.id === p.id)
-          ? { ...p, settled_at: now, paid_disputed_at: null, paid_confirmed_at: null }
-          : p,
-      ),
-    )
+    if (done.length > 0) {
+      setProposals((prev) =>
+        prev.map((p) =>
+          done.includes(p.id) ? { ...p, paid_disputed_at: null, paid_confirmed_at: null } : p,
+        ),
+      )
+    }
     setSelected(new Set())
   }
 
@@ -691,6 +697,9 @@ export default function DealSheet({
           <span className="text-[#9A9AA5] text-[12px]">
             합계 {(selectedBudget / 10000).toLocaleString()}만원
           </span>
+          {resettleError && (
+            <span className="text-[#FCA5A5] text-[12px]">{resettleError}</span>
+          )}
           <div className="ml-auto flex items-center gap-2">
             {reSettleTargets.length > 0 && (
               <button

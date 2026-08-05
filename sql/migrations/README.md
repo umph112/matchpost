@@ -49,3 +49,6 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0044_reviews_rename_to_spec.sql` — reviews 컬럼명을 IMPLEMENT-2-SETTLE.md 스펙에 맞춤(rater_id/ratee_id/role/stars/private_note) + closed_at 추가, 트리거·refresh_trust_score() 컬럼 참조 갱신
 - `0045_notifications_done_state.sql` — notifications.state CHECK 제약 추가 + "행위로만 done" 배선(평가 제출 시 본인 review 그룹 done, 정산 등록 시 payment_reminder done) + 관련 인덱스 3개
 - `0046_settle_campaign_security.sql` — settle_campaign() EXECUTE 권한을 service_role로만 제한(anon 키로 다른 SECURITY DEFINER 함수 직접 호출되는 것 확인해서 잠금). 호출자 소유권 확인은 src/lib/deals/settle.ts에서 선행
+- `0047_lock_privileged_functions.sql` — credit_ledger_* 5종, run_dormant_decay_batch/run_payment_reminder_batch/run_visit_weekly_batch/run_visit_monthly_batch, refresh_trust_score, resolve_payment_due_date — 0046과 같은 이유로 EXECUTE를 service_role로만 제한
+- `0048_re_settle_campaign.sql` — 재정산 루프 제대로 구현. settlement_attempts(0025, 그동안 미사용)를 실제로 써서 회차 기록, settled_at은 절대 안 건드림, payment 체크포인트를 "신고 없이 확정된 날" 기준으로 재계산, 3회째부터 운영팀 에스컬레이션 알림. 0046/0047과 같은 이유로 EXECUTE 잠금
+- `0049_blog_history_tables.sql` — blog_analytics_history / blog_post_rankings 테이블 신설(IMPLEMENT-3-SCREENS.md 10장 ⑤⑥) + blog_analytics.missing_metrics/grade_score 컬럼 추가

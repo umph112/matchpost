@@ -13,10 +13,10 @@ type PendingProposal = {
 
 export default function PaidConfirmModal({
   proposals,
-  onClose,
   onDone,
 }: {
   proposals: PendingProposal[]
+  // 정상 수금은 닫기만 해도 처리되므로(confirmAndClose가 onDone을 호출) 별도 onClose는 쓰지 않는다.
   onClose: () => void
   onDone: (confirmedIds: string[], disputedIds: string[]) => void
 }) {
@@ -35,15 +35,15 @@ export default function PaidConfirmModal({
       })
     : ''
 
-  const handleConfirm = async () => {
+  // 정상 입금은 아무 액션도 요구하지 않는다 — 오버레이 클릭이든 버튼이든, "닫기" 자체가 확인이다.
+  const confirmAndClose = async () => {
+    if (loading) return
     setLoading(true)
-    setError('')
     const now = new Date().toISOString()
-    const { error: err } = await supabase
+    await supabase
       .from('proposals')
       .update({ paid_confirmed_at: now })
       .in('id', proposals.map((p) => p.id))
-    if (err) { setError(err.message); setLoading(false); return }
     onDone(proposals.map((p) => p.id), [])
   }
 
@@ -60,8 +60,14 @@ export default function PaidConfirmModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-[480px]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={confirmAndClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-[480px]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* 헤더 */}
         <div className="px-6 pt-6 pb-4 border-b border-gray-100">
           <p className="text-xs text-gray-400 mb-1">{brandName} · {settledDate} 기록</p>
@@ -102,29 +108,25 @@ export default function PaidConfirmModal({
           <p className="px-6 pb-3 text-sm text-red-500">{error}</p>
         )}
 
-        {/* 버튼 */}
+        {/* 버튼 — 위계가 뒤집혀 있는 게 의도된 설계: 신고가 주 액션, 정상 수금은 닫기만 해도 처리됨 */}
         <div className="px-6 pb-6 flex flex-col gap-2">
-          <button
-            onClick={handleConfirm}
-            disabled={loading}
-            className="w-full py-3 bg-[#F59E0B] text-white font-semibold rounded-xl hover:bg-[#D97706] transition disabled:opacity-50"
-          >
-            잘 받았어요
-          </button>
           <button
             onClick={handleDispute}
             disabled={loading}
-            className="w-full py-3 bg-red-50 text-red-600 font-semibold rounded-xl hover:bg-red-100 transition disabled:opacity-50"
+            className="w-full py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition disabled:opacity-50"
           >
-            수금된 것 없어요 → 브랜드에 알리기
+            입금된 게 없어요 — 브랜드에 알리기
           </button>
           <button
-            onClick={onClose}
+            onClick={confirmAndClose}
             disabled={loading}
-            className="w-full py-2 text-sm text-gray-400 hover:text-gray-600 transition"
+            className="w-full py-2.5 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition disabled:opacity-50"
           >
-            나중에
+            잘 받았어요 · 닫기
           </button>
+          <p className="text-[11px] text-gray-400 text-center leading-snug">
+            들어왔으면 따로 하실 일이 없습니다 — 그대로 닫으면 정상 처리돼요.
+          </p>
         </div>
       </div>
     </div>

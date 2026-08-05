@@ -14,7 +14,7 @@ import time
 import random
 import argparse
 import json as _json
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from urllib.parse import urlparse, unquote_plus
 
 import requests
@@ -265,16 +265,17 @@ def extract_keywords(title: str) -> list[str]:
 
 def check_post_keyword_rankings(blog_id: str, posts: list) -> list:
     """
-    최근 포스팅별:
-      1) 제목 전체로 검색 → 해당 글 노출 여부/순위 (인덱싱 상태 확인)
-      2) 제목에서 추출한 키워드별 검색 → 키워드마다 노출 순위 세분화
+    그날 발행한 포스팅(최대 5개, 호출부에서 필터링해서 넘김)별:
+      1) 제목 전체로 검색 → 해당 글 노출 여부/순위 (인덱싱 상태 확인용, 배점에는 미반영)
+      2) 제목에서 추출한 키워드별 검색 → 키워드마다 노출 순위 세분화(배점 기준)
     """
     results = []
-    check_posts = posts[:7]
+    check_posts = posts[:5]
 
     for post in check_posts:
         title  = unquote_plus(re.sub(r'<[^>]+>', '', post.get('title', ''))).strip()
         log_no = str(post.get('logNo', ''))
+        published_on = _parse_naver_date(post.get('addDate', ''))
         if not title or not log_no:
             continue
 
@@ -290,11 +291,12 @@ def check_post_keyword_rankings(blog_id: str, posts: list) -> list:
             time.sleep(random.uniform(0.3, 0.6))
 
         results.append({
-            'log_no':   log_no,
-            'title':    title,
-            'found':    found,
-            'rank':     rank,
-            'keywords': kw_results,
+            'log_no':       log_no,
+            'title':        title,
+            'published_on': published_on.isoformat() if published_on else None,
+            'found':        found,
+            'rank':         rank,
+            'keywords':     kw_results,
         })
 
         print(
@@ -346,87 +348,100 @@ def check_category_keywords(blog_id: str, categories: list[str]) -> dict:
 
 # ── 종합 등급 계산 ─────────────────────────────────────────────────────────
 
-def calculate_grade(data: dict, post_rankings: list) -> tuple[str, int]:
+def calculate_grade(data: dict, post_rankings: list) -> tuple[str, int, int]:
     """
-    100점 만점 종합 등급 + 세부 등급(A-1 / A-2 / A-3 등) 반환
+    100점 만점 종합 등급 + 세부 등급(A-1 / A-2 / A-3 등) + 결측 항목 수 반환
 
-    배점:
+    배점(측정 가능한 항목의 만점 기준으로 환산 — 결측 항목은 감점하지 않고 제외):
       일 방문자     40점  — 실제 도달력, 조작 어려운 핵심 지표
       포스팅 노출   35점  — 노출률(20) + 평균 순위 품질(15)
-      포스팅 빈도   15점  — 꾸준한 활동성
-      이웃 수       10점  — 참고 지표 (팔로워 매입 가능하므로 비중 낮춤)
+      포스팅 빈도   15점  — 꾸준한 활동성. None(수집 실패)은 0점이 아니라 항목 자체를 제외
+      이웃 수       10점  — 참고 지표. 컷을 낮춰(300+) 소규모 블로거도 점수를 받게 함
 
-    등급 컷: S ≥ 75 / A ≥ 55 / B ≥ 35 / C ≥ 15 / D
-    세부:    X-1(상위 1/3) / X-2(중간) / X-3(하위 1/3)
+    등급 컷(13단계): S 90+ / A 75-89 / B 60-74 / C 45-59 / D 0-44, 각 3단계 세분
     """
-    score = 0
+    earned = 0
+    max_possible = 0
+    missing = 0
 
-    visitor  = data.get('visitor_today')  or 0
-    freq     = data.get('post_frequency') or 0.0
-    neighbor = data.get('neighbor_count') or 0
+    visitor  = data.get('visitor_today')
+    freq     = data.get('post_frequency')
+    neighbor = data.get('neighbor_count')
 
-    # ① 일 방문자 (0~40) — 1만이 광고 활용 최소선
-    if   visitor >= 50_000: score += 40
-    elif visitor >= 20_000: score += 32
-    elif visitor >= 10_000: score += 22
-    elif visitor >=  3_000: score += 10
-    elif visitor >=  1_000: score +=  4
+    # ① 일 방문자 (0~40)
+    if visitor is None:
+        missing += 1
+    else:
+        max_possible += 40
+        if   visitor >= 50_000: earned += 40
+        elif visitor >= 20_000: earned += 32
+        elif visitor >= 10_000: earned += 22
+        elif visitor >=  3_000: earned += 10
+        elif visitor >=  1_000: earned +=  4
 
     # ② 포스팅 노출 (0~35) = 키워드 노출률(0~20) + 평균 순위 품질(0~15)
-    # 제목 전체 검색은 자기 글 제목이므로 항상 1위 → 변별력 없음
+    # 제목 전체 검색은 자기 글 제목이므로 항상 1위 → 변별력 없어 배점에서 제외
     # 실제 사람이 검색하는 키워드(2-gram) 단위 노출률을 기준으로 배점
-    if post_rankings:
-        all_kws     = [k for p in post_rankings for k in (p.get('keywords') or [])]
-        exposed_kws = [k for k in all_kws if k.get('found') and k.get('rank')]
-        if all_kws:
-            rate = len(exposed_kws) / len(all_kws)
+    all_kws     = [k for p in post_rankings for k in (p.get('keywords') or [])] if post_rankings else []
+    exposed_kws = [k for k in all_kws if k.get('found') and k.get('rank')]
+    if all_kws:
+        max_possible += 35
+        rate = len(exposed_kws) / len(all_kws)
 
-            # 노출률 점수 (0~20)
-            if   rate >= 0.9: score += 20
-            elif rate >= 0.7: score += 15
-            elif rate >= 0.5: score += 10
-            elif rate >= 0.3: score +=  5
-            elif rate  > 0:   score +=  2
+        if   rate >= 0.9: earned += 20
+        elif rate >= 0.7: earned += 15
+        elif rate >= 0.5: earned += 10
+        elif rate >= 0.3: earned +=  5
+        elif rate  > 0:   earned +=  2
 
-            # 평균 순위 품질 점수 (0~15) — 노출된 키워드들의 평균 순위 기준
-            if exposed_kws:
-                avg_rank = sum(k['rank'] for k in exposed_kws) / len(exposed_kws)
-                if   avg_rank <=  3: score += 15
-                elif avg_rank <= 10: score += 12
-                elif avg_rank <= 20: score +=  8
-                elif avg_rank <= 50: score +=  4
-                else:                score +=  1
-
-    # ③ 포스팅 빈도 (0~15)
-    if   freq >= 20: score += 15
-    elif freq >= 10: score += 10
-    elif freq >=  4: score +=  6
-    elif freq >=  1: score +=  3
-
-    # ④ 이웃 수 (0~10) — 참고 지표
-    if   neighbor >= 100_000: score += 10
-    elif neighbor >=  30_000: score +=  7
-    elif neighbor >=  10_000: score +=  4
-    elif neighbor >=   3_000: score +=  2
-
-    # 등급 + 세부 등급 계산
-    if   score >= 75:
-        base = 'S'
-        cuts = [90, 83]   # S-1 ≥90, S-2 ≥83, S-3 ≥75
-    elif score >= 55:
-        base = 'A'
-        cuts = [69, 62]   # A-1 ≥69, A-2 ≥62, A-3 ≥55
-    elif score >= 35:
-        base = 'B'
-        cuts = [49, 42]   # B-1 ≥49, B-2 ≥42, B-3 ≥35
-    elif score >= 15:
-        base = 'C'
-        cuts = [29, 22]   # C-1 ≥29, C-2 ≥22, C-3 ≥15
+        if exposed_kws:
+            avg_rank = sum(k['rank'] for k in exposed_kws) / len(exposed_kws)
+            if   avg_rank <=  3: earned += 15
+            elif avg_rank <= 10: earned += 12
+            elif avg_rank <= 20: earned +=  8
+            elif avg_rank <= 50: earned +=  4
+            else:                earned +=  1
     else:
-        return 'D', score
+        missing += 1
+
+    # ③ 포스팅 빈도 (0~15) — null(수집 실패)이면 0점이 아니라 항목 제외
+    if freq is None:
+        missing += 1
+    else:
+        max_possible += 15
+        if   freq >= 20: earned += 15
+        elif freq >= 10: earned += 10
+        elif freq >=  4: earned +=  6
+        elif freq >=  1: earned +=  3
+
+    # ④ 이웃 수 (0~10) — 컷 하향, 참고 지표
+    if neighbor is None:
+        missing += 1
+    else:
+        max_possible += 10
+        if   neighbor >= 100_000: earned += 10
+        elif neighbor >=  30_000: earned +=  8
+        elif neighbor >=  10_000: earned +=  6
+        elif neighbor >=   3_000: earned +=  4
+        elif neighbor >=   1_000: earned +=  2
+        elif neighbor >=     300: earned +=  1
+
+    score = round(earned / max_possible * 100) if max_possible > 0 else 0
+
+    # 등급 + 세부 등급 (13단계)
+    if score >= 90:
+        return 'S', score, missing
+    elif score >= 75:
+        base, cuts = 'A', [85, 80]
+    elif score >= 60:
+        base, cuts = 'B', [70, 65]
+    elif score >= 45:
+        base, cuts = 'C', [55, 50]
+    else:
+        base, cuts = 'D', [40, 35]
 
     sub = 1 if score >= cuts[0] else (2 if score >= cuts[1] else 3)
-    return f'{base}-{sub}', score
+    return f'{base}-{sub}', score, missing
 
 
 # ── Supabase 연동 ──────────────────────────────────────────────────────────
@@ -443,19 +458,76 @@ def get_influencers(user_id: str | None = None) -> list[dict]:
     return (q.execute().data or [])
 
 
-def save_analytics(user_id: str, blog_url: str, data: dict):
+def save_analytics(user_id: str, blog_url: str, data: dict, batch_date: date):
+    # 전일 대비 방문자 차분(history.visitor_daily) — 기존 스냅샷을 덮어쓰기 전에 조회
+    prev = (
+        supabase.from_('blog_analytics')
+        .select('visitor_total')
+        .eq('user_id', user_id)
+        .execute()
+    )
+    prev_total = prev.data[0]['visitor_total'] if prev.data else None
+    visitor_total = data.get('visitor_total')
+    visitor_daily = (
+        visitor_total - prev_total
+        if visitor_total is not None and prev_total is not None and visitor_total >= prev_total
+        else None
+    )
+
     supabase.from_('blog_analytics').upsert(
         {'user_id': user_id, 'blog_url': blog_url,
-         'crawled_at': datetime.utcnow().isoformat(), **data},
+         'crawled_at': datetime.now(timezone.utc).isoformat(), **data},
         on_conflict='user_id',
     ).execute()
+
+    if data.get('error_message'):
+        return  # 크롤링 실패한 날은 이력을 남기지 않는다(측정 자체가 안 됐으므로)
+
+    post_rankings = data.get('post_keyword_rankings') or []
+    all_kws     = [k for p in post_rankings for k in (p.get('keywords') or [])]
+    exposed_kws = [k for k in all_kws if k.get('found') and k.get('rank')]
+    exposure_rate = round(len(exposed_kws) / len(all_kws), 3) if all_kws else None
+    avg_rank      = round(sum(k['rank'] for k in exposed_kws) / len(exposed_kws), 1) if exposed_kws else None
+
+    supabase.from_('blog_analytics_history').upsert({
+        'user_id':        user_id,
+        'crawled_on':     batch_date.isoformat(),
+        'blog_grade':     data.get('blog_grade'),
+        'grade_score':    data.get('grade_score'),
+        'visitor_total':  visitor_total,
+        'visitor_daily':  visitor_daily,
+        'neighbor_count': data.get('neighbor_count'),
+        'post_count':     data.get('post_count'),
+        'post_frequency': data.get('post_frequency'),
+        'exposure_rate':  exposure_rate,
+        'avg_rank':       avg_rank,
+        'missing_metrics': data.get('missing_metrics'),
+    }, on_conflict='user_id,crawled_on').execute()
+
+
+def save_post_rankings(user_id: str, batch_date: date, post_rankings: list):
+    for p in post_rankings:
+        kws = p.get('keywords') or []
+        exposed = [k for k in kws if k.get('found') and k.get('rank')]
+        supabase.from_('blog_post_rankings').upsert({
+            'user_id':       user_id,
+            'log_no':        p['log_no'],
+            'published_on':  p.get('published_on') or batch_date.isoformat(),
+            'checked_on':    batch_date.isoformat(),
+            'title':         p.get('title'),
+            'keywords':      kws,
+            'exposure_rate': round(len(exposed) / len(kws), 3) if kws else None,
+            'avg_rank':      round(sum(k['rank'] for k in exposed) / len(exposed), 1) if exposed else None,
+        }, on_conflict='user_id,log_no,checked_on').execute()
 
 
 # ── 메인 ──────────────────────────────────────────────────────────────────
 
 def run(user_id: str | None = None, skip_keywords: bool = False):
+    # 배치 시작일 기준으로 고정 — 자정을 넘겨도 이 실행 내내 같은 날짜를 쓴다
+    batch_date = date.today()
     influencers = get_influencers(user_id)
-    print(f'[블로그 분석기] 대상 {len(influencers)}명')
+    print(f'[블로그 분석기] 대상 {len(influencers)}명 (batch_date={batch_date})')
 
     for inf in influencers:
         uid        = inf['user_id']
@@ -464,7 +536,7 @@ def run(user_id: str | None = None, skip_keywords: bool = False):
 
         blog_id = extract_blog_id(url)
         if not blog_id:
-            save_analytics(uid, url, {'blog_id': None, 'error_message': '네이버 블로그 URL 아님'})
+            save_analytics(uid, url, {'blog_id': None, 'error_message': '네이버 블로그 URL 아님'}, batch_date)
             print(f'  [NG] {url} -- not naver blog')
             continue
 
@@ -472,22 +544,35 @@ def run(user_id: str | None = None, skip_keywords: bool = False):
         data, posts = fetch_blog_analytics(blog_id)
 
         if not skip_keywords and not data.get('error_message'):
-            print(f'     posting exposure check ({len(posts[:7])})...')
-            post_rankings = check_post_keyword_rankings(blog_id, posts)
-            data['post_keyword_rankings'] = post_rankings
+            # 그날 발행한 포스팅만, 최대 5개 — 이전 글을 매번 다시 검사하며 호출을 낭비하지 않는다
+            today_posts = [p for p in posts if _parse_naver_date(p.get('addDate', '')) == batch_date][:5]
 
-            exposed_cnt = sum(1 for p in post_rankings if p['found'])
-            print(f'     exposed {exposed_cnt}/{len(post_rankings)}')
+            if today_posts:
+                print(f'     posting exposure check ({len(today_posts)}, 오늘 발행분)...')
+                post_rankings = check_post_keyword_rankings(blog_id, today_posts)
+                data['post_keyword_rankings'] = post_rankings
+                save_post_rankings(uid, batch_date, post_rankings)
+
+                exposed_cnt = sum(1 for p in post_rankings if p['found'])
+                print(f'     exposed {exposed_cnt}/{len(post_rankings)}')
+            else:
+                post_rankings = []
+                print('     오늘 발행 글 없음 — 노출 검사 건너뜀')
 
             print(f'     category keywords... ({categories})')
             kw_data = check_category_keywords(blog_id, categories)
             data.update(kw_data)
 
-            grade, gscore = calculate_grade(data, post_rankings)
-            data['blog_grade'] = grade
-            print(f'     grade: {grade} ({gscore}pt)  top10:{kw_data["top10_count"]} top30:{kw_data["top30_count"]}')
+            grade, gscore, missing = calculate_grade(data, post_rankings)
+            data['blog_grade']     = grade
+            data['grade_score']    = gscore
+            data['missing_metrics'] = missing
+            print(
+                f'     grade: {grade} ({gscore}pt, 결측 {missing}개)  '
+                f'top10:{kw_data["top10_count"]} top30:{kw_data["top30_count"]}'
+            )
 
-        save_analytics(uid, url, data)
+        save_analytics(uid, url, data, batch_date)
 
         if data.get('error_message'):
             print(f'  [NG] {blog_id} -- {data["error_message"]}')
