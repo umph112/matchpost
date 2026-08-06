@@ -1,0 +1,11 @@
+{
+  "crons": [
+    { "path": "/api/cron/blog-analytics", "schedule": "0 13 * * *" },
+    { "path": "/api/admin/batch/dormant-decay", "schedule": "5 13 * * *" },
+    { "path": "/api/admin/batch/payment-reminders", "schedule": "10 13 * * *" },
+    { "path": "/api/admin/batch/trust-score-recalc", "schedule": "15 13 * * *" },
+    { "path": "/api/admin/batch/visit-weekly", "schedule": "0 0 * * 1" },
+    { "path": "/api/admin/batch/visit-monthly", "schedule": "0 0 1 * *" },
+    { "path": "/api/admin/batch/comeback", "schedule": "20 13 * * *" }
+  ]
+}

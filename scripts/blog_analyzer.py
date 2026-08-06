@@ -2,6 +2,10 @@
 MatchPost 블로그 분석기 — 네이버 블로그
 Supabase influencer_profiles.blog_url 을 읽어 자동 수집 → blog_analytics 테이블에 저장
 
+⚠️ 운영 배치는 이 스크립트가 아니라 src/lib/blogAnalyzer(TS 이식본)가 Vercel Cron으로 매일
+22:00 KST에 자동 실행한다(Vercel은 Python을 못 돌려서 옮김). 로직을 고칠 땐 TS 쪽도 같이 고칠 것.
+이 파일은 로컬 수동 실행·디버깅용으로 남겨둠.
+
 실행:
   python scripts/blog_analyzer.py              # 전체 실행
   python scripts/blog_analyzer.py --user-id <uuid>   # 특정 유저만
