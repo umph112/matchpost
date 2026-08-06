@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Megaphone, Users, MessageSquare, Bell, Wallet } from 'lucide-react'
+import { LayoutDashboard, Megaphone, Users, MessageSquare, Bell, Wallet, UserPlus } from 'lucide-react'
 import LogoutButton from './LogoutButton'
 
 // 광고주 셸 — PC(사이드바) / 모바일(앱형)을 사용자가 선택(환경 자동 감지 기본, localStorage 우선).
@@ -13,6 +13,8 @@ const NAV = [
   { href: '/advertiser/campaigns', label: '캠페인', Icon: Megaphone, badge: '' as 'msg' | 'notif' | '' },
   { href: '/advertiser/search', label: '인플루언서', Icon: Users, badge: '' as 'msg' | 'notif' | '' },
   { href: '/advertiser/messages', label: '메시지', Icon: MessageSquare, badge: 'msg' as const },
+  { href: '/advertiser/settlements', label: '정산', Icon: Wallet, badge: '' as 'msg' | 'notif' | '' },
+  { href: '/advertiser/team', label: '팀 멤버', Icon: UserPlus, badge: '' as 'msg' | 'notif' | '' },
   { href: '/advertiser/notifications', label: '알림', Icon: Bell, badge: 'notif' as const },
 ]
 
@@ -103,11 +105,6 @@ export default function AdvertiserShell({
           </Link>
         )
       })}
-      <div className="flex items-center gap-2.5 px-2.5 py-[9px] rounded-lg text-[13.5px] font-semibold text-[#C4C4CE] cursor-not-allowed">
-        <Wallet size={16} strokeWidth={1.75} className="opacity-75 shrink-0" />
-        <span>정산</span>
-        <span className="ml-auto text-[10px] font-bold bg-[#F1F1F4] text-[#9A9AA5] rounded px-1.5 py-0.5">곧</span>
-      </div>
     </nav>
   )
 
@@ -174,13 +171,13 @@ export default function AdvertiserShell({
               <span className="text-xs font-semibold text-[#7C7C88]">원</span>
             </div>
           </div>
-          <div>
+          <Link href="/credits" className="block hover:opacity-80">
             <div className="text-[11px] text-[#9A9AA5] leading-relaxed">보유 크레딧</div>
             <div className="text-base font-extrabold tracking-[-0.02em] mt-0.5">
               {creditBalance === null ? '—' : creditBalance.toLocaleString()}
               <span className="text-xs font-semibold text-[#F59E0B]"> C</span>
             </div>
-          </div>
+          </Link>
         </div>
       </aside>
 

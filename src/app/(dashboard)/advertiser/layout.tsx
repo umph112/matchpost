@@ -30,21 +30,14 @@ export default async function AdvertiserLayout({ children }: { children: React.R
     .eq('user_id', user.id)
     .eq('is_read', false)
 
-  // 내 응답 대기 대화 수 (최근 메시지가 나에게 온 대화)
-  const { data: msgs } = await supabase
+  // 내 응답 대기 대화 수 — 안 읽은 메시지가 하나라도 있는 상대방 수.
+  // 대화를 열면 그 대화는 읽음 처리되므로(A1), 이 배지·대시보드 요약 카드가 같은 값에서 파생된다.
+  const { data: unreadMsgs } = await supabase
     .from('messages')
-    .select('sender_id, receiver_id, created_at')
-    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-    .order('created_at', { ascending: false })
-    .limit(80)
-  const seen = new Set<string>()
-  let msgCount = 0
-  for (const m of msgs ?? []) {
-    const other = m.sender_id === user.id ? m.receiver_id : m.sender_id
-    if (seen.has(other)) continue
-    seen.add(other)
-    if (m.receiver_id === user.id) msgCount++
-  }
+    .select('sender_id')
+    .eq('receiver_id', user.id)
+    .eq('is_read', false)
+  const msgCount = new Set((unreadMsgs ?? []).map((m) => m.sender_id)).size
 
   const now = new Date()
   const sub = `광고주 콘솔 · ${now.getFullYear()}년 ${now.getMonth() + 1}월`

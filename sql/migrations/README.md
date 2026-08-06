@@ -60,3 +60,9 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0055_connections_functions.sql` — 상호등록(connections) 제안/수락/해제. 실제 정산 완료한 사이만 제안 가능(스팸 방지)
 - `0056_message_checkpoint_trigger.sql` — messages.checkpoint_kind(0031, 'guide'만 허용하던 제약)를 guide/draft/publish로 확장 + 대화 파일 전송 시 딜시트 체크포인트 자동완료 트리거
 - `0057_dash_fee_beta_free.sql` — 대시 발송 과금(500C, 문서엔 100C로 적혀 있었으나 실제 운영값은 500C) 베타 기간 한시 중단. 트리거 삭제 대신 함수 내부 조건(v_dash_fee_enabled)으로 꺼서 재개 용이
+- `0058_send_dash.sql` — 대시 보내기 통합(IMPLEMENT-5-DELTA.md A3/A4). 지금까지 갈라져 있던 두 발송 경로(전체 폼은 대화를 안 열고, 캘린더/검색 버튼은 proposals 행을 안 만듦)를 send_dash() 하나로 합침. 같은 상대+같은 캠페인/오픈에 미확정 proposals 행이 있으면 새로 안 만들고 그 행을 갱신 + 재전송 시스템 메시지·알림으로 분기
+- `0059_cancellation_withdraw.sql` — 취소 요청 철회(IMPLEMENT-5-DELTA.md A6). 0053에 요청/수락만 있고 요청자 본인이 철회하는 경로가 빠져 있었음. agreed=null인 pending row를 삭제(카운트는 되돌리지 않음)
+- `0060_settlements_screen.sql` — 정산 화면(/advertiser/settlements) 지원(IMPLEMENT-5-DELTA.md B절, SPEC-B-SETTLE.md 화면11). campaigns.tax_doc_requested_at + 범용 audit_log 테이블 + request_tax_docs()/resolve_settlement_dispute() RPC. SettleConfirmModal도 "미수령 제외하고 부분 기록" 방식을 없애고 전원 수령 전엔 잠그도록 수정
+- `0061_credit_review_comeback.sql` — 크레딧 정책 중 빠져 있던 훅 2개: review(리뷰 작성 1,000C, 종료 후 7일 이내) 트리거 + comeback(30일 공백 후 복귀 1,000C) 배치. 나머지 크레딧 규칙은 0018/0024/0042에 이미 구현돼 있었음(creditConfig.ts가 SPEC과 이미 일치)
+- `0062_advertiser_payment_score.sql` — 정산 성실도(광고주 신뢰 지표) 뷰. 인플루언서 귀책 제외는 draft/publish 체크포인트 지연 여부로 근사(정밀 판정 필드 없음 — GAPS-FOR-NEXT-ROUND.md 참고)
+- `0063_team_members.sql` — 팀 초대(IMPLEMENT-5-DELTA.md C2). `team_members` 테이블(초대/역할/상태) + `invite_team_member()` RPC(이메일 교차조회는 user_private RLS 때문에 SECURITY DEFINER 필요). 역할변경/재발송/재활성화는 RLS(owner_id=auth.uid())로 충분해 별도 RPC 없음. 실제 팀원의 오너 데이터 접근 권한 전파는 범위 밖(GAPS-FOR-NEXT-ROUND.md 0번 참고)

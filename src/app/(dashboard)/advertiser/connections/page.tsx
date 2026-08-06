@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { initial } from '@/lib/initial'
 import { respondConnection, revokeConnection } from '@/lib/connections/actions'
+import DashSendButton from '@/components/DashSendButton'
 
 type ConnectionRow = {
   id: string
@@ -137,7 +138,14 @@ export default function AdvertiserConnectionsPage() {
                 <p className="font-semibold text-gray-800 text-sm">{r.otherName}</p>
               </div>
               <div className="flex items-center gap-3">
-                <Link href={`/advertiser/messages?to=${r.otherId}`} className="text-xs text-[#B45309] hover:underline">
+                <DashSendButton
+                  influencerId={r.otherId}
+                  influencerName={r.otherName}
+                  className="text-xs text-white bg-[#F59E0B] hover:bg-[#D97706] px-3 py-1.5 rounded-lg font-medium"
+                >
+                  대시 보내기
+                </DashSendButton>
+                <Link href={`/advertiser/messages?c=${r.otherId}`} className="text-xs text-[#B45309] hover:underline">
                   메시지
                 </Link>
                 <button onClick={() => revoke(r.id)} disabled={busyId === r.id}

@@ -5,6 +5,7 @@ import { initial } from '@/lib/initial'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { sendDash } from '@/lib/deals/sendDash'
 
 const COLLABORATION_TYPES = ['협찬', '광고', '체험단', '기타']
 
@@ -61,27 +62,24 @@ function NewProposalForm() {
     setError('')
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user || !influencerId) return
 
-    const { error: insertError } = await supabase.from('proposals').insert({
-      schedule_id: scheduleId,
-      advertiser_id: user.id,
-      influencer_id: influencerId,
+    const res = await sendDash({
+      influencerId,
+      scheduleId,
       message,
       budget: budget ? parseInt(budget) : null,
-      collaboration_type: collaborationType,
-      status: 'pending',
-      initiated_by: 'advertiser',
+      collaborationType,
     })
 
-    if (insertError) {
+    if (!res.ok) {
       setError('제안 전송에 실패했어요. 다시 시도해주세요.')
       setLoading(false)
       return
     }
 
     setSuccess(true)
-    setTimeout(() => router.push('/advertiser/proposals'), 1500)
+    setTimeout(() => router.push(`/advertiser/messages?c=${influencerId}`), 1200)
   }
 
   if (success) {

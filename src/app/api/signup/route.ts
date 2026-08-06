@@ -63,6 +63,13 @@ export async function POST(req: Request) {
     })
   } else {
     await admin.from('advertiser_profiles').insert({ user_id: uid })
+
+    // 팀 초대(C2) — 이 이메일로 온 초대(invited)가 있으면 가입과 동시에 연결한다
+    await admin
+      .from('team_members')
+      .update({ member_id: uid, status: 'active', joined_at: new Date().toISOString() })
+      .eq('email', email.toLowerCase())
+      .eq('status', 'invited')
   }
 
   // 4) 가입 환영 크레딧 지급 (양쪽 30,000 — CREDIT_AMOUNTS.WELCOME)

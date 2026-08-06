@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { settleCampaign } from '@/lib/deals/settle'
+import { settleCampaign, requestTaxDocs } from '@/lib/deals/settle'
 
 type Proposal = {
   id: string
@@ -12,6 +12,7 @@ type Proposal = {
 }
 
 type Campaign = {
+  id: string
   title: string
 }
 
@@ -26,24 +27,35 @@ export default function SettleConfirmModal({
   onClose: () => void
   onDone: (settledIds: string[]) => void
 }) {
-  // 세무자료 미수령자 제외
-  const excluded = proposals.filter((p) => p.tax_doc_type && !p.tax_doc_received)
-  const targets = proposals.filter((p) => !(p.tax_doc_type && !p.tax_doc_received))
+  // 전원 세무자료 수령이어야 정산 완료 기록 가능 — 미수령이 남으면 "제외하고 기록"이 아니라
+  // 잠그고 그 자리에서 일괄 요청으로 이어준다(B1/B2)
+  const missing = proposals.filter((p) => !p.tax_doc_type || !p.tax_doc_received)
+  const allReceived = missing.length === 0
 
-  const grossTotal = targets.reduce((s, p) => s + (p.budget ?? 0), 0)
+  const grossTotal = proposals.reduce((s, p) => s + (p.budget ?? 0), 0)
   const [withholding, setWithholding] = useState(false)
   const withheldTotal = withholding ? Math.floor(grossTotal * 0.033) : 0
   const netTotal = grossTotal - withheldTotal
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [requested, setRequested] = useState(false)
+
+  const handleRequestTaxDocs = async () => {
+    setSubmitting(true)
+    setError('')
+    const res = await requestTaxDocs(campaign.id)
+    setSubmitting(false)
+    if (!res.ok) { setError(res.error); return }
+    setRequested(true)
+  }
 
   const handleRecord = async () => {
-    if (targets.length === 0) return
+    if (!allReceived) return
     setSubmitting(true)
     setError('')
     const settled: string[] = []
-    for (const p of targets) {
+    for (const p of proposals) {
       const res = await settleCampaign(p.id, {
         withholding: withholding
           ? {
@@ -85,11 +97,11 @@ export default function SettleConfirmModal({
             {campaign.title}
           </p>
           <p className="text-[12.5px] text-[#5C5C68] mt-1">
-            아래 {targets.length}명에게 결제를 모두 마치셨나요? 수금은 광고주가 직접 하고, 이 화면은 그 기록을 남깁니다.
+            아래 {proposals.length}명에게 결제를 모두 마치셨나요? 수금은 광고주가 직접 하고, 이 화면은 그 기록을 남깁니다.
           </p>
-          {excluded.length > 0 && (
+          {!allReceived && (
             <p className="text-[11.5px] text-[#B45309] mt-1.5 bg-[#FEF3C7] rounded px-2 py-1">
-              대상 {proposals.length}명 (세무자료 미수령 {excluded.length}명 제외)
+              전원 자료를 받아야 기록할 수 있어요 — 세무자료 미수령 {missing.length}명
             </p>
           )}
         </div>
@@ -146,13 +158,23 @@ export default function SettleConfirmModal({
 
           {/* 버튼 */}
           <div className="flex flex-col gap-2">
-            <button
-              onClick={handleRecord}
-              disabled={submitting || targets.length === 0}
-              className="w-full py-3 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold text-[14px] transition disabled:opacity-40"
-            >
-              {submitting ? '기록 중...' : `${targets.length}명 기록하기`}
-            </button>
+            {allReceived ? (
+              <button
+                onClick={handleRecord}
+                disabled={submitting}
+                className="w-full py-3 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold text-[14px] transition disabled:opacity-40"
+              >
+                {submitting ? '기록 중...' : `${proposals.length}명 기록하기`}
+              </button>
+            ) : (
+              <button
+                onClick={handleRequestTaxDocs}
+                disabled={submitting || requested}
+                className="w-full py-3 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold text-[14px] transition disabled:opacity-40"
+              >
+                {requested ? '요청 보냄 · 대기' : submitting ? '요청 중...' : `세무자료 ${missing.length}명 요청하기`}
+              </button>
+            )}
             <button
               onClick={onClose}
               className="w-full py-2.5 rounded-xl border border-[#EAEAEE] text-[13px] text-[#7C7C88] hover:bg-[#F6F6F7] transition"

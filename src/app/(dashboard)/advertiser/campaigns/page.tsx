@@ -16,7 +16,7 @@ export default async function AdvertiserCampaignsPage() {
 
   const { data: campaigns } = await supabase
     .from('campaigns')
-    .select('id,title,date,recruit_start,recruit_end,channels,campaign_type,budget_total,recruit_target,location_city,location_district,status')
+    .select('id,title,date,created_at,recruit_start,recruit_end,channels,campaign_type,budget_total,recruit_target,location_city,location_district,status')
     .eq('advertiser_id', user.id)
     .order('created_at', { ascending: false })
 

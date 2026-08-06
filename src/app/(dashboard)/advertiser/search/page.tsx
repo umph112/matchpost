@@ -2,10 +2,10 @@
 
 import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
 import MatchScore from '@/components/MatchScore'
 import { BlogAnalyticsCompact } from '@/components/BlogAnalyticsCard'
+import DashSendButton from '@/components/DashSendButton'
 import { initial } from '@/lib/initial'
 
 const REGIONS = ['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '강원', '충남', '충북', '전남', '전북', '경남', '경북', '제주']
@@ -30,7 +30,6 @@ const CH_STYLE: Record<string, { bg: string; text: string }> = {
 
 export default function AdvertiserSearchPage() {
   const supabase = createClient()
-  const router = useRouter()
 
   // Filter state
   const [date, setDate] = useState('')
@@ -219,14 +218,14 @@ export default function AdvertiserSearchPage() {
         </div>
       )}
 
-      <button
-        onClick={() =>
-          router.push(`/advertiser/messages?to=${schedule.influencer_id}&date=${schedule.date}`)
-        }
+      <DashSendButton
+        influencerId={schedule.influencer_id}
+        influencerName={schedule.profiles?.name ?? '인플루언서'}
+        scheduleId={schedule.id}
         className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-white text-[12.5px] font-bold py-2 rounded-lg transition shadow-[0_1px_2px_rgba(245,158,11,.25)]"
       >
         이 날짜로 대시 →
-      </button>
+      </DashSendButton>
     </div>
   )
 

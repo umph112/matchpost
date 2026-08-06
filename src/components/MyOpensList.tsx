@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 type Open = {
@@ -11,6 +12,7 @@ type Open = {
   location_city?: string
   location_district?: string
   derivedStatus: '진행중' | '메이드' | '마감' | '캔슬'
+  dashHref?: string | null
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -58,17 +60,33 @@ export default function MyOpensList({ opens }: { opens: Open[] }) {
         <div className="space-y-2">
           {list.map((o) => (
             <div key={o.id} className="bg-white rounded-2xl p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="font-medium text-gray-900 truncate">{o.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    📅 {o.date}　📍 {o.location_city} {o.location_district}
-                  </p>
+              {/* 대시가 온 오픈만 대화로 연결(0건은 커서 없음) — C4 */}
+              {o.dashHref ? (
+                <Link href={o.dashHref} className="flex items-start justify-between gap-2 -m-1 p-1 rounded-xl hover:bg-gray-50 transition">
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{o.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      📅 {o.date}　📍 {o.location_city} {o.location_district}
+                    </p>
+                    <p className="text-[11px] text-[#B45309] font-medium mt-1">💬 대시 열기 →</p>
+                  </div>
+                  <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[o.derivedStatus]}`}>
+                    {o.derivedStatus}
+                  </span>
+                </Link>
+              ) : (
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{o.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      📅 {o.date}　📍 {o.location_city} {o.location_district}
+                    </p>
+                  </div>
+                  <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[o.derivedStatus]}`}>
+                    {o.derivedStatus}
+                  </span>
                 </div>
-                <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[o.derivedStatus]}`}>
-                  {o.derivedStatus}
-                </span>
-              </div>
+              )}
               {o.derivedStatus === '진행중' && (
                 <div className="flex justify-end mt-2">
                   <button

@@ -7,6 +7,7 @@ type Campaign = {
   id: string
   title: string
   date: string | null
+  created_at: string
   recruit_start: string | null
   recruit_end: string | null
   channels: string[] | null
@@ -33,10 +34,11 @@ const statusLabel = (s: string) => s === '캔슬' ? '취소' : s
 const CH_ICON: Record<string, string> = { 블로그: '✍️', 유튜브: '▶️', 인스타그램: '📷', 틱톡: '🎵' }
 
 type FilterTab = '전체' | '진행중' | '마감' | '완료' | '취소'
-type SortKey = 'date_desc' | 'date_asc' | 'budget_desc' | 'budget_asc'
+type SortKey = 'created_desc' | 'created_asc' | 'budget_desc' | 'budget_asc'
+// 표에는 진행일(date)만 보이지만 정렬 기준은 등록일(created_at)이라, 라벨에 "등록"을 밝힌다(C1)
 const SORT_LABELS: Record<SortKey, string> = {
-  date_desc: '날짜 최신순',
-  date_asc:  '날짜 오래된순',
+  created_desc: '등록 최신순',
+  created_asc:  '등록 오래된순',
   budget_desc: '예산 높은순',
   budget_asc:  '예산 낮은순',
 }
@@ -44,7 +46,7 @@ const SORT_LABELS: Record<SortKey, string> = {
 export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }) {
   const [tab, setTab]     = useState<FilterTab>('전체')
   const [search, setSearch] = useState('')
-  const [sort, setSort]   = useState<SortKey>('date_desc')
+  const [sort, setSort]   = useState<SortKey>('created_desc')
 
   const tabs: FilterTab[] = ['전체', '진행중', '마감', '완료', '취소']
 
@@ -58,9 +60,9 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
       list = list.filter((c) => c.title.toLowerCase().includes(q))
     }
     return [...list].sort((a, b) => {
-      if (sort === 'date_desc')   return (b.date ?? '').localeCompare(a.date ?? '')
-      if (sort === 'date_asc')    return (a.date ?? '').localeCompare(b.date ?? '')
-      if (sort === 'budget_desc') return (b.budget_total ?? 0) - (a.budget_total ?? 0)
+      if (sort === 'created_desc') return b.created_at.localeCompare(a.created_at)
+      if (sort === 'created_asc')  return a.created_at.localeCompare(b.created_at)
+      if (sort === 'budget_desc')  return (b.budget_total ?? 0) - (a.budget_total ?? 0)
       return (a.budget_total ?? 0) - (b.budget_total ?? 0)
     })
   }, [campaigns, tab, search, sort])

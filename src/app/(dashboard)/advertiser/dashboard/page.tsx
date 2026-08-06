@@ -86,17 +86,18 @@ export default async function AdvertiserMyPage() {
   const ipById: Record<string, any> = Object.fromEntries((openIps ?? []).map((i) => [i.user_id, i]))
   const openCount = (openRows ?? []).length
 
-  // 메시지 미리보기
+  // 메시지 미리보기 — unread(미응답)는 대화를 열면(is_read=true) 사라지는 단일 값에서 파생(A1)
   const { data: msgs } = await supabase
     .from('messages')
     .select('*')
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
     .order('created_at', { ascending: false })
     .limit(60)
-  const convMap: Record<string, { otherId: string; last: { content?: string }; awaitingMe: boolean }> = {}
+  const convMap: Record<string, { otherId: string; last: { content?: string }; unread: boolean }> = {}
   for (const m of msgs ?? []) {
     const other = m.sender_id === user.id ? m.receiver_id : m.sender_id
-    if (!convMap[other]) convMap[other] = { otherId: other, last: m, awaitingMe: m.receiver_id === user.id }
+    if (!convMap[other]) convMap[other] = { otherId: other, last: m, unread: false }
+    if (m.receiver_id === user.id && !m.is_read) convMap[other].unread = true
   }
   const convPreview = Object.values(convMap).slice(0, 3)
   const otherIds = convPreview.map((c) => c.otherId)
@@ -180,7 +181,7 @@ export default async function AdvertiserMyPage() {
     confirmedInf += c.stats.confirmed
     negotiatingInf += c.stats.negotiating
   }
-  const respWaiting = Object.values(convMap).filter((c) => c.awaitingMe).length
+  const respWaiting = Object.values(convMap).filter((c) => c.unread).length
   const kpis = [
     { label: '진행중 캠페인', value: String(ongoingCount), unit: '건', sub: `이번 달 등록 ${monthCampCount}건`, dot: '#F59E0B' },
     { label: '확정 인플루언서', value: String(confirmedInf), unit: '명', sub: `협의중 ${negotiatingInf}명`, dot: '#22C55E' },
@@ -338,7 +339,7 @@ export default async function AdvertiserMyPage() {
               <p className="text-sm text-[#9A9AA5] p-[18px]">아직 주고받은 대시가 없어요.</p>
             ) : (
               convPreview.map((c) => (
-                <Link key={c.otherId} href="/advertiser/messages" className="flex items-center gap-[11px] px-[18px] py-3 border-b border-[#F5F5F7] hover:bg-[#FAFAFB]">
+                <Link key={c.otherId} href={`/advertiser/messages?c=${c.otherId}`} className="flex items-center gap-[11px] px-[18px] py-3 border-b border-[#F5F5F7] hover:bg-[#FAFAFB]">
                   <div className="w-[34px] h-[34px] rounded-full bg-[#FEF3C7] text-[#B45309] text-[13px] font-extrabold flex items-center justify-center shrink-0">
                     {initial(nameById[c.otherId])}
                   </div>
@@ -346,7 +347,7 @@ export default async function AdvertiserMyPage() {
                     <div className="text-[13px] font-semibold truncate">{nameById[c.otherId] ?? '상대방'}</div>
                     <div className="text-[11.5px] text-[#9A9AA5] truncate mt-0.5">{c.last?.content}</div>
                   </div>
-                  {c.awaitingMe ? (
+                  {c.unread ? (
                     <span className="text-[10.5px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded-full px-[7px] py-0.5 shrink-0">미응답</span>
                   ) : (
                     <span className="text-[10.5px] font-semibold bg-[#F1F1F4] text-[#9A9AA5] rounded-full px-[7px] py-0.5 shrink-0">상대 미확인</span>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { acceptCancellation } from '@/lib/cancellations/actions'
+import { acceptCancellation, withdrawCancellation } from '@/lib/cancellations/actions'
 import { setProposalTime } from '@/lib/deals/time'
 
 type PendingCancellation = {
@@ -32,9 +32,11 @@ function timeLeft(createdAt: string) {
 export default function DealConfirmBar({
   proposalId,
   currentUserId,
+  onPrefill,
 }: {
   proposalId: string
   currentUserId: string
+  onPrefill?: (text: string) => void
 }) {
   const [proposal, setProposal] = useState<any>(null)
   const [title, setTitle] = useState('')
@@ -81,6 +83,16 @@ export default function DealConfirmBar({
     setCancelBusy(true)
     setErrMsg('')
     const res = await acceptCancellation(pendingCancel.id)
+    setCancelBusy(false)
+    if (!res.ok) { setErrMsg(res.error); return }
+    setPendingCancel(null)
+  }
+
+  const handleWithdrawCancel = async () => {
+    if (!pendingCancel) return
+    setCancelBusy(true)
+    setErrMsg('')
+    const res = await withdrawCancellation(pendingCancel.id)
     setCancelBusy(false)
     if (!res.ok) { setErrMsg(res.error); return }
     setPendingCancel(null)
@@ -165,15 +177,27 @@ export default function DealConfirmBar({
     )
   }
 
-  // 내가 취소를 요청한 쪽이면 대기 상태만 보여준다
+  // 내가 취소를 요청한 쪽이면 대기 상태 + 철회 버튼을 보여준다
   if (pendingCancel && pendingCancel.by_id === currentUserId) {
     return (
       <div className="rounded-xl p-3 mb-3 border bg-gray-50 border-gray-200">
-        <p className="text-[11px] text-gray-500 font-semibold">협업 취소 요청함</p>
-        <p className="text-sm font-semibold text-gray-800 truncate">{title}</p>
-        <p className="text-[11px] text-gray-500 mt-0.5">
-          사유: {pendingCancel.reason} · 상대 수락 대기 중 · {timeLeft(pendingCancel.created_at)}
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] text-gray-500 font-semibold">취소 요청 보냄 · 상대 수락 대기</p>
+            <p className="text-sm font-semibold text-gray-800 truncate">{title}</p>
+            <p className="text-[11px] text-gray-500 mt-0.5">
+              사유: {pendingCancel.reason} · {timeLeft(pendingCancel.created_at)}
+            </p>
+          </div>
+          <button
+            onClick={handleWithdrawCancel}
+            disabled={cancelBusy}
+            className="shrink-0 text-[11px] text-gray-400 hover:text-red-500 underline disabled:opacity-50"
+          >
+            {cancelBusy ? '처리 중...' : '요청 철회'}
+          </button>
+        </div>
+        {errMsg && <p className="mt-2 text-[11px] text-red-500 font-medium">{errMsg}</p>}
       </div>
     )
   }
@@ -218,6 +242,14 @@ export default function DealConfirmBar({
               {stageLabel.text}
             </span>
           </div>
+          {!done && onPrefill && (
+            <button
+              onClick={() => onPrefill('협업 조건을 이렇게 바꾸고 싶어요 — ')}
+              className="mt-1 text-[11px] text-[#B45309] hover:underline"
+            >
+              조건 수정 제안하기
+            </button>
+          )}
         </div>
 
         <div className="shrink-0 flex flex-col items-end gap-1">
@@ -240,7 +272,7 @@ export default function DealConfirmBar({
                 disabled={busy}
                 className="text-[11px] text-gray-400 hover:text-red-500 underline disabled:opacity-50"
               >
-                {busy ? '처리 중...' : '철회'}
+                {busy ? '처리 중...' : '내 수락 취소'}
               </button>
             </>
           ) : (

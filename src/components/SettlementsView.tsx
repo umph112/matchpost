@@ -1,0 +1,395 @@
+'use client'
+
+import { useState, useMemo } from 'react'
+import { requestTaxDocs, resolveSettlementDispute } from '@/lib/deals/settle'
+import SettleConfirmModal from './SettleConfirmModal'
+
+type Proposal = {
+  id: string
+  campaign_id: string
+  influencer_id: string
+  budget: number | null
+  advertiser_confirmed: boolean
+  influencer_confirmed: boolean
+  tax_doc_type: string | null
+  tax_doc_received: boolean | null
+  settlement_status: string | null
+  settled_at: string | null
+  paid_disputed_at: string | null
+  profile: { name: string | null }
+}
+
+type Campaign = {
+  id: string
+  title: string
+  campaign_type: string | null
+  settlement_date: string | null
+  tax_doc_requested_at: string | null
+  status: string | null
+}
+
+type Tab = '예정' | '보류' | '완료'
+
+const TAX_CHIP = (type: string | null, received: boolean | null) => {
+  if (!type) return { label: '종류 미정', cls: 'bg-[#FEE2E2] text-[#DC2626]' }
+  if (received) return { label: type, cls: 'bg-[#F1F1F4] text-[#5C5C68]' }
+  return { label: `${type} 미수령`, cls: 'bg-[#FEE2E2] text-[#DC2626]' }
+}
+
+function dDay(dateStr: string | null) {
+  if (!dateStr) return null
+  const d = new Date(dateStr)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const diff = Math.ceil((d.getTime() - today.getTime()) / 86400000)
+  return diff
+}
+
+export default function SettlementsView({
+  campaigns,
+  proposals,
+}: {
+  campaigns: Campaign[]
+  proposals: Proposal[]
+}) {
+  const [tab, setTab] = useState<Tab>('예정')
+  const [openId, setOpenId] = useState<string | null>(null)
+  const [settleModalFor, setSettleModalFor] = useState<Campaign | null>(null)
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set())
+  const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set())
+  const [resolveNote, setResolveNote] = useState('')
+  const [resolvingFor, setResolvingFor] = useState<string | null>(null)
+  // 정산 완료 처리는 아래에서 handleSettled로 흡수하지만, 화면 리렌더를 위해
+  // settlement_status를 로컬에서도 낙관적으로 갱신한다.
+  const [localProposals, setLocalProposals] = useState(proposals)
+
+  const rows = useMemo(() => {
+    const byCampaign: Record<string, Proposal[]> = {}
+    for (const p of localProposals) (byCampaign[p.campaign_id] ??= []).push(p)
+
+    return campaigns
+      .map((c) => {
+        const targets = (byCampaign[c.id] ?? []).filter(
+          (p) => p.advertiser_confirmed && p.influencer_confirmed,
+        )
+        if (targets.length === 0) return null
+        const disputed = targets.some((p) => p.settled_at && p.paid_disputed_at)
+        const allSettled = targets.every((p) => p.settlement_status === '완료')
+        const bucket: Tab = disputed ? '보류' : allSettled ? '완료' : '예정'
+        const totalAmount = targets.reduce((s, p) => s + (p.budget ?? 0), 0)
+        const readyAmount = targets
+          .filter((p) => p.tax_doc_received)
+          .reduce((s, p) => s + (p.budget ?? 0), 0)
+        const taxReceived = targets.filter((p) => p.tax_doc_received).length
+        return { campaign: c, targets, bucket, totalAmount, readyAmount, taxReceived, disputed }
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null)
+  }, [campaigns, localProposals])
+
+  const tabCounts = useMemo(() => {
+    const c: Record<Tab, number> = { 예정: 0, 보류: 0, 완료: 0 }
+    for (const r of rows) c[r.bucket]++
+    return c
+  }, [rows])
+
+  const kpis = useMemo(() => {
+    const pending = rows.filter((r) => r.bucket === '예정')
+    const pendingTotal = pending.reduce((s, r) => s + r.totalAmount, 0)
+    const upcoming = pending
+      .map((r) => r.campaign.settlement_date)
+      .filter((d): d is string => !!d)
+      .sort()[0]
+    const taxMissing = rows
+      .filter((r) => r.bucket !== '완료')
+      .reduce((s, r) => s + (r.targets.length - r.taxReceived), 0)
+    const doneTotal = rows.filter((r) => r.bucket === '완료').reduce((s, r) => s + r.totalAmount, 0)
+    return { pendingTotal, pendingCount: pending.length, upcoming, taxMissing, doneTotal }
+  }, [rows])
+
+  const filtered = rows.filter((r) => r.bucket === tab)
+
+  const handleRequestTaxDocs = async (campaignId: string) => {
+    setBusyId(campaignId)
+    const res = await requestTaxDocs(campaignId)
+    setBusyId(null)
+    if (res.ok) setRequestedIds((prev) => new Set(prev).add(campaignId))
+  }
+
+  const handleResolveDispute = async (campaignId: string) => {
+    setBusyId(campaignId)
+    const res = await resolveSettlementDispute(campaignId, resolveNote)
+    setBusyId(null)
+    if (res.ok) {
+      setResolvedIds((prev) => new Set(prev).add(campaignId))
+      setResolvingFor(null)
+      setResolveNote('')
+    }
+  }
+
+  const handleSettled = (settledIds: string[]) => {
+    setLocalProposals((prev) =>
+      prev.map((p) => (settledIds.includes(p.id) ? { ...p, settlement_status: '완료', settled_at: new Date().toISOString() } : p)),
+    )
+    setSettleModalFor(null)
+  }
+
+  const card = 'bg-white border border-[#EAEAEE] rounded-[14px]'
+  const fmt = (n: number) => n.toLocaleString()
+
+  return (
+    <div className="flex flex-col gap-5 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] [.adv-pc_&]:gap-5 [.adv-pc_&]:items-start">
+      <div className="flex flex-col gap-5 min-w-0">
+        <h1 className="text-[23px] font-extrabold tracking-[-0.03em] text-[#17171B]">정산</h1>
+
+        {/* 요약 4칸 */}
+        <div className="grid grid-cols-2 [.adv-pc_&]:grid-cols-4 gap-3.5">
+          <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-[2px] bg-[#F59E0B]" />
+              <span className="text-xs font-semibold text-[#7C7C88]">정산 예정</span>
+            </div>
+            <div className="text-[22px] font-extrabold tracking-[-0.03em]">{fmt(kpis.pendingTotal)}원</div>
+            <div className="text-[11.5px] text-[#9A9AA5]">{kpis.pendingCount}개 캠페인</div>
+          </div>
+          <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-[2px] bg-[#3B82F6]" />
+              <span className="text-xs font-semibold text-[#7C7C88]">가장 가까운 정산일</span>
+            </div>
+            <div className="text-[22px] font-extrabold tracking-[-0.03em]">
+              {kpis.upcoming ? kpis.upcoming.slice(5).replace('-', '/') : '—'}
+            </div>
+            <div className="text-[11.5px] text-[#9A9AA5]">
+              {kpis.upcoming ? (dDay(kpis.upcoming)! >= 0 ? `D-${dDay(kpis.upcoming)}` : `D+${Math.abs(dDay(kpis.upcoming)!)}`) : '예정 없음'}
+            </div>
+          </div>
+          <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-[2px] bg-[#EF4444]" />
+              <span className="text-xs font-semibold text-[#7C7C88]">세무자료 미비</span>
+            </div>
+            <div className="text-[22px] font-extrabold tracking-[-0.03em] text-[#DC2626]">{kpis.taxMissing}명</div>
+            <div className="text-[11.5px] text-[#9A9AA5]">전원 수령해야 정산 기록 가능</div>
+          </div>
+          <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-[2px] bg-[#22C55E]" />
+              <span className="text-xs font-semibold text-[#7C7C88]">정산 완료 (누적)</span>
+            </div>
+            <div className="text-[22px] font-extrabold tracking-[-0.03em]">{fmt(kpis.doneTotal)}원</div>
+          </div>
+        </div>
+
+        {/* 탭 */}
+        <div className="flex gap-[3px] bg-[#F1F1F4] rounded-lg p-[3px] w-fit">
+          {(['예정', '보류', '완료'] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`text-[12.5px] font-semibold px-3.5 py-[7px] rounded-md transition ${
+                tab === t ? 'bg-white text-[#17171B] shadow-[0_1px_2px_rgba(0,0,0,.06)]' : 'text-[#8A8A96] hover:text-[#5C5C68]'
+              }`}
+            >
+              {t} {tabCounts[t]}
+            </button>
+          ))}
+        </div>
+
+        {/* 캠페인 카드 */}
+        <div className="flex flex-col gap-3">
+          {filtered.length === 0 && (
+            <div className={card + ' py-16 text-center'}>
+              <p className="text-[14px] text-[#B0B0BB]">{tab} 상태인 캠페인이 없어요.</p>
+            </div>
+          )}
+          {filtered.map((r) => {
+            const pct = r.targets.length ? Math.round((r.taxReceived / r.targets.length) * 100) : 0
+            const isOpen = openId === r.campaign.id
+            const requested = requestedIds.has(r.campaign.id) || !!r.campaign.tax_doc_requested_at
+            const resolved = resolvedIds.has(r.campaign.id)
+            const dday = dDay(r.campaign.settlement_date)
+            return (
+              <div key={r.campaign.id} className={card + ' p-4 flex flex-col gap-[13px]'}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[14.5px] font-extrabold truncate">{r.campaign.title}</span>
+                      <span
+                        className={`text-[10.5px] font-bold px-2 py-0.5 rounded-[5px] ${
+                          r.bucket === '완료'
+                            ? 'bg-[#DCFCE7] text-[#15803D]'
+                            : r.bucket === '보류'
+                            ? 'bg-[#FEE2E2] text-[#DC2626]'
+                            : 'bg-[#FEF3C7] text-[#B45309]'
+                        }`}
+                      >
+                        {r.bucket}
+                      </span>
+                    </div>
+                    <div className="text-[11.5px] text-[#8A8A96] mt-[3px]">
+                      {r.campaign.campaign_type ?? '캠페인'} ·{' '}
+                      {r.campaign.settlement_date ? (
+                        <>
+                          정산일 {r.campaign.settlement_date.slice(5).replace('-', '/')}(
+                          <span className={dday !== null && dday < 0 ? 'text-[#DC2626]' : 'text-[#B45309]'}>
+                            {dday !== null ? (dday >= 0 ? `D-${dday}` : `D+${Math.abs(dday)}`) : '-'}
+                          </span>
+                          )
+                        </>
+                      ) : (
+                        '정산일 미정'
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-[18px] font-extrabold">{fmt(r.totalAmount)}원</div>
+                    <div className="text-[11px] text-[#9A9AA5]">지급 준비 {fmt(r.readyAmount)}원</div>
+                  </div>
+                </div>
+
+                {r.disputed && (
+                  <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-lg px-3 py-2 text-[12px] text-[#B91C1C]">
+                    인플루언서가 입금을 확인하지 못했다고 표시했어요. 사유를 확인하고 딜시트에서 재정산해주세요.
+                    {resolved ? (
+                      <span className="ml-1 font-semibold">— 해결 기록됨 · 오늘</span>
+                    ) : resolvingFor === r.campaign.id ? (
+                      <span className="mt-2 flex flex-col gap-1.5">
+                        <textarea
+                          value={resolveNote}
+                          onChange={(e) => setResolveNote(e.target.value)}
+                          rows={2}
+                          placeholder="확인한 내용을 남겨주세요 (선택)"
+                          className="w-full mt-1.5 px-2 py-1.5 text-[11.5px] rounded-lg border border-[#FECACA] bg-white resize-none"
+                        />
+                        <button
+                          onClick={() => handleResolveDispute(r.campaign.id)}
+                          disabled={busyId === r.campaign.id}
+                          className="self-start text-[11.5px] font-semibold bg-[#B91C1C] text-white px-3 py-1.5 rounded-lg disabled:opacity-50"
+                        >
+                          {busyId === r.campaign.id ? '기록 중...' : '해결 기록하기'}
+                        </button>
+                      </span>
+                    ) : null}
+                  </div>
+                )}
+
+                {/* 세무자료 수집 바 */}
+                <div>
+                  <div className="h-1.5 rounded-full bg-[#F1F1F4] overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${pct === 100 ? 'bg-[#22C55E]' : 'bg-[#F59E0B]'}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="text-[11px] text-[#9A9AA5] mt-1">
+                    세무자료 {r.taxReceived} / {r.targets.length}명
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setOpenId(isOpen ? null : r.campaign.id)}
+                    className="text-[12px] font-semibold text-[#5C5C68] hover:text-[#17171B]"
+                  >
+                    대상 인원 보기 {isOpen ? '^' : 'v'}
+                  </button>
+                  <div className="ml-auto">
+                    {r.bucket === '완료' ? (
+                      <span className="text-[12px] font-semibold text-[#15803D]">정산 내역 보기</span>
+                    ) : r.bucket === '보류' ? (
+                      !resolved &&
+                      resolvingFor !== r.campaign.id && (
+                        <button
+                          onClick={() => setResolvingFor(r.campaign.id)}
+                          className="text-[12px] font-semibold text-[#5C5C68] border border-[#E2E2E8] rounded-lg px-3 py-1.5 hover:bg-[#F6F6F7]"
+                        >
+                          보류 사유 해결하기
+                        </button>
+                      )
+                    ) : pct === 100 ? (
+                      <button
+                        onClick={() => setSettleModalFor(r.campaign)}
+                        className="text-[12.5px] font-bold bg-[#F59E0B] hover:bg-[#D97706] text-white px-4 py-2 rounded-lg"
+                      >
+                        정산 완료로 기록
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleRequestTaxDocs(r.campaign.id)}
+                        disabled={busyId === r.campaign.id || requested}
+                        className="text-[12.5px] font-bold bg-[#F59E0B] hover:bg-[#D97706] text-white px-4 py-2 rounded-lg disabled:opacity-50"
+                      >
+                        {requested ? '요청 보냄 · 대기' : busyId === r.campaign.id ? '요청 중...' : `세무자료 ${r.targets.length - r.taxReceived}명 요청하기`}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {isOpen && (
+                  <div className="border-t border-[#F1F1F4] pt-2.5 -mx-4 px-4 overflow-x-auto">
+                    <div className="min-w-[480px]">
+                      <div className="grid grid-cols-[minmax(0,1fr)_130px_130px_100px] gap-2 px-1 pb-2 text-[10.5px] font-bold text-[#9A9AA5]">
+                        <span>인플루언서</span>
+                        <span className="text-right">페이</span>
+                        <span className="text-right">세무자료</span>
+                        <span className="text-right">상태</span>
+                      </div>
+                      {r.targets.map((p) => {
+                        const chip = TAX_CHIP(p.tax_doc_type, p.tax_doc_received)
+                        return (
+                          <div key={p.id} className="grid grid-cols-[minmax(0,1fr)_130px_130px_100px] gap-2 px-1 py-2 border-t border-[#F5F5F7] items-center text-[12.5px]">
+                            <span className="truncate font-medium">{p.profile.name ?? '인플루언서'}</span>
+                            <span className="text-right">{fmt(p.budget ?? 0)}원</span>
+                            <span className="text-right">
+                              <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${chip.cls}`}>{chip.label}</span>
+                            </span>
+                            <span className="text-right">
+                              {p.settlement_status === '완료' ? (
+                                <span className="text-[11px] font-semibold text-[#15803D]">지급 완료</span>
+                              ) : p.paid_disputed_at ? (
+                                <span className="text-[11px] font-semibold text-[#DC2626]">보류</span>
+                              ) : (
+                                <span className="text-[11px] font-semibold text-[#9A9AA5]">대기</span>
+                              )}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 우측 레일 */}
+      <div className="flex flex-col gap-3.5">
+        <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-[14px] px-4 py-3.5">
+          <p className="text-[12.5px] font-bold text-[#92400E] mb-1">매치포스트는 송금을 대행하지 않아요</p>
+          <p className="text-[11.5px] text-[#B45309] leading-relaxed">
+            실제 지급은 광고주가 직접 합니다. 여기 버튼은 지급 여부를 확인하고 기록만 남겨요.
+          </p>
+        </div>
+        <div className={card + ' px-4 py-3.5'}>
+          <p className="text-[12.5px] font-bold text-[#17171B] mb-2">세무자료 안내</p>
+          <ul className="flex flex-col gap-1.5 text-[11.5px] text-[#7C7C88] leading-relaxed">
+            <li>· 세금계산서 — 사업자등록증(발행 주체)</li>
+            <li>· 3.3% — 주민번호 대신 전화번호·국세청 ID</li>
+            <li>· 대시에서 받고 딜시트에 즉시 체크. 체크가 없으면 정산 대상에서 빠져요.</li>
+          </ul>
+        </div>
+      </div>
+
+      {settleModalFor && (
+        <SettleConfirmModal
+          proposals={rows.find((r) => r.campaign.id === settleModalFor.id)?.targets ?? []}
+          campaign={settleModalFor}
+          onClose={() => setSettleModalFor(null)}
+          onDone={handleSettled}
+        />
+      )}
+    </div>
+  )
+}

@@ -22,8 +22,7 @@ export default function AdvertiserMessagesPage() {
   const [markAsGuide, setMarkAsGuide] = useState(true)
   const supabase = createClient()
   const searchParams = useSearchParams()
-  const toParam = searchParams.get('to')
-  const dateParam = searchParams.get('date')
+  const cParam = searchParams.get('c')
 
   useEffect(() => {
     const init = async () => {
@@ -32,22 +31,18 @@ export default function AdvertiserMessagesPage() {
       setCurrentUser(user)
       const convList = await fetchConversations(user.id)
 
-      // ?to= 파라미터: 해당 인플루언서 대화 자동 선택
-      if (toParam) {
-        const existing = convList.find((c: any) => c.otherId === toParam)
+      // ?c= 파라미터: 해당 인플루언서 대화 자동 선택 (대시 보내기 직후 이동 등)
+      if (cParam) {
+        const existing = convList.find((c: any) => c.otherId === cParam)
         if (existing) {
           setSelectedConversation(existing)
           fetchMessages(existing.otherId, existing.proposalId)
+          markThreadRead(existing.otherId, user.id)
         } else {
           // 기존 대화 없음 → 이름 조회 후 신규 대화창 열기
-          const { data: prof } = await supabase.from('profiles').select('name').eq('id', toParam).single()
-          setSelectedConversation({ otherId: toParam, otherName: prof?.name ?? '인플루언서', proposalId: null })
+          const { data: prof } = await supabase.from('profiles').select('name').eq('id', cParam).single()
+          setSelectedConversation({ otherId: cParam, otherName: prof?.name ?? '인플루언서', proposalId: null })
           setMessages([])
-        }
-        // ?date= 있으면 입력창 프리필
-        if (dateParam) {
-          const [, m, d] = dateParam.split('-')
-          setNewMessage(`안녕하세요! ${m}월 ${d}일 날짜로 협업을 제안드리고 싶어요.\n캠페인 관련 이야기 나눠볼 수 있을까요?`)
         }
       }
     }
@@ -76,8 +71,11 @@ export default function AdvertiserMessagesPage() {
           otherId,
           lastMessage: msg,
           proposalId: msg.proposal_id,
+          unread: false,
         }
       }
+      // 대화를 열면(is_read=true) 사라지는 단일 값에서 미응답 배지가 파생된다(A1)
+      if (msg.receiver_id === userId && !msg.is_read) grouped[otherId].unread = true
     })
 
     const convList = await Promise.all(
@@ -128,9 +126,22 @@ export default function AdvertiserMessagesPage() {
     return () => { supabase.removeChannel(channel) }
   }
 
+  // 대화를 열면 그 대화는 읽음 처리 — 목록 배지·사이드바 배지·대시보드 요약 카드가
+  // 전부 messages.is_read 하나에서 파생되므로 여기서만 갱신하면 된다(A1)
+  const markThreadRead = async (otherId: string, userId: string) => {
+    await supabase
+      .from('messages')
+      .update({ is_read: true })
+      .eq('sender_id', otherId)
+      .eq('receiver_id', userId)
+      .eq('is_read', false)
+    setConversations((prev) => prev.map((c) => (c.otherId === otherId ? { ...c, unread: false } : c)))
+  }
+
   const selectConversation = (conv: any) => {
     setSelectedConversation(conv)
     fetchMessages(conv.otherId, conv.proposalId)
+    if (currentUser) markThreadRead(conv.otherId, currentUser.id)
   }
 
   const sendMessage = async () => {
@@ -190,7 +201,11 @@ export default function AdvertiserMessagesPage() {
         </div>
 
         {selectedConversation.proposalId && currentUser && (
-          <DealConfirmBar proposalId={selectedConversation.proposalId} currentUserId={currentUser.id} />
+          <DealConfirmBar
+            proposalId={selectedConversation.proposalId}
+            currentUserId={currentUser.id}
+            onPrefill={setNewMessage}
+          />
         )}
 
         <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-3 mb-4">
@@ -290,9 +305,14 @@ export default function AdvertiserMessagesPage() {
             </div>
             <p className="text-sm text-gray-400 truncate">{conv.lastMessage?.content}</p>
           </div>
-          <p className="text-xs text-gray-300 ml-2">
-            {new Date(conv.lastMessage?.created_at).toLocaleDateString('ko-KR')}
-          </p>
+          <div className="flex flex-col items-end gap-1 ml-2 shrink-0">
+            {conv.unread && (
+              <span className="text-[10.5px] font-bold bg-red-100 text-red-500 px-2 py-0.5 rounded-full">미응답</span>
+            )}
+            <p className="text-xs text-gray-300">
+              {new Date(conv.lastMessage?.created_at).toLocaleDateString('ko-KR')}
+            </p>
+          </div>
         </button>
       ))}
     </div>

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
-const PLATFORMS = ['인스타그램', '유튜브', '블로그', '틱톡']
+const PLATFORMS = ['블로그', '유튜브', '인스타그램', '틱톡']
 
 export default function SchedulePage() {
   const [selectedDate, setSelectedDate] = useState<string>('')
@@ -16,7 +16,7 @@ export default function SchedulePage() {
   const [title, setTitle] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [freeTags, setFreeTags] = useState('')
-  const [platform, setPlatform] = useState('')
+  const [platforms, setPlatforms] = useState<string[]>([])
   const [isPublic, setIsPublic] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -27,6 +27,12 @@ export default function SchedulePage() {
   const toggleCategory = (cat: string) => {
     setSelectedCategories(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    )
+  }
+
+  const togglePlatform = (p: string) => {
+    setPlatforms(prev =>
+      prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]
     )
   }
 
@@ -57,6 +63,7 @@ export default function SchedulePage() {
       location_district: locationDistrict,
       predefined_categories: selectedCategories,
       free_tags: freeTagsArray,
+      channels: platforms,
       is_public: isPublic,
       status: 'open',
     })
@@ -172,16 +179,16 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {/* 플랫폼 */}
+      {/* 플랫폼 (복수 선택 가능) */}
       <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">플랫폼</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">플랫폼 (복수 선택 가능)</label>
         <div className="flex flex-wrap gap-2">
           {PLATFORMS.map(p => (
             <button
               key={p}
-              onClick={() => setPlatform(p)}
+              onClick={() => togglePlatform(p)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                platform === p
+                platforms.includes(p)
                   ? 'bg-[#F59E0B] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}

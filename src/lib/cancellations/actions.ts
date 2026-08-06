@@ -52,3 +52,22 @@ export async function acceptCancellation(cancellationId: string): Promise<Cancel
   }
   return { ok: true, id: cancellationId }
 }
+
+export async function withdrawCancellation(cancellationId: string): Promise<CancelResult> {
+  const auth = await createClient()
+  const { data: { user } } = await auth.auth.getUser()
+  if (!user) return { ok: false, error: '로그인이 필요해요.' }
+
+  const db = createServiceClient()
+  const { error } = await db.rpc('withdraw_cancellation', {
+    p_cancellation_id: cancellationId,
+    p_by_id: user.id,
+  })
+
+  if (error) {
+    if (error.message.includes('only the requester can withdraw')) return { ok: false, error: '본인이 요청한 취소만 철회할 수 있어요.' }
+    if (error.message.includes('not found'))                        return { ok: false, error: '이미 처리됐어요.' }
+    return { ok: false, error: error.message }
+  }
+  return { ok: true, id: cancellationId }
+}

@@ -54,7 +54,16 @@ export default function InfluencerSearchPage() {
           .select('company_name')
           .eq('user_id', campaign.advertiser_id)
           .single()
-        return { ...campaign, advertiserName: ap?.company_name ?? profile?.name ?? '광고주' }
+        const { data: score } = await supabase
+          .from('advertiser_payment_score')
+          .select('on_time_rate, deals_count')
+          .eq('advertiser_id', campaign.advertiser_id)
+          .maybeSingle()
+        return {
+          ...campaign,
+          advertiserName: ap?.company_name ?? profile?.name ?? '광고주',
+          onTimeRate: score?.on_time_rate ?? null,
+        }
       })
     )
 
@@ -131,7 +140,15 @@ export default function InfluencerSearchPage() {
           {results.map((c) => (
             <div key={c.id} className="bg-white rounded-2xl p-5 shadow-sm mb-3 border-l-4 border-amber-400">
               <p className="font-semibold text-gray-900">{c.title}</p>
-              <p className="text-xs text-gray-500 mt-1">🏢 {c.advertiserName}</p>
+              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
+                🏢 {c.advertiserName}
+                {c.onTimeRate != null && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium">
+                    <span className={`w-1.5 h-1.5 rounded-full ${c.onTimeRate >= 90 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    <span className={c.onTimeRate >= 90 ? 'text-emerald-600' : 'text-amber-600'}>정산 {c.onTimeRate}%</span>
+                  </span>
+                )}
+              </p>
 
               <div className="bg-gray-50 rounded-xl p-3 my-3 text-xs text-gray-500 space-y-0.5">
                 <p>📅 {new Date(c.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</p>

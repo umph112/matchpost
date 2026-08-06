@@ -47,9 +47,11 @@ function MessagesContent() {
         }
         setSelectedConversation(conv)
         fetchMessages(user.id, receiverId)
+        markThreadRead(receiverId, user.id)
       }
     }
     init()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -73,8 +75,11 @@ function MessagesContent() {
           otherId,
           lastMessage: msg,
           proposalId: msg.proposal_id,
+          unread: false,
         }
       }
+      // 대화를 열면(is_read=true) 사라지는 단일 값에서 미응답 배지가 파생된다(A1)
+      if (msg.receiver_id === userId && !msg.is_read) grouped[otherId].unread = true
     })
 
     const convList = await Promise.all(
@@ -123,9 +128,24 @@ function MessagesContent() {
     return () => { supabase.removeChannel(channel) }
   }
 
+  // 대화를 열면 그 대화는 읽음 처리 — 목록 배지·대시보드 요약 카드가 전부
+  // messages.is_read 하나에서 파생되므로 여기서만 갱신하면 된다(A1)
+  const markThreadRead = async (otherId: string, userId: string) => {
+    await supabase
+      .from('messages')
+      .update({ is_read: true })
+      .eq('sender_id', otherId)
+      .eq('receiver_id', userId)
+      .eq('is_read', false)
+    setConversations((prev) => prev.map((c) => (c.otherId === otherId ? { ...c, unread: false } : c)))
+  }
+
   const selectConversation = (conv: any) => {
     setSelectedConversation(conv)
-    if (currentUser) fetchMessages(currentUser.id, conv.otherId)
+    if (currentUser) {
+      fetchMessages(currentUser.id, conv.otherId)
+      markThreadRead(conv.otherId, currentUser.id)
+    }
   }
 
   const sendMessage = async () => {
@@ -183,6 +203,7 @@ function MessagesContent() {
           <DealConfirmBar
             proposalId={selectedConversation.proposalId ?? proposalId}
             currentUserId={currentUser.id}
+            onPrefill={setNewMessage}
           />
         )}
 
@@ -285,9 +306,14 @@ function MessagesContent() {
             <p className="font-semibold text-gray-800">{conv.otherName}</p>
             <p className="text-sm text-gray-400 truncate">{conv.lastMessage?.content}</p>
           </div>
-          <p className="text-xs text-gray-300 ml-2">
-            {new Date(conv.lastMessage?.created_at).toLocaleDateString('ko-KR')}
-          </p>
+          <div className="flex flex-col items-end gap-1 ml-2 shrink-0">
+            {conv.unread && (
+              <span className="text-[10.5px] font-bold bg-red-100 text-red-500 px-2 py-0.5 rounded-full">미응답</span>
+            )}
+            <p className="text-xs text-gray-300">
+              {new Date(conv.lastMessage?.created_at).toLocaleDateString('ko-KR')}
+            </p>
+          </div>
         </button>
       ))}
     </div>

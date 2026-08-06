@@ -1,7 +1,7 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import Link from 'next/link'
 import { initial } from '@/lib/initial'
-console.log('파일 실행됨')
+import DashSendButton from '@/components/DashSendButton'
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -73,12 +73,14 @@ console.log('profile:', profile)
                 <p className="text-xs text-gray-500 mb-2">
                   {new Date(schedule.date).toLocaleDateString('ko-KR')} / {schedule.location_city} {schedule.location_district}
                 </p>
-                <Link
-                  href={"/advertiser/proposals/new?scheduleId=" + schedule.id + "&influencerId=" + profile.id}
+                <DashSendButton
+                  influencerId={profile.id}
+                  influencerName={profile.name}
+                  scheduleId={schedule.id}
                   className="w-full block text-center bg-[#F59E0B] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#D97706] transition"
                 >
                   협업 제안하기
-                </Link>
+                </DashSendButton>
               </div>
             ))}
           </div>

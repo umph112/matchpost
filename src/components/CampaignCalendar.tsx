@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import DashSendButton from './DashSendButton'
 
 // 광고주 마이페이지 캘린더 — 월 그리드 + 날짜별 캠페인/오픈 카운트 칩 + 날짜 팝업(목록→상세).
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type DayData = { campaigns: any[]; opens: any[] }
 const DOW = ['일', '월', '화', '수', '목', '금', '토']
-const pad = (n: number) => String(n).padStart(2, '0')
 const BADGE: Record<string, string> = {
   진행중: 'bg-[#FEF3C7] text-[#B45309]',
   완료: 'bg-[#DCFCE7] text-[#15803D]',
@@ -233,12 +233,14 @@ export default function CampaignCalendar({
                 </div>
                 <div className="flex gap-2 px-[22px] py-3.5 border-t border-[#F1F1F4] bg-[#FAFAFB] shrink-0">
                   <Link href={`/profile/${item.data.influencerId}`} className="h-[38px] px-[15px] rounded-[9px] border border-[#E2E2E8] bg-white text-[13px] font-semibold text-[#3C3C46] flex items-center hover:bg-[#F1F1F4]">프로필 보기</Link>
-                  <Link
-                    href={`/advertiser/messages?to=${item.data.influencerId}&date=${year}-${pad(month)}-${pad(sel!)}`}
+                  <DashSendButton
+                    influencerId={item.data.influencerId}
+                    influencerName={item.data.name}
+                    scheduleId={item.data.id}
                     className="ml-auto h-[38px] px-[18px] rounded-[9px] bg-[#F59E0B] text-white text-[13px] font-bold flex items-center hover:bg-[#D97706] shadow-[0_1px_2px_rgba(245,158,11,0.35)]"
                   >
                     이 날짜로 대시 보내기 →
-                  </Link>
+                  </DashSendButton>
                 </div>
               </>
             )}

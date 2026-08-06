@@ -21,11 +21,38 @@
   - `0019_schedules_open_group.sql` — `schedules.open_group_id` 추가. "오픈 1건=1,000C, 날짜 수 무관" 정책을 지키기 위해 같은 그룹의 첫 행에서만 차감·응원 지급하도록 오픈 트리거 함수 교체. 현재 인플루언서 오픈 등록 폼(`influencer/schedule/page.tsx`)은 한 번에 한 날짜만 insert하므로 즉시 동작에 영향 없음(각 행이 default로 자기 자신만의 group_id를 받음) — 나중에 오픈 등록이 여러 날짜를 한 번에 묶어 넣는 폼으로 바뀌면 그 삽입 코드가 여러 행에 **같은 open_group_id를 명시적으로 넘겨야** 이 정책이 실제로 작동한다.
   - 이번 차수에서 훅을 안 붙인 reason_code(다음 차수에서 연결): `unlock_profile`(프로필 유료열람 기능 자체 미구현), `deal_complete`(정산 흐름 `settleCampaign` — 지시서 8번), `review`/`invite` 보상, `visit_weekly`/`visit_monthly`/`comeback`/휴면배치(크론 인프라 없음).
 
+## 현재 상태 (2026-08-06 — D5 A절+B절(화면11/12·크레딧·정산성실도) 완료, 커밋 안 함)
+- **디자인 핸드오프 5차(D5, delta)**: `docs/design/d5/`가 최신 기준 문서. 예전 라운드 문서는 전부 `design/_archive/`로 옮김(IMPLEMENT-1~4 포함). 남은 갭은 `docs/design/d5/GAPS-FOR-NEXT-ROUND.md`에 정리해둠 — 다음 핸드오프 받을 때 그 파일부터 확인할 것.
+  - **A절(대시/메시지 상태 규칙, A1~A7) 완료** — A1 읽음 상태(`messages.is_read` 단일 파생), A3/A4 대시 보내기 통합(`sendDash`, `0058_send_dash.sql`, `?c=` 경로 통일), A5 조건수정 프리필, A6 취소요청 철회(`0059_cancellation_withdraw.sql`), A7 라벨 변경. A2(탭)는 탭 UI 자체가 없어서 원칙만 남기고 보류.
+  - **화면11 정산 화면(B1~B4) 완료** — `/advertiser/settlements` 신규(`SettlementsView.tsx`). `SettleConfirmModal.tsx`가 "미수령 제외 부분기록"을 없애고 전원 수령 전엔 잠금 + "세무자료 N명 요청하기"로 전환. `0060_settlements_screen.sql`(tax_doc_requested_at, audit_log, request_tax_docs/resolve_settlement_dispute RPC).
+  - **화면12 인플루언서 마이페이지 완료(대시보드 한정)** — `InfluencerShell.tsx` 신규(PC 사이드바+모바일 하단탭), `/influencer/dashboard`만 새 셸 적용(나머지 9개 페이지는 기존 TopBar 유지 — 사용자 확인 후 범위 축소). 답기다리는제안 배너·받은제안·진행중협업·7일스트립 추가.
+  - **크레딧 정책 — 이미 구현된 게 대부분이었음**(creditConfig.ts가 SPEC과 이미 일치, 0018/0024/0042에 대부분 훅 연결됨). 빠졌던 review/comeback 훅만 추가(`0061_credit_review_comeback.sql`) + 유저용 화면 2개 신규(`/credits`, `/credits/about`). **대시 발송 500C는 베타 무료 유지로 확정**(0057 유지, SPEC 표와 다르게 감). invite(초대) 기능·unlock_profile 정의는 스펙 부족으로 보류 → 갭 문서 참고.
+  - **정산 성실도 지표 완료** — `advertiser_payment_score` 뷰(`0062_advertiser_payment_score.sql`), 인플루언서 대시 받은제안 카드 + `/influencer/search` 카드에 정산 정시율 노출. 브랜드 정보 팝업·광고주 KPI 노출은 보류(갭 문서 참고).
+  - **C절(그 밖의 작은 확정 C1~C4) 완료**:
+    - C1 캠페인 목록 정렬 라벨 "등록 최신순/오래된순"(`MyCampaignsList.tsx`, 기존엔 진행일 기준인데 라벨이 모호했음)
+    - C2 팀 초대 — `team_members` 테이블 + `/advertiser/team` 화면(초대/역할변경/재발송/재활성화) + 가입 시 이메일 자동연결. **단, 팀원이 실제로 오너의 캠페인·정산에 접근하는 권한 전파는 범위 밖**(15곳 이상 조회 지점을 건드려야 하는 별도 보안 작업 — `docs/design/d5/GAPS-FOR-NEXT-ROUND.md` 0번 참고)
+    - C3 — 현재 레포에 "모바일에서 막혀야 할 되돌릴 수 없는 처리"가 없어서(모바일=반응형 재배치일 뿐 기능 잠금 없음) 원칙만 확인, 고칠 위반 사례 없었음
+    - C4 오픈 등록 폼 플랫폼 선택을 단일→다중 토글로 전환(기존엔 select만 되고 insert에 빠져 있던 죽은 필드였음) + 내 오픈 목록 행이 대시 온 오픈만 대화로 연결(0건은 커서 없음)
+  - **재확인 중 발견해서 추가로 고친 것**: 크레딧 "지급 8지점" 중 `profile_complete`/`first_action`이 실제로는 훅이 없었음(지난 요약에서 "이미 있다"고 잘못 말함) — `0064_credit_profile_first_action.sql`로 추가.
+  - **재확인 후 사용자 확인받고 "지금 방식 유지"로 결정한 것 2개**(`docs/design/d5/DECISIONS-D5.md` "B/화면12 구현 후 재확인 결정" 참고): 정산 완료 기록이 캠페인 단위 트랜잭션 1건이 아니라 프로포절별 순회 호출인 점(정산 코드라 다시 안 건드림) / 화면12 모바일 홈에 스펙 8개 목록에 없는 내오픈목록·대시메시지·알림함 미리보기 3개를 그대로 남긴 점.
+  - **Supabase 미실행 SQL(순서대로)**: `0058_send_dash.sql` → `0059_cancellation_withdraw.sql` → `0060_settlements_screen.sql` → `0061_credit_review_comeback.sql` → `0062_advertiser_payment_score.sql` → `0063_team_members.sql` → `0064_credit_profile_first_action.sql`
+  - `npx tsc --noEmit` + `npm run build` 매 단계마다 통과 확인됨. **D5 핸드오프(docs/design/d5/) 전체 항목 완료 — 남은 건 GAPS-FOR-NEXT-ROUND.md에 정리된, 스펙이 부족해 다음 라운드 확인이 필요한 것들뿐(초대 기능, 프로필 열람 잠금, 팀원 권한 전파, 관리자 지급 화면 고도화 등).**
+
 ## 🚨 최우선 원칙
 - **MatchPost와 KPGTR(manian)은 완전히 별개의 앱/프로젝트다.** 코드·파일·DB를 섞지 않는다. 필요한 연동은 **API를 통한 느슨한 결합만** 허용(나중에 콘텐츠 등을 API로 주고받는 정도). 각자 독립 배포·운영.
 - **수정 전 사전 보고 + 승인**: 어느 파일의 어느 부분을 어떻게 바꿀지 먼저 보고하고 승인 후 실행. 요청한 부분만, 최소 범위로.
 - **커밋/푸시는 명시적 지시가 있을 때만.** 자동 커밋 금지.
 - DB 스키마 변경은 항상 `sql/migrations/`에 번호 SQL로 남기고 커밋(재현성). Supabase SQL Editor에서 실행.
+
+### 디자인 핸드오프 폴더 — 중복 방지 규칙 (2026-08-05 확립)
+사용자가 `매치포스트 PC 디자인 핸드오프 (N)` 폴더를 레포 루트에 통째로 떨어뜨려 놓는 일이 반복됨(Claude Design 산출물, git에는 안 올라가는 임시 다운로드). 매번 아래 순서로 처리:
+1. 폴더 안 하위폴더(`handoff_D5_delta` 등)의 파일들을 `docs/design/<현재 라운드>/`(예: `docs/design/d5/`)의 기존 파일과 대조 — 문장부호·줄바꿈 스타일 차이는 무시하고 **A/B/C 항목·결정·규칙 내용이 실제로 바뀌었는지만** 본다.
+2. 내용이 같으면(재수출본): 새로 추가된 부분(보통 DECISIONS 파일 끝의 "구현 중 결정" 로그류)만 기존 파일에 병합하고, 다운로드 폴더는 그대로 삭제. 새로 구현할 것 없음.
+3. 진짜 새 라운드(항목 자체가 바뀌었거나 라운드 번호가 다름)면 `docs/design/d<N+1>/`로 새로 만들고 이전 라운드 폴더는 그대로 둔다(아직 참고할 수 있어 archive 안 함).
+4. `매치포스트 PC 디자인 핸드오프 (N)` 폴더 자체는 처리 끝나면 **항상 삭제** — 레포에 남기지 않는다.
+5. 레포 루트에 `IMPLEMENT-*.md` 낱장이 떨어져 있으면(1~4차 시절 관행) `design/_archive/`로 옮긴다 — 1~4차분은 이미 옮겨둠.
+
+이렇게 하면 "어느 문서가 최신인가"를 매번 판단할 필요 없이 `docs/design/d5/`(또는 최신 라운드 폴더) 하나만 보면 된다.
 
 ## 개요
 - 광고주 ↔ 인플루언서 **달력 기반 매칭 + 딜시트(캠페인 프로젝트 관리)** 플랫폼
