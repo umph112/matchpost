@@ -12,16 +12,13 @@ import { initial } from '@/lib/initial'
 import { reSettleCampaign } from '@/lib/deals/settle'
 import { requestCancellation, acceptCancellation, CANCEL_REASONS, type CancelReason } from '@/lib/cancellations/actions'
 import { proposeConnection } from '@/lib/connections/actions'
+import { computeEnabledStages, reindexStage, stageHintLine, type Stage } from '@/lib/campaign-stages'
 
-// 8-stage pipeline (지역=8단계, 제품/기자단=방문 제외 7단계)
-const ALL_STAGES = ['신청', '확정', '가이드', '방문', '업로드', '수정/컴프', '검사', '정산'] as const
-type Stage = (typeof ALL_STAGES)[number]
-
-// 체크포인트가 있는 단계 → checkpoint kind (방문·수정컴프 제외)
+// 체크포인트가 있는 단계 → checkpoint kind (방문·수정/컨펌 제외)
 const STAGE_TO_CP: Record<string, string> = {
   '가이드': 'guide',
-  '업로드': 'draft',
-  '검사':   'publish',
+  '원고':   'draft',
+  '게재':   'publish',
   '정산':   'payment',
 }
 
@@ -120,16 +117,21 @@ type Campaign = {
   inspection_deadline: string | null
   settlement_date: string | null
   status: string | null
+  stage_pre_confirm?: boolean
+  stage_post_edit?: boolean
 }
 
-function stageIndex(stage: string | null): number {
-  const idx = ALL_STAGES.indexOf((stage ?? '신청') as Stage)
+// D6 B3 — 인덱스는 항상 그 캠페인의 활성 단계 목록(stages) 기준으로만 계산한다.
+// 예전엔 ALL_STAGES 기준 인덱스를 필터링된 목록에 그대로 꽂아 써서(같은 공간이 아님)
+// 방문 없는 캠페인에서 다음 단계를 건너뛰는 버그가 있었다.
+function stageIndex(stage: string | null, stages: readonly Stage[]): number {
+  const idx = stages.indexOf(reindexStage(stage, stages as Stage[]))
   return idx >= 0 ? idx : 0
 }
 
-function stageColor(stage: string | null): string {
-  const idx = stageIndex(stage)
-  if (idx >= 7) return '#22C55E'
+function stageColor(stage: string | null, stages: readonly Stage[]): string {
+  const idx = stageIndex(stage, stages)
+  if (idx >= stages.length - 1) return '#22C55E'
   if (idx >= 2) return '#F59E0B'
   return '#C4C4CE'
 }
@@ -157,6 +159,8 @@ export default function DealSheet({
   const [pendingCancellations, setPendingCancellations] = useState<
     Record<string, { id: string; by_id: string; reason: string }>
   >({})
+  // D6 A8 — 취소가 수락된 건. 행은 지우지 않고 배지+사유로 남긴다(확정 플래그는 이미 서버에서 내려감)
+  const [resolvedCancellations, setResolvedCancellations] = useState<Record<string, { reason: string }>>({})
   const [cancelError, setCancelError] = useState('')
   const [connections, setConnections] = useState<
     Record<string, { id: string; a_id: string; a_ok: boolean; b_ok: boolean }>
@@ -202,6 +206,17 @@ export default function DealSheet({
         const map: Record<string, { id: string; by_id: string; reason: string }> = {}
         for (const c of data) map[c.deal_id] = { id: c.id, by_id: c.by_id, reason: c.reason }
         setPendingCancellations(map)
+      })
+    supabase
+      .from('cancellations')
+      .select('deal_id, reason')
+      .in('deal_id', ids)
+      .eq('agreed', true)
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, { reason: string }> = {}
+        for (const c of data) map[c.deal_id] = { reason: c.reason }
+        setResolvedCancellations(map)
       })
   }
 
@@ -261,7 +276,11 @@ export default function DealSheet({
   }
 
   const isLocation = campaign.campaign_type === '지역'
-  const stages = isLocation ? ALL_STAGES : ALL_STAGES.filter((s) => s !== '방문')
+  const stages = computeEnabledStages({
+    campaignType: campaign.campaign_type,
+    preConfirm: campaign.stage_pre_confirm ?? true,
+    postEdit: campaign.stage_post_edit ?? false,
+  })
 
   const confirmedCount = proposals_.filter((p) => p.advertiser_confirmed && p.influencer_confirmed).length
   const selectedProposals = proposals_.filter((p) => selected.has(p.id))
@@ -284,7 +303,7 @@ export default function DealSheet({
   const advanceStage = async (proposalId: string) => {
     const p = proposals_.find((x) => x.id === proposalId)
     if (!p) return
-    const cur = stageIndex(p.stage)
+    const cur = stageIndex(p.stage, stages)
     if (cur >= stages.length - 1) return
     const nextStage = stages[cur + 1]
     const { error } = await supabase.from('proposals').update({ stage: nextStage }).eq('id', proposalId)
@@ -399,15 +418,48 @@ export default function DealSheet({
   }
 
   const proposalRow = (p: Proposal) => {
-    const sidx = stageIndex(p.stage)
+    const sidx = stageIndex(p.stage, stages)
     const pct = Math.round(((sidx + 1) / stages.length) * 100)
-    const color = stageColor(p.stage)
+    const color = stageColor(p.stage, stages)
     const isConfirmed = p.advertiser_confirmed && p.influencer_confirmed
     const cpKind = p.stage ? STAGE_TO_CP[p.stage] : null
     const cp = cpKind ? checkpoints[p.id]?.[cpKind] : null
     const isSettled = !!p.settled_at
 
     const pendingCancel = pendingCancellations[p.id]
+    const cancelled = resolvedCancellations[p.id]
+
+    // D6 A8 — 취소가 수락된 행은 지우지 않고 남기되, 배지+사유로 바꾸고 나머지 칸은 비운다.
+    // 확정 플래그는 서버에서 이미 내려가 있어(0067) 모집확정·집행예정액 등 다른 파생값에서는
+    // 저절로 빠진다 — 여기서는 이 행 자체의 표시만 다룬다.
+    if (cancelled) {
+      return (
+        <div key={p.id} className="border-b border-[#F5F5F7] last:border-b-0 bg-[#FEF2F2]">
+          <div className="grid items-center px-4 py-3 gap-2" style={{ gridTemplateColumns: COL }}>
+            <input type="checkbox" checked={false} disabled className="w-[14px] h-[14px] opacity-30" />
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-full bg-[#FEE2E2] text-[#B91C1C] text-[11px] font-bold flex items-center justify-center shrink-0">
+                {initial(p.profile?.name)}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12.5px] font-semibold text-[#7C7C88] truncate line-through">
+                  {p.profile?.name ?? '인플루언서'}
+                </p>
+                <span className="text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded px-1.5 py-0.5">
+                  취소 · {cancelled.reason}
+                </span>
+              </div>
+            </div>
+            <div className="text-[11.5px] text-[#B0B0BB]">진행 없음</div>
+            <div className="text-[11.5px] text-[#C4C4CE]">—</div>
+            <div className="text-[11.5px] text-[#C4C4CE]">—</div>
+            <div className="text-[11.5px] text-[#C4C4CE]">—</div>
+            <div className="text-[11px] text-[#C4C4CE]">—</div>
+            <div className="text-right text-[11px] text-[#C4C4CE]">해당 없음</div>
+          </div>
+        </div>
+      )
+    }
 
     return (
       <div key={p.id} className="border-b border-[#F5F5F7] last:border-b-0">
@@ -453,7 +505,7 @@ export default function DealSheet({
         {/* 단계 */}
         <div>
           <span className="text-[11.5px] font-semibold text-[#3C3C46]">
-            {p.stage ?? '신청'}
+            {stages[sidx]}
           </span>
           {isConfirmed && !isSettled && sidx < stages.length - 1 && (
             <button
@@ -668,6 +720,7 @@ export default function DealSheet({
       {reportModal && (
         <ReportModal
           proposalId={reportModal}
+          role="advertiser"
           onClose={() => setReportModal(null)}
           onDone={() => setReportModal(null)}
         />

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { signupCreditAmount } from '@/lib/creditConfig'
 
 // 개발 기간: 이메일 인증/RLS 우회를 위해 service_role로 계정+프로필을 즉시 생성.
 // (베타 진입 시 이메일 인증·본인인증 등 보안 절차 추가 예정)
@@ -72,10 +73,10 @@ export async function POST(req: Request) {
       .eq('status', 'invited')
   }
 
-  // 4) 가입 환영 크레딧 지급 (양쪽 30,000 — CREDIT_AMOUNTS.WELCOME)
+  // 4) 가입 환영 크레딧 지급 — D6 D1: 역할별로 다르다(광고주 20,000 / 인플루언서 10,000)
   await admin.rpc('credit_ledger_grant', {
     p_user_id: uid,
-    p_amount: 30000,
+    p_amount: signupCreditAmount(role),
     p_kind: 'welcome',
     p_reason_code: 'welcome',
     p_memo: '가입 환영 크레딧',

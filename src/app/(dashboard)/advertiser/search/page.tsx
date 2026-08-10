@@ -222,6 +222,7 @@ export default function AdvertiserSearchPage() {
         influencerId={schedule.influencer_id}
         influencerName={schedule.profiles?.name ?? '인플루언서'}
         scheduleId={schedule.id}
+        scheduleDate={schedule.date}
         className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-white text-[12.5px] font-bold py-2 rounded-lg transition shadow-[0_1px_2px_rgba(245,158,11,.25)]"
       >
         이 날짜로 대시 →

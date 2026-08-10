@@ -8,6 +8,7 @@ import DashSendButton from './DashSendButton'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type DayData = { campaigns: any[]; opens: any[] }
 const DOW = ['일', '월', '화', '수', '목', '금', '토']
+const pad = (n: number) => String(n).padStart(2, '0')
 const BADGE: Record<string, string> = {
   진행중: 'bg-[#FEF3C7] text-[#B45309]',
   완료: 'bg-[#DCFCE7] text-[#15803D]',
@@ -237,6 +238,7 @@ export default function CampaignCalendar({
                     influencerId={item.data.influencerId}
                     influencerName={item.data.name}
                     scheduleId={item.data.id}
+                    scheduleDate={`${year}-${pad(month)}-${pad(sel!)}`}
                     className="ml-auto h-[38px] px-[18px] rounded-[9px] bg-[#F59E0B] text-white text-[13px] font-bold flex items-center hover:bg-[#D97706] shadow-[0_1px_2px_rgba(245,158,11,0.35)]"
                   >
                     이 날짜로 대시 보내기 →

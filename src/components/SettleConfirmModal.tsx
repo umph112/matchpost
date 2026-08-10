@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { settleCampaign, requestTaxDocs } from '@/lib/deals/settle'
+import { creditAmount } from '@/lib/creditConfig'
 
 type Proposal = {
   id: string
@@ -148,7 +149,7 @@ export default function SettleConfirmModal({
             <p className="text-[11.5px] font-bold text-[#5C5C68] mb-2">기록하면 이렇게 됩니다</p>
             <ul className="flex flex-col gap-1.5 text-[11.5px] text-[#7C7C88]">
               <li>· 정산 기록이 남습니다 (이후 수정 불가)</li>
-              <li>· 양쪽에 각각 3,000C가 지급됩니다</li>
+              <li>· 양쪽에 각각 {creditAmount('deal_complete').toLocaleString()}C가 지급됩니다</li>
               <li>· 상호 평가 요청 알림이 발송됩니다</li>
               <li>· 5일 뒤 양쪽 연락처가 차단됩니다</li>
             </ul>

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
 import TimeSelect from '@/components/TimeSelect'
+import { computeEnabledStages, stageHintLine } from '@/lib/campaign-stages'
 
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
 // 채널별 콘텐츠 단위 (수량 입력 라벨)
@@ -63,6 +64,8 @@ export default function NewCampaignPage() {
   const [detailTemplates, setDetailTemplates] = useState<any[]>([])
   const [showDetailTpls, setShowDetailTpls] = useState(false)
   const [campaignType, setCampaignType] = useState('')
+  const [stagePreConfirm, setStagePreConfirm] = useState(true)
+  const [stagePostEdit, setStagePostEdit] = useState(false)
 
   // 옵션 (추가형 + 비용 직접 입력)
   const [reviewOpt, setReviewOpt] = useState(false)
@@ -223,6 +226,16 @@ export default function NewCampaignPage() {
     setDetails((prev) => (prev.trim() ? prev + '\n\n' + (t.content || '') : t.content || ''))
     setShowDetailTpls(false)
   }
+  // D6 B1 — 수정/컨펌을 끄면 게재뒤수정이 자동으로 켜진다(가장 흔한 대안이라 먼저 제안).
+  // 둘 다 끌 수도, 둘 다 켤 수도 있다.
+  const togglePreConfirm = () => {
+    setStagePreConfirm((prev) => {
+      const next = !prev
+      if (!next && !stagePostEdit) setStagePostEdit(true)
+      return next
+    })
+  }
+
   const deleteDetailTemplate = async (id: string) => {
     await supabase.from('campaign_detail_templates').delete().eq('id', id)
     setDetailTemplates((prev) => prev.filter((t) => t.id !== id))
@@ -232,6 +245,8 @@ export default function NewCampaignPage() {
   const applyTemplate = (c: any) => {
     setChannels(c.channels || [])
     setCampaignType(c.campaign_type || '')
+    setStagePreConfirm(c.stage_pre_confirm ?? true)
+    setStagePostEdit(c.stage_post_edit ?? false)
     const opts = (c.options || []) as { type: string; cost: number | null }[]
     const rv = opts.find((o) => o.type === '구매평')
     setReviewOpt(!!rv)
@@ -522,6 +537,8 @@ export default function NewCampaignPage() {
       image_urls: imageUrls,
       cover_image_url: coverImageUrl || null,
       status: 'open',
+      stage_pre_confirm: stagePreConfirm,
+      stage_post_edit: stagePostEdit,
     })
 
     if (insertError) {
@@ -631,6 +648,47 @@ export default function NewCampaignPage() {
           ))}
         </div>
       </div>
+
+      {/* ②-1 진행 과정 (조립식) */}
+      {campaignType && (
+        <div className={card}>
+          <label className="block text-sm font-medium text-gray-700 mb-2">진행 과정</label>
+          <div className="flex flex-wrap gap-2 mb-2.5">
+            {computeEnabledStages({ campaignType, preConfirm: stagePreConfirm, postEdit: stagePostEdit }).map((s) => {
+              const fixed = !['수정/컨펌', '게재뒤수정'].includes(s)
+              return (
+                <span
+                  key={s}
+                  className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg ${
+                    fixed ? 'bg-white border border-gray-200 text-gray-600' : 'bg-[#FFFBEB] border border-[#F59E0B] text-[#B45309]'
+                  }`}
+                >
+                  {s}
+                </span>
+              )
+            })}
+          </div>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <button
+              onClick={togglePreConfirm}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition ${
+                stagePreConfirm ? 'bg-[#F59E0B] text-white border-[#F59E0B]' : 'bg-white text-gray-500 border-gray-200'
+              }`}
+            >
+              수정/컨펌 {stagePreConfirm ? '켜짐' : '사전 원고 없음'}
+            </button>
+            <button
+              onClick={() => setStagePostEdit((v) => !v)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition ${
+                stagePostEdit ? 'bg-[#F59E0B] text-white border-[#F59E0B]' : 'bg-white text-gray-500 border-gray-200'
+              }`}
+            >
+              게재뒤수정 {stagePostEdit ? '켜짐' : '꺼짐'}
+            </button>
+          </div>
+          <p className="text-xs text-gray-500">{stageHintLine({ campaignType, preConfirm: stagePreConfirm, postEdit: stagePostEdit })}</p>
+        </div>
+      )}
 
       {/* ③ 옵션 (추가형 + 비용 직접입력) */}
       <div className={card}>

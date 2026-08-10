@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { creditAmount } from '@/lib/creditConfig'
 
 // 광고주를 평가 (인플루언서가 입력)
 const ADV_TAGS = ['결제가 신속해요', '가이드가 명확해요', '요구가 합리적이었어요', '소통이 빨라요', '다시 함께하고 싶어요']
@@ -135,7 +136,7 @@ export default function ReviewModal({
               disabled={submitting}
               className="w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 transition disabled:opacity-40"
             >
-              {submitting ? '제출 중...' : '평가 보내고 1,000C 받기'}
+              {submitting ? '제출 중...' : `평가 보내고 ${creditAmount('review').toLocaleString()}C 받기`}
             </button>
             <p className="text-[10.5px] text-[#9A9AA5] text-center leading-snug">
               내가 남긴 평가는 상대에게 공개되지 않습니다. 여러 건이 모이면 평균 만 프로필에 표시라요. 제출 이후는 수정할 수 없습니다.

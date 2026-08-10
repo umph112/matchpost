@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { requestTaxDocs, resolveSettlementDispute } from '@/lib/deals/settle'
+import { kstDateString, dDay as kstDDay, dDayLabel } from '@/lib/date'
 import SettleConfirmModal from './SettleConfirmModal'
 
 type Proposal = {
@@ -26,22 +27,15 @@ type Campaign = {
   settlement_date: string | null
   tax_doc_requested_at: string | null
   status: string | null
+  overdue_reminder_count?: number
 }
 
-type Tab = '예정' | '보류' | '완료'
+type Tab = '예정' | '미수' | '완료'
 
 const TAX_CHIP = (type: string | null, received: boolean | null) => {
   if (!type) return { label: '종류 미정', cls: 'bg-[#FEE2E2] text-[#DC2626]' }
   if (received) return { label: type, cls: 'bg-[#F1F1F4] text-[#5C5C68]' }
   return { label: `${type} 미수령`, cls: 'bg-[#FEE2E2] text-[#DC2626]' }
-}
-
-function dDay(dateStr: string | null) {
-  if (!dateStr) return null
-  const d = new Date(dateStr)
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const diff = Math.ceil((d.getTime() - today.getTime()) / 86400000)
-  return diff
 }
 
 export default function SettlementsView({
@@ -63,6 +57,9 @@ export default function SettlementsView({
   // settlement_status를 로컬에서도 낙관적으로 갱신한다.
   const [localProposals, setLocalProposals] = useState(proposals)
 
+  // D6 C1 — 미수 = 지급 예정일이 지났는데 기록되지 않은 건. C7 — "오늘" 기준은 kstDateString 하나뿐.
+  const today = kstDateString()
+
   const rows = useMemo(() => {
     const byCampaign: Record<string, Proposal[]> = {}
     for (const p of localProposals) (byCampaign[p.campaign_id] ??= []).push(p)
@@ -75,19 +72,22 @@ export default function SettlementsView({
         if (targets.length === 0) return null
         const disputed = targets.some((p) => p.settled_at && p.paid_disputed_at)
         const allSettled = targets.every((p) => p.settlement_status === '완료')
-        const bucket: Tab = disputed ? '보류' : allSettled ? '완료' : '예정'
+        const overdue = !allSettled && !!c.settlement_date && c.settlement_date < today
+        // C4 — 진행바 분모는 정산 대상 인원(보류자 제외)
+        const settleableTargets = disputed ? targets.filter((p) => !(p.settled_at && p.paid_disputed_at)) : targets
+        const bucket: Tab = allSettled ? '완료' : overdue ? '미수' : '예정'
         const totalAmount = targets.reduce((s, p) => s + (p.budget ?? 0), 0)
         const readyAmount = targets
           .filter((p) => p.tax_doc_received)
           .reduce((s, p) => s + (p.budget ?? 0), 0)
         const taxReceived = targets.filter((p) => p.tax_doc_received).length
-        return { campaign: c, targets, bucket, totalAmount, readyAmount, taxReceived, disputed }
+        return { campaign: c, targets, settleableTargets, bucket, totalAmount, readyAmount, taxReceived, disputed, overdue }
       })
       .filter((r): r is NonNullable<typeof r> => r !== null)
-  }, [campaigns, localProposals])
+  }, [campaigns, localProposals, today])
 
   const tabCounts = useMemo(() => {
-    const c: Record<Tab, number> = { 예정: 0, 보류: 0, 완료: 0 }
+    const c: Record<Tab, number> = { 예정: 0, 미수: 0, 완료: 0 }
     for (const r of rows) c[r.bucket]++
     return c
   }, [rows])
@@ -95,7 +95,9 @@ export default function SettlementsView({
   const kpis = useMemo(() => {
     const pending = rows.filter((r) => r.bucket === '예정')
     const pendingTotal = pending.reduce((s, r) => s + r.totalAmount, 0)
-    const upcoming = pending
+    const overdueRows = rows.filter((r) => r.bucket === '미수')
+    const overdueTotal = overdueRows.reduce((s, r) => s + r.totalAmount, 0)
+    const oldestOverdue = overdueRows
       .map((r) => r.campaign.settlement_date)
       .filter((d): d is string => !!d)
       .sort()[0]
@@ -103,7 +105,7 @@ export default function SettlementsView({
       .filter((r) => r.bucket !== '완료')
       .reduce((s, r) => s + (r.targets.length - r.taxReceived), 0)
     const doneTotal = rows.filter((r) => r.bucket === '완료').reduce((s, r) => s + r.totalAmount, 0)
-    return { pendingTotal, pendingCount: pending.length, upcoming, taxMissing, doneTotal }
+    return { pendingTotal, pendingCount: pending.length, overdueTotal, overdueCount: overdueRows.length, oldestOverdue, taxMissing, doneTotal }
   }, [rows])
 
   const filtered = rows.filter((r) => r.bucket === tab)
@@ -151,16 +153,16 @@ export default function SettlementsView({
             <div className="text-[22px] font-extrabold tracking-[-0.03em]">{fmt(kpis.pendingTotal)}원</div>
             <div className="text-[11.5px] text-[#9A9AA5]">{kpis.pendingCount}개 캠페인</div>
           </div>
-          <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4 flex flex-col gap-1.5">
+          <div className={`border rounded-xl px-[18px] py-4 flex flex-col gap-1.5 ${kpis.overdueCount > 0 ? 'bg-[#FEF2F2] border-[#FECACA]' : 'bg-white border-[#EAEAEE]'}`}>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-[2px] bg-[#3B82F6]" />
-              <span className="text-xs font-semibold text-[#7C7C88]">가장 가까운 정산일</span>
+              <span className="w-1.5 h-1.5 rounded-[2px] bg-[#DC2626]" />
+              <span className="text-xs font-semibold text-[#7C7C88]">미수</span>
             </div>
-            <div className="text-[22px] font-extrabold tracking-[-0.03em]">
-              {kpis.upcoming ? kpis.upcoming.slice(5).replace('-', '/') : '—'}
+            <div className={`text-[22px] font-extrabold tracking-[-0.03em] ${kpis.overdueCount > 0 ? 'text-[#DC2626]' : ''}`}>
+              {kpis.overdueCount > 0 ? fmt(kpis.overdueTotal) + '원' : '없음'}
             </div>
             <div className="text-[11.5px] text-[#9A9AA5]">
-              {kpis.upcoming ? (dDay(kpis.upcoming)! >= 0 ? `D-${dDay(kpis.upcoming)}` : `D+${Math.abs(dDay(kpis.upcoming)!)}`) : '예정 없음'}
+              {kpis.overdueCount > 0 ? `${kpis.overdueCount}건 · 가장 오래 ${dDayLabel(kpis.oldestOverdue)}` : '예정일을 지킨 상태예요'}
             </div>
           </div>
           <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4 flex flex-col gap-1.5">
@@ -180,14 +182,16 @@ export default function SettlementsView({
           </div>
         </div>
 
-        {/* 탭 */}
+        {/* 탭 — 미수가 0건이 아니면 탭 자체를 빨강으로(C1) */}
         <div className="flex gap-[3px] bg-[#F1F1F4] rounded-lg p-[3px] w-fit">
-          {(['예정', '보류', '완료'] as Tab[]).map((t) => (
+          {(['예정', '미수', '완료'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`text-[12.5px] font-semibold px-3.5 py-[7px] rounded-md transition ${
-                tab === t ? 'bg-white text-[#17171B] shadow-[0_1px_2px_rgba(0,0,0,.06)]' : 'text-[#8A8A96] hover:text-[#5C5C68]'
+                t === '미수' && tabCounts['미수'] > 0
+                  ? tab === t ? 'bg-[#FEF2F2] text-[#DC2626] shadow-[0_1px_2px_rgba(0,0,0,.06)]' : 'text-[#DC2626] hover:bg-[#FEF2F2]'
+                  : tab === t ? 'bg-white text-[#17171B] shadow-[0_1px_2px_rgba(0,0,0,.06)]' : 'text-[#8A8A96] hover:text-[#5C5C68]'
               }`}
             >
               {t} {tabCounts[t]}
@@ -203,11 +207,13 @@ export default function SettlementsView({
             </div>
           )}
           {filtered.map((r) => {
-            const pct = r.targets.length ? Math.round((r.taxReceived / r.targets.length) * 100) : 0
+            // C4 — 분모는 정산 대상 인원(보류자 제외)
+            const taxReceivedAmongSettleable = r.settleableTargets.filter((p) => p.tax_doc_received).length
+            const pct = r.settleableTargets.length ? Math.round((taxReceivedAmongSettleable / r.settleableTargets.length) * 100) : 0
             const isOpen = openId === r.campaign.id
             const requested = requestedIds.has(r.campaign.id) || !!r.campaign.tax_doc_requested_at
             const resolved = resolvedIds.has(r.campaign.id)
-            const dday = dDay(r.campaign.settlement_date)
+            const dday = kstDDay(r.campaign.settlement_date)
             return (
               <div key={r.campaign.id} className={card + ' p-4 flex flex-col gap-[13px]'}>
                 <div className="flex items-start justify-between gap-3">
@@ -218,7 +224,7 @@ export default function SettlementsView({
                         className={`text-[10.5px] font-bold px-2 py-0.5 rounded-[5px] ${
                           r.bucket === '완료'
                             ? 'bg-[#DCFCE7] text-[#15803D]'
-                            : r.bucket === '보류'
+                            : r.bucket === '미수'
                             ? 'bg-[#FEE2E2] text-[#DC2626]'
                             : 'bg-[#FEF3C7] text-[#B45309]'
                         }`}
@@ -246,6 +252,15 @@ export default function SettlementsView({
                     <div className="text-[11px] text-[#9A9AA5]">지급 준비 {fmt(r.readyAmount)}원</div>
                   </div>
                 </div>
+
+                {/* C1 — 미수 카드 안내: 지연 자동 알림·누적 근거·예정일 변경 경로를 그 자리에서 알려준다 */}
+                {r.bucket === '미수' && (
+                  <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-lg px-3 py-2 text-[12px] text-[#B91C1C] leading-relaxed">
+                    예정일 {r.campaign.settlement_date?.slice(5).replace('-', '/')}에서 {Math.abs(dday ?? 0)}일 지났어요.
+                    매일 1회 지연 알림이 발송되고 있고(누적 {r.campaign.overdue_reminder_count ?? 0}회), 이 기록이 이용 제한 판정에 쓰입니다.
+                    결제 예정일 변경이 필요하면 캠페인 대화창에서 참여 인플루언서에게 공지하고 결제일 변경을 확정하세요.
+                  </div>
+                )}
 
                 {r.disputed && (
                   <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-lg px-3 py-2 text-[12px] text-[#B91C1C]">
@@ -295,16 +310,15 @@ export default function SettlementsView({
                   </button>
                   <div className="ml-auto">
                     {r.bucket === '완료' ? (
-                      <span className="text-[12px] font-semibold text-[#15803D]">정산 내역 보기</span>
-                    ) : r.bucket === '보류' ? (
-                      !resolved &&
-                      resolvingFor !== r.campaign.id && (
+                      r.disputed && !resolved && resolvingFor !== r.campaign.id ? (
                         <button
                           onClick={() => setResolvingFor(r.campaign.id)}
                           className="text-[12px] font-semibold text-[#5C5C68] border border-[#E2E2E8] rounded-lg px-3 py-1.5 hover:bg-[#F6F6F7]"
                         >
                           보류 사유 해결하기
                         </button>
+                      ) : (
+                        <span className="text-[12px] font-semibold text-[#15803D]">정산 내역 보기</span>
                       )
                     ) : pct === 100 ? (
                       <button

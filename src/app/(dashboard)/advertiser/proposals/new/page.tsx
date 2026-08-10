@@ -62,7 +62,7 @@ function NewProposalForm() {
     setError('')
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user || !influencerId) return
+    if (!user || !influencerId || !schedule?.date) return
 
     const res = await sendDash({
       influencerId,
@@ -70,6 +70,7 @@ function NewProposalForm() {
       message,
       budget: budget ? parseInt(budget) : null,
       collaborationType,
+      date: schedule.date,
     })
 
     if (!res.ok) {
@@ -78,8 +79,11 @@ function NewProposalForm() {
       return
     }
 
+    const { data: convId } = await supabase.rpc('get_or_create_conversation', {
+      p_advertiser_id: user.id, p_kind: 'personal', p_campaign_id: null, p_other_id: influencerId,
+    })
     setSuccess(true)
-    setTimeout(() => router.push(`/advertiser/messages?c=${influencerId}`), 1200)
+    setTimeout(() => router.push(`/advertiser/messages/${convId}`), 1200)
   }
 
   if (success) {

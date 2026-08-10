@@ -285,6 +285,14 @@ export default function SignupPage() {
             {loading ? '가입 중...' : '회원가입'}
           </button>
 
+          <p className="text-center text-[11px] text-gray-400 mt-3 leading-relaxed">
+            가입하면{' '}
+            <Link href="/terms" target="_blank" className="underline hover:text-gray-600">이용약관</Link>
+            {' '}과{' '}
+            <Link href="/privacy" target="_blank" className="underline hover:text-gray-600">개인정보처리방침</Link>
+            에 동의하는 것으로 간주됩니다.
+          </p>
+
           <p className="text-center text-xs text-gray-400 mt-3">
             {role === 'influencer'
               ? '가입 즉시 이용 가능해요. 오픈(가능일정) 등록은 마이페이지에서 채널·소개를 먼저 작성하면 활성화됩니다.'

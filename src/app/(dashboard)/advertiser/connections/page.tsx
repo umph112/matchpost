@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { initial } from '@/lib/initial'
 import { respondConnection, revokeConnection } from '@/lib/connections/actions'
@@ -26,6 +27,14 @@ export default function AdvertiserConnectionsPage() {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const supabase = createClient()
+  const router = useRouter()
+
+  const goToConversation = async (otherId: string) => {
+    const { data: convId } = await supabase.rpc('get_or_create_conversation', {
+      p_advertiser_id: userId, p_kind: 'personal', p_campaign_id: null, p_other_id: otherId,
+    })
+    if (convId) router.push(`/advertiser/messages/${convId}`)
+  }
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -145,9 +154,9 @@ export default function AdvertiserConnectionsPage() {
                 >
                   대시 보내기
                 </DashSendButton>
-                <Link href={`/advertiser/messages?c=${r.otherId}`} className="text-xs text-[#B45309] hover:underline">
+                <button onClick={() => goToConversation(r.otherId)} className="text-xs text-[#B45309] hover:underline">
                   메시지
-                </Link>
+                </button>
                 <button onClick={() => revoke(r.id)} disabled={busyId === r.id}
                   className="text-xs text-gray-300 hover:text-red-500">해제</button>
               </div>

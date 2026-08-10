@@ -12,6 +12,7 @@ export default function DashSendButton({
   message,
   budget,
   collaborationType,
+  scheduleDate,
   className,
   children,
 }: {
@@ -22,6 +23,7 @@ export default function DashSendButton({
   message?: string | null
   budget?: number | null
   collaborationType?: string | null
+  scheduleDate?: string | null
   className?: string
   children: React.ReactNode
 }) {
@@ -40,6 +42,7 @@ export default function DashSendButton({
           message={message}
           budget={budget}
           collaborationType={collaborationType}
+          scheduleDate={scheduleDate}
           onClose={() => setOpen(false)}
         />
       )}

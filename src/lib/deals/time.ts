@@ -38,3 +38,23 @@ export async function setProposalTime(
   }
   return { ok: true }
 }
+
+// D6 A7 — 날짜 제안 수락. 상대가 보낸 제안에만 쓸 수 있고, 수락하면 곧바로 진행일(start_at)이 된다.
+export async function acceptDateProposal(proposalId: string): Promise<TimeResult> {
+  const auth = await createClient()
+  const { data: { user } } = await auth.auth.getUser()
+  if (!user) return { ok: false, error: '로그인이 필요해요.' }
+
+  const db = createServiceClient()
+  const { error } = await db.rpc('accept_date_proposal', {
+    p_proposal_id: proposalId,
+    p_by_id: user.id,
+  })
+
+  if (error) {
+    if (error.message.includes('cannot accept own proposal')) return { ok: false, error: '내가 보낸 제안은 직접 수락할 수 없어요.' }
+    if (error.message.includes('no pending date proposal')) return { ok: false, error: '이미 처리된 제안이에요.' }
+    return { ok: false, error: error.message }
+  }
+  return { ok: true }
+}

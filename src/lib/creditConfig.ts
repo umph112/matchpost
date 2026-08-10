@@ -1,52 +1,69 @@
-// 크레딧 금액·표시 설정 — IMPLEMENT-1-SCHEMA.md 1번(크레딧 원장) 기준.
-// 실제 지급/차감 로직은 sql/migrations/0018_credit_ledger.sql의 트리거·함수에 있다.
-// 여기 있는 amount는 화면/문서용 참고값이며 서버 함수의 인자로 그대로 전달된다.
-export const CREDIT_AMOUNTS = {
-  WELCOME:            30_000,  // 가입 환영 (양쪽, 첫 로그인 1회)
-  PROFILE_COMPLETE:    3_000,  // 프로필 완성 (양쪽, 계정당 1회)
-  FIRST_ACTION:        3_000,  // 첫 오픈/첫 캠페인 (양쪽, 계정당 1회)
-  ENCOURAGE:             500,  // 오픈·캠페인 열 때마다 (양쪽)
-  CELEBRATE:           2_000,  // 협업 성사 (양쪽)
-  DEAL_COMPLETE:       3_000,  // 정산 완료 (양쪽 모두)
-  REVIEW:              1_000,  // 종료 후 7일 이내 리뷰 작성 (양쪽)
-  INVITE:              5_000,  // 초대 — 피초대자 첫 활동 완료 시 (초대자)
-  VISIT_WEEKLY:          500,  // 주 5일 이상 방문 (양쪽)
-  VISIT_MONTHLY:       2_000,  // 월 20일 이상 방문 (양쪽)
-  COMEBACK:            1_000,  // 30일 공백 후 복귀 1회 (양쪽)
+// D6 D1 — 값의 원본은 카탈로그 하나. 화면 어디서도 금액을 직접 쓰지 않고 전부 여기서 읽는다.
+// 실제 지급/차감 로직은 sql/migrations/0018_credit_ledger.sql 등의 트리거·함수에 있고,
+// 여기 있는 amount는 화면 표시·서버 함수 인자 참고값이다(서버가 최종 권위).
 
-  OPEN_SCHEDULE:       1_000,  // 오픈 등록 (차감, 인플루언서)
-  CREATE_CAMPAIGN:     5_000,  // 캠페인 등록 (차감, 광고주)
-  SEND_PROPOSAL:         500,  // 대시 발송 (차감, 광고주) — 0057부터 베타 기간 무료라 실제로는 안 빠짐
-  UNLOCK_PROFILE:      1_000,  // 프로필 상세 열람 (차감, 광고주) — 기능 미구현, 금액만 확정
-
-  DORMANT_14:            500,  // 휴면 14일 (1회)
-  DORMANT_30:          1_000,  // 휴면 30일 이후 (30일마다 반복)
-} as const
-
-export const CREDIT_ACTION_LABELS: Record<string, string> = {
-  welcome:          '가입 환영 크레딧',
-  profile_complete: '프로필 완성 크레딧',
-  first_action:     '첫 활동 크레딧',
-  encourage:        '응원 크레딧',
-  celebrate:        '협업 성사 축하 크레딧',
-  deal_complete:    '정산 완료 크레딧',
-  review:           '리뷰 작성 크레딧',
-  invite:           '초대 크레딧',
-  visit_weekly:     '주간 방문 크레딧',
-  visit_monthly:    '월간 방문 크레딧',
-  comeback:         '복귀 크레딧',
-
-  open_schedule:    '오픈 등록',
-  create_campaign:  '캠페인 등록',
-  send_proposal:    '대시 발송',
-  unlock_profile:   '프로필 열람',
-
-  dormant_14:       '휴면 차감 (14일)',
-  dormant_30:       '휴면 차감 (30일)',
-
-  admin_grant:      '관리자 지급',
-  admin_deduct:     '관리자 차감',
-  migration:        '이전 시스템 잔액 이관',
+export type CreditPolicyItem = {
+  key: string
+  label: string
+  dir: 'grant' | 'charge'
+  amount: number
+  status: 'once' | 'active' | 'beta_free'
 }
 
-export type CreditReasonCode = keyof typeof CREDIT_ACTION_LABELS
+export const CREDIT_POLICY: CreditPolicyItem[] = [
+  // 가입 축하는 역할별로 금액이 다르다(광고주 20,000 / 인플루언서 10,000).
+  // 원장에는 reason_code='welcome'으로 남는다(과거 데이터 호환 — 아래 두 키는 지급 시점 금액 결정용).
+  { key: 'signup_advertiser', label: '가입 축하(광고주)',        dir: 'grant',  amount: 20_000, status: 'once' },
+  { key: 'signup_influencer', label: '가입 축하(인플루언서)',    dir: 'grant',  amount: 10_000, status: 'once' },
+  { key: 'profile_complete', label: '프로필 완성',              dir: 'grant',  amount:  3_000, status: 'once' },
+  { key: 'first_action',     label: '첫 오픈/첫 캠페인',         dir: 'grant',  amount:  3_000, status: 'once' },
+  { key: 'encourage',        label: '응원 크레딧',               dir: 'grant',  amount:    500, status: 'active' },
+  { key: 'celebrate',        label: '협업 성사 축하',            dir: 'grant',  amount:  2_000, status: 'active' },
+  { key: 'deal_complete',    label: '협업 성사(정산 완료)',      dir: 'grant',  amount:  3_000, status: 'active' },
+  { key: 'review',           label: '리뷰 작성',                dir: 'grant',  amount:  1_000, status: 'active' },
+  { key: 'invite',           label: '친구 초대',                dir: 'grant',  amount:  5_000, status: 'active' },
+  { key: 'visit_weekly',     label: '주간 방문',                dir: 'grant',  amount:    500, status: 'active' },
+  { key: 'visit_monthly',    label: '월간 방문',                dir: 'grant',  amount:  2_000, status: 'active' },
+  { key: 'comeback',         label: '오랜만에 돌아오기',         dir: 'grant',  amount:  1_000, status: 'active' },
+
+  { key: 'open_schedule',    label: '오픈 등록',                dir: 'charge', amount:  1_000, status: 'active' },
+  { key: 'create_campaign',  label: '캠페인 개설',              dir: 'charge', amount:  5_000, status: 'active' },
+  { key: 'send_proposal',    label: '대시 보내기',              dir: 'charge', amount:    500, status: 'beta_free' },
+  { key: 'unlock_profile',   label: '프로필 열람',              dir: 'charge', amount:  1_000, status: 'beta_free' },
+
+  { key: 'dormant_14',       label: '휴면 차감(14일)',          dir: 'charge', amount:    500, status: 'active' },
+  { key: 'dormant_30',       label: '휴면 차감(30일, 반복)',     dir: 'charge', amount:  1_000, status: 'active' },
+]
+
+const policyByKey = Object.fromEntries(CREDIT_POLICY.map((p) => [p.key, p]))
+
+export function creditAmount(key: string): number {
+  return policyByKey[key]?.amount ?? 0
+}
+
+export function creditLabel(key: string): string {
+  return policyByKey[key]?.label ?? key
+}
+
+export function isBetaFree(key: string): boolean {
+  return policyByKey[key]?.status === 'beta_free'
+}
+
+// 옛 코드 호환용 — 새로 쓸 땐 CREDIT_POLICY/creditAmount를 직접 쓴다.
+export const CREDIT_AMOUNTS = Object.fromEntries(
+  CREDIT_POLICY.map((p) => [p.key.toUpperCase(), p.amount])
+) as Record<string, number>
+
+export const CREDIT_ACTION_LABELS: Record<string, string> = {
+  ...Object.fromEntries(CREDIT_POLICY.map((p) => [p.key, p.label])),
+  welcome:      '가입 환영 크레딧', // 과거 원장 reason_code — signup_advertiser/influencer로 갈리기 전 값
+  admin_grant:  '관리자 지급',
+  admin_deduct: '관리자 차감',
+  migration:    '이전 시스템 잔액 이관',
+}
+
+export function signupCreditAmount(role: 'advertiser' | 'influencer'): number {
+  return creditAmount(role === 'advertiser' ? 'signup_advertiser' : 'signup_influencer')
+}
+
+export type CreditReasonCode = string

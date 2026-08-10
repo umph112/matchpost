@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { initial } from '@/lib/initial'
+import { signupCreditAmount } from '@/lib/creditConfig'
 
 function UsersContent() {
   const [users, setUsers] = useState<any[]>([])
@@ -155,19 +156,25 @@ function UsersContent() {
               )}
 
               {user.status === 'pending' && (
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => handleReject(user.id)}
-                    className="py-2 rounded-lg text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition"
-                  >
-                    거절
-                  </button>
-                  <button
-                    onClick={() => handleApprove(user.id)}
-                    className="py-2 rounded-lg text-sm font-medium bg-[#F59E0B] text-white hover:bg-[#D97706] transition"
-                  >
-                    승인
-                  </button>
+                <div>
+                  {/* D6 E2 — 승인 즉시 무엇이 되는지 미리 알린다 */}
+                  <p className="text-[11px] text-gray-400 mb-2">
+                    승인하면 가입 축하금 {signupCreditAmount(user.role).toLocaleString()}C가 지급됩니다.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleReject(user.id)}
+                      className="py-2 rounded-lg text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition"
+                    >
+                      거절
+                    </button>
+                    <button
+                      onClick={() => handleApprove(user.id)}
+                      className="py-2 rounded-lg text-sm font-medium bg-[#F59E0B] text-white hover:bg-[#D97706] transition"
+                    >
+                      승인
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

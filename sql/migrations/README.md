@@ -66,3 +66,13 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0061_credit_review_comeback.sql` — 크레딧 정책 중 빠져 있던 훅 2개: review(리뷰 작성 1,000C, 종료 후 7일 이내) 트리거 + comeback(30일 공백 후 복귀 1,000C) 배치. 나머지 크레딧 규칙은 0018/0024/0042에 이미 구현돼 있었음(creditConfig.ts가 SPEC과 이미 일치)
 - `0062_advertiser_payment_score.sql` — 정산 성실도(광고주 신뢰 지표) 뷰. 인플루언서 귀책 제외는 draft/publish 체크포인트 지연 여부로 근사(정밀 판정 필드 없음 — GAPS-FOR-NEXT-ROUND.md 참고)
 - `0063_team_members.sql` — 팀 초대(IMPLEMENT-5-DELTA.md C2). `team_members` 테이블(초대/역할/상태) + `invite_team_member()` RPC(이메일 교차조회는 user_private RLS 때문에 SECURITY DEFINER 필요). 역할변경/재발송/재활성화는 RLS(owner_id=auth.uid())로 충분해 별도 RPC 없음. 실제 팀원의 오너 데이터 접근 권한 전파는 범위 밖(GAPS-FOR-NEXT-ROUND.md 0번 참고)
+- `0064_credit_profile_first_action.sql` — 크레딧 훅 2개 추가: profile_complete(프로필 완성 3,000C), first_action(첫 행동 3,000C)
+- `0065_conversations.sql` — (IMPLEMENT-6-DELTA.md A1) `conversations` 테이블(캠페인룸/개인룸) + `get_or_create_conversation()` RPC + messages.broadcast_id/targeted_only/is_system/proxy/proposed_date + proposals.proposed_date/proposed_by 컬럼
+- `0066_dash_date_and_messaging.sql` — (A6/A7) send_dash()에 날짜 파라미터 필수화(p_date, 없으면 P0018) + 날짜제안 메시지카드 생성 + accept_date_proposal() RPC + send_campaign_message()(캠페인룸 전체/개별 발송) RPC
+- `0067_cancellation_propagation.sql` — (A8) accept_cancellation()이 취소 수락 시 proposals.advertiser_confirmed/influencer_confirmed를 false로 같이 내려서, 취소된 건이 앱 전체(캠페인목록·대시보드·정산·딜시트)의 "확정 건" 집계에서 자동으로 빠지게 함
+- `0068_campaign_stages.sql` — (B1/B3) campaigns.stage_pre_confirm/stage_post_edit/first_confirmed_at 추가 + 첫 확정 시각 자동기록 트리거 + 기존 단계명 데이터 이관(신청→협의, 확정→수락, 업로드→원고, 수정/컴프→수정/컨펌, 검사→게재)
+- `0069_cancellation_stage_names.sql` — 0068의 단계명 변경 이후 request_cancellation()(0053)에 남아있던 옛 8단계 배열 하드코딩을 새 9단계 배열로 수정(방치 시 "게재 후엔 취소 불가" 검사가 조용히 깨짐)
+- `0070_campaign_stage_lock.sql` — (B4) campaigns.stage_pre_confirm/stage_post_edit는 first_confirmed_at 확정 이후 변경 시 트리거가 P0021로 차단(진행 중 캠페인의 단계 구성이 바뀌는 것 방지)
+- `0071_settlement_overdue_reminder.sql` — (C1/C6) campaigns.overdue_reminder_count 추가 + run_settlement_reminder_batch()(정산일 지난 미확정 건에 알림+대화 시스템메시지, 3회째부터 운영팀 언급 문구로 확대)
+- `0072_credit_policy_changes.sql` — (D1 관련 E1) credit_policy_changes 테이블(크레딧 금액 변경 예고 기록, admin 전용). 실제 금액은 여전히 creditConfig.ts가 원본 — 여긴 공지 이력만 기록
+- `0073_attachment_purge.sql` — (F3) messages.file_deleted_at 추가 + 인덱스. 대시 첨부파일 7일 자동삭제 크론(`/api/cron/purge-attachments`)이 실제 파일만 지우고 이 컬럼을 채움 — 파일명/시각/보낸사람은 대화 기록에 그대로 남음

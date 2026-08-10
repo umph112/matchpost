@@ -14,10 +14,12 @@ export async function sendDash(input: {
   message?: string | null
   budget?: number | null
   collaborationType?: string | null
+  date: string // YYYY-MM-DD, 필수 (D6 A6)
 }): Promise<SendDashResult> {
   const auth = await createClient()
   const { data: { user } } = await auth.auth.getUser()
   if (!user) return { ok: false, error: '로그인이 필요해요.' }
+  if (!input.date) return { ok: false, error: '날짜를 골라야 보낼 수 있어요.' }
 
   const db = createServiceClient()
   const { data, error } = await db.rpc('send_dash', {
@@ -28,6 +30,7 @@ export async function sendDash(input: {
     p_message: input.message?.trim() || null,
     p_budget: input.budget ?? null,
     p_collaboration_type: input.collaborationType ?? null,
+    p_date: input.date,
   })
 
   if (error) return { ok: false, error: error.message }

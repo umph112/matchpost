@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import PaidConfirmModal from '@/components/PaidConfirmModal'
+import { kstDateString } from '@/lib/date'
+
+type OverdueRow = {
+  campaignId: string
+  title: string
+  advertiserId: string
+  proposalId: string
+  settlementDate: string
+}
 
 const STATUS_FILTERS = ['전체', '예정', '진행중', '완료', '결제완료']
 
@@ -24,7 +34,9 @@ export default function EarningsPage() {
   const [period, setPeriod] = useState('이번달')
   const [pendingConfirm, setPendingConfirm] = useState<PendingProposal[]>([])
   const [confirmModal, setConfirmModal] = useState(false)
+  const [overdue, setOverdue] = useState<OverdueRow[]>([])
   const supabase = createClient()
+  const router = useRouter()
 
   useEffect(() => {
     fetchAll()
@@ -68,7 +80,48 @@ export default function EarningsPage() {
     }
 
     setPendingConfirm(rows)
+
+    // D6 A9/C6 — 미수(예정일 지났는데 미기록)를 인플루언서 화면에도 같은 기준으로 보여준다
+    const { data: myProps } = await supabase
+      .from('proposals')
+      .select('id, campaign_id, advertiser_id, settlement_status, advertiser_confirmed, influencer_confirmed')
+      .eq('influencer_id', user.id)
+      .eq('advertiser_confirmed', true)
+      .eq('influencer_confirmed', true)
+      .neq('settlement_status', '완료')
+    const campIds = [...new Set((myProps ?? []).map((p) => p.campaign_id).filter(Boolean))]
+    if (campIds.length > 0) {
+      const today = kstDateString()
+      const { data: camps } = await supabase
+        .from('campaigns')
+        .select('id, title, settlement_date')
+        .in('id', campIds)
+        .lt('settlement_date', today)
+      const campById = Object.fromEntries((camps ?? []).map((c) => [c.id, c]))
+      const overdueRows: OverdueRow[] = (myProps ?? [])
+        .filter((p) => p.campaign_id && campById[p.campaign_id])
+        .map((p) => ({
+          campaignId: p.campaign_id as string,
+          title: campById[p.campaign_id as string].title,
+          advertiserId: p.advertiser_id,
+          proposalId: p.id,
+          settlementDate: campById[p.campaign_id as string].settlement_date,
+        }))
+      setOverdue(overdueRows)
+    }
+
     setLoading(false)
+  }
+
+  // A9 — 캠페인 맥락 알림은 새 대화를 만들지 않고 기존 대화로 들어간다.
+  // 인플루언서는 항상 1:1이므로(A1) 그 광고주와의 개인 대화로 이동한다.
+  const inquireInChat = async (r: OverdueRow) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data: convId } = await supabase.rpc('get_or_create_conversation', {
+      p_advertiser_id: r.advertiserId, p_kind: 'personal', p_campaign_id: null, p_other_id: user.id,
+    })
+    if (convId) router.push(`/influencer/messages/${convId}`)
   }
 
   const now = new Date()
@@ -168,6 +221,26 @@ export default function EarningsPage() {
           </div>
           <span className="text-[#B45309] font-bold text-sm">확인 →</span>
         </button>
+      )}
+
+      {/* D6 A9/C1 — 미수 카드: 신고가 아니라 대시에서 문의하기 */}
+      {overdue.length > 0 && (
+        <div className="mb-5 space-y-2">
+          {overdue.map((r) => (
+            <div key={r.proposalId} className="bg-[#FEF2F2] border border-[#FECACA] rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-[#DC2626]">미수 · {r.title}</p>
+                <p className="text-[11px] text-[#B91C1C] mt-0.5">정산 예정일 {r.settlementDate}이 지났어요</p>
+              </div>
+              <button
+                onClick={() => inquireInChat(r)}
+                className="shrink-0 text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-3 py-1.5 rounded-lg"
+              >
+                대시에서 문의하기
+              </button>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* 기간 선택 */}

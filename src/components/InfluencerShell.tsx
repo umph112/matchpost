@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { Home, CalendarDays, MessageSquare, BarChart3, Wallet, Search, Bell } from 'lucide-react'
 import LogoutButton from './LogoutButton'
 import MatchScore from './MatchScore'
+import { creditAmount } from '@/lib/creditConfig'
 
 // 인플루언서 셸 — 광고주 AdvertiserShell과 같은 PC/모바일 전환 패턴.
 // 지금은 /influencer/dashboard 페이지에만 적용(다른 페이지는 아직 기존 TopBar 유지).
@@ -172,8 +173,13 @@ export default function InfluencerShell({
               {creditBalance === null ? '—' : creditBalance.toLocaleString()}
               <span className="text-xs font-semibold text-[#F59E0B]"> C</span>
             </div>
-            <div className="text-[10px] text-[#B0B0BB] mt-0.5">오픈 등록 1건당 1,000C</div>
+            <div className="text-[10px] text-[#B0B0BB] mt-0.5">오픈 등록 1건당 {creditAmount('open_schedule').toLocaleString()}C</div>
           </Link>
+          <div className="flex gap-2 text-[10px] text-[#B9B9C2] pt-1">
+            <Link href="/terms" target="_blank" className="hover:text-[#7C7C88]">이용약관</Link>
+            <span>·</span>
+            <Link href="/privacy" target="_blank" className="hover:text-[#7C7C88]">개인정보처리방침</Link>
+          </div>
         </div>
       </aside>
 

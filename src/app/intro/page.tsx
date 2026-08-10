@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Footer from '@/components/Footer'
 
 export default function LandingPage() {
   return (
@@ -162,10 +163,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 푸터 */}
-      <footer className="py-8 text-center text-gray-400 text-sm">
-        <p>© 2026 MatchPost. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   )
 }

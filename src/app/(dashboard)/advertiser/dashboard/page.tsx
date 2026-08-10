@@ -105,6 +105,13 @@ export default async function AdvertiserMyPage() {
     ? await supabase.from('profiles').select('id, name').in('id', otherIds)
     : { data: [] }
   const nameById = Object.fromEntries((names ?? []).map((p) => [p.id, p.name]))
+  const convIdByOther: Record<string, string> = {}
+  for (const oid of otherIds) {
+    const { data: convId } = await supabase.rpc('get_or_create_conversation', {
+      p_advertiser_id: user.id, p_kind: 'personal', p_campaign_id: null, p_other_id: oid,
+    })
+    if (convId) convIdByOther[oid] = convId as string
+  }
 
   // 알림
   const { data: notifs } = await supabase
@@ -339,7 +346,7 @@ export default async function AdvertiserMyPage() {
               <p className="text-sm text-[#9A9AA5] p-[18px]">아직 주고받은 대시가 없어요.</p>
             ) : (
               convPreview.map((c) => (
-                <Link key={c.otherId} href={`/advertiser/messages?c=${c.otherId}`} className="flex items-center gap-[11px] px-[18px] py-3 border-b border-[#F5F5F7] hover:bg-[#FAFAFB]">
+                <Link key={c.otherId} href={`/advertiser/messages/${convIdByOther[c.otherId] ?? ''}`} className="flex items-center gap-[11px] px-[18px] py-3 border-b border-[#F5F5F7] hover:bg-[#FAFAFB]">
                   <div className="w-[34px] h-[34px] rounded-full bg-[#FEF3C7] text-[#B45309] text-[13px] font-extrabold flex items-center justify-center shrink-0">
                     {initial(nameById[c.otherId])}
                   </div>

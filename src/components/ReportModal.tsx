@@ -14,15 +14,18 @@ const TYPE_LABELS: Record<ReportType, string> = {
   etc: '기타',
 }
 
-// DealSheet(광고주 화면)에서만 쓰므로 광고주가 인플루언서에게 낼 수 있는 유형만 노출
+// D6 E4 — 신고 유형은 관리자 REPORT_TYPES를 역할별로 잘라 쓴다(입구는 대화 헤더 한 곳뿐)
 const ADVERTISER_TYPES: ReportType[] = ['draft_late', 'guide_violation', 'no_show', 'abuse', 'etc']
+const INFLUENCER_TYPES: ReportType[] = ['unpaid', 'cancel_unilateral', 'guide_mismatch_req', 'abuse', 'etc']
 
 export default function ReportModal({
   proposalId,
+  role,
   onClose,
   onDone,
 }: {
   proposalId: string
+  role: 'advertiser' | 'influencer'
   onClose: () => void
   onDone: () => void
 }) {
@@ -30,6 +33,7 @@ export default function ReportModal({
   const [body, setBody] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const types = role === 'advertiser' ? ADVERTISER_TYPES : INFLUENCER_TYPES
 
   const submit = async () => {
     if (!type) { setError('신고 유형을 선택해주세요.'); return }
@@ -51,8 +55,9 @@ export default function ReportModal({
         <div className="px-5 pt-5 pb-4 border-b border-[#F1F1F4]">
           <p className="text-[11px] text-[#9A9AA5] mb-0.5">운영팀에 알리기</p>
           <p className="text-base font-bold text-[#17171B]">무슨 일이 있었나요?</p>
-          <p className="text-[11.5px] text-[#7C7C88] mt-1">
-            접수 즉시 상대방에게도 알림이 가요. 조건·마감일·정산 기록은 자동으로 함께 전달돼요.
+          <p className="text-[11.5px] text-[#7C7C88] mt-1 leading-relaxed">
+            매치포스트는 판정하지 않습니다 — 양쪽 기록을 확인하고 안내합니다. 접수되면 상대에게도
+            같은 내용이 전달되고, 처리 결과는 알림함으로 보내드립니다. 더 하실 말씀은 고객센터로 남겨주세요.
           </p>
         </div>
 
@@ -60,7 +65,7 @@ export default function ReportModal({
           <div>
             <p className="text-[11px] font-semibold text-[#9A9AA5] mb-2">유형</p>
             <div className="flex flex-wrap gap-1.5">
-              {ADVERTISER_TYPES.map((t) => (
+              {types.map((t) => (
                 <button
                   key={t}
                   onClick={() => setType(t)}

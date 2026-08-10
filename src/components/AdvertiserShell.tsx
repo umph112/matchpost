@@ -178,6 +178,11 @@ export default function AdvertiserShell({
               <span className="text-xs font-semibold text-[#F59E0B]"> C</span>
             </div>
           </Link>
+          <div className="flex gap-2 text-[10px] text-[#B9B9C2] pt-1">
+            <Link href="/terms" target="_blank" className="hover:text-[#7C7C88]">이용약관</Link>
+            <span>·</span>
+            <Link href="/privacy" target="_blank" className="hover:text-[#7C7C88]">개인정보처리방침</Link>
+          </div>
         </div>
       </aside>
 

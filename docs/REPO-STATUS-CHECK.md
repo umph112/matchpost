@@ -104,12 +104,10 @@ curl -s -H "apikey: $KEY" -H "Authorization: Bearer $KEY" "$URL/storage/v1/bucke
 
 해결하면 이 절을 지운다. **반대로 새로 발견하면 여기에 추가한다.**
 
-1. **`0008_campaign_detail_templates.sql` 미실행** — `campaign_detail_templates` 테이블 없음(404). 코드 4곳이 사용: `advertiser/campaigns/new/page.tsx` 187·216·227행, `advertiser/dashboard/page.tsx` 154행
-   - 증상: 화면은 안 죽음. `data || []`로 에러를 삼켜서 **대시보드 양식함은 항상 샘플 3개만 뜨고, 등록 폼에서 양식 저장이 조용히 실패**
-2. **Storage `campaign-images` 버킷 없음** — 현재 `chat-files`, `campaign-guides` 둘뿐. migration 0011로 컬럼은 있으므로 캠페인 이미지 업로드가 버킷 단계에서 실패 가능
-3. **Vercel에 `NAVER_API_CLIENT_ID` / `NAVER_API_CLIENT_SECRET` 미등록**(development 기준) — 배포판 장소검색·오픈 조인 영향. 로컬엔 둘 다 값 있음
-4. **`CRON_SECRET` 등록 여부 미확인** — `vercel.json` 크론 7개가 이 키로 인증한다. 미등록이면 배포판 크론이 전부 401. 로컬 개발엔 불필요
-5. **배치 라우트 11개 중 4개가 `vercel.json`에 미등록** — `cancellation-autoconfirm`, `cancellation-count-reset`, `report-autoclose`, `sanction-recalc`. 의도인지 누락인지 미확인
+1. **Storage `campaign-images` 버킷 없음** — 현재 `chat-files`, `campaign-guides` 둘뿐. migration 0011로 컬럼은 있으므로 캠페인 이미지 업로드가 버킷 단계에서 실패 가능
+2. **Vercel에 `NAVER_API_CLIENT_ID` / `NAVER_API_CLIENT_SECRET` 미등록**(development 기준) — 배포판 장소검색·오픈 조인 영향. 로컬엔 둘 다 값 있음
+3. **`CRON_SECRET` 등록 여부 미확인** — `vercel.json` 크론 7개가 이 키로 인증한다. 미등록이면 배포판 크론이 전부 401. 로컬 개발엔 불필요
+4. **배치 라우트 11개 중 4개가 `vercel.json`에 미등록** — `cancellation-autoconfirm`, `cancellation-count-reset`, `report-autoclose`, `sanction-recalc`. 의도인지 누락인지 미확인
 
 ## CLAUDE.md 신뢰도 경고
 

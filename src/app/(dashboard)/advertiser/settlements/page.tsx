@@ -13,7 +13,7 @@ export default async function SettlementsPage() {
 
   const { data: campaigns } = await supabase
     .from('campaigns')
-    .select('id, title, campaign_type, settlement_date, tax_doc_requested_at, status')
+    .select('id, title, campaign_type, settlement_date, tax_doc_requested_at, status, overdue_reminder_count')
     .eq('advertiser_id', user.id)
     .order('settlement_date', { ascending: true })
 
