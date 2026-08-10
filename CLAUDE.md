@@ -21,6 +21,27 @@
   - `0019_schedules_open_group.sql` — `schedules.open_group_id` 추가. "오픈 1건=1,000C, 날짜 수 무관" 정책을 지키기 위해 같은 그룹의 첫 행에서만 차감·응원 지급하도록 오픈 트리거 함수 교체. 현재 인플루언서 오픈 등록 폼(`influencer/schedule/page.tsx`)은 한 번에 한 날짜만 insert하므로 즉시 동작에 영향 없음(각 행이 default로 자기 자신만의 group_id를 받음) — 나중에 오픈 등록이 여러 날짜를 한 번에 묶어 넣는 폼으로 바뀌면 그 삽입 코드가 여러 행에 **같은 open_group_id를 명시적으로 넘겨야** 이 정책이 실제로 작동한다.
   - 이번 차수에서 훅을 안 붙인 reason_code(다음 차수에서 연결): `unlock_profile`(프로필 유료열람 기능 자체 미구현), `deal_complete`(정산 흐름 `settleCampaign` — 지시서 8번), `review`/`invite` 보상, `visit_weekly`/`visit_monthly`/`comeback`/휴면배치(크론 인프라 없음).
 
+## 현재 상태 (2026-08-10 — D6 핸드오프 A~F 전체 완료, 커밋+push 완료)
+- **디자인 핸드오프 6차(D6, delta)**: `docs/design/d6/`가 최신 기준 문서(D5를 완전히 대체). A~F 6개 절, 29개 항목 **전부 구현·마이그레이션(0065~0073) 실행·DB 대조 검증·커밋(e1b8841)·push 완료**.
+  - A: 대시/메시지 구조 개편(캠페인룸 1:N / 개인룸 1:1 구분, 담당자 대리발송, 날짜제안-수락, 취소수락→딜시트 전파)
+  - B: 조립식 진행단계(9단계, 캠페인 유형별 자동 구성 + 첫 확정 후 잠금)
+  - C: 정산 예정/미수/완료 3버킷 + 정산지연 일괄알림 배치
+  - D: 크레딧 카탈로그 단일원본화(`creditConfig.ts` — `CREDIT_POLICY` 배열, 가입크레딧 역할별 분리 버그 수정)
+  - E: 관리자 크레딧정책/회원승인 안내/제재 5단계 사다리/신고 사유 분리
+  - F: Footer 사업자정보, `/terms`·`/privacy`(국외이전 고지 포함), 대시 첨부파일 7일 자동삭제 크론
+  - **남은 갭 10개**는 `docs/design/d6/GAPS-FOR-NEXT-ROUND.md`에 정리 — 팀원 실제 권한 전파, 참여자별 마감일 개별조정(B2, 미구현), 제재사다리-기존배치 정합성 미검증, 캠페인룸 신고 미연결, 서류업로드 기능 자체 부재(F3 즉시삭제 정책 붙일 곳 없음), 모바일 "더보기" 화면 부재, 죽은 코드 `CampaignBroadcast.tsx` 등. **다음 핸드오프 받으면 이 파일부터 확인할 것.**
+
+### 🔧 진행 중: Supabase 서울리전(ap-northeast-2) 이전 — 아직 미착수, 다음 세션에서 이어갈 것
+- **의도**: 매치포스트가 쓰는 Supabase 프로젝트를 서울 리전으로. (Supabase는 기존 프로젝트 리전을 바꾸는 기능이 없어서, 서울리전 새 프로젝트를 만들어 스키마를 통째로 재현하고 앱 연결을 그쪽으로 옮긴 뒤 기존 프로젝트를 폐기하는 방식 — 결과적으로 매치포스트는 하나의 앱/DB만 쓰게 됨, 별도 프로젝트 병행 아님)
+- **막힌 지점**: Supabase CLI가 이 기기에 로그인 안 되어 있어(액세스 토큰 없음) 새 프로젝트를 바로 못 만듦. 진행하려면 https://supabase.com/dashboard/account/tokens 에서 액세스 토큰 발급 필요.
+- **다음에 할 일 (토큰 받으면)**:
+  1. `npx supabase projects create` — 조직 선택, 프로젝트명, DB 비밀번호, 리전 `ap-northeast-2 (Seoul)` 지정
+  2. 새 프로젝트에 `sql/migrations/0001`~`0073` 순서대로 전부 실행 (0001 이전 베이스라인이 레포에 없다는 점 주의 — `sql/migrations/README.md` "베이스라인 미포함" 참고, `supabase db pull`로 기존 프로젝트 스키마 먼저 통째로 떠서 이관하는 게 안전할 수 있음)
+  3. `.env.local`의 `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY`를 새 프로젝트 값으로 교체
+  4. Vercel 환경변수도 동일하게 교체(Vercel CLI 로그인 별도 필요할 수 있음)
+  5. 기존 프로젝트(`qkiijelmsonacberngyo`)에 실제 회원 데이터가 있으면 데이터 이관 필요 여부 확인 후, 이관 끝나면 기존 프로젝트 폐기
+  6. 개인정보처리방침(`src/app/privacy/page.tsx`)이 이미 "서울 리전 저장"이라고 명시하고 있으니, 이전 끝나면 그 문구가 실제와 맞는지 재확인
+
 ## 현재 상태 (2026-08-06 — D5 A절+B절(화면11/12·크레딧·정산성실도) 완료, 커밋 안 함)
 - **디자인 핸드오프 5차(D5, delta)**: `docs/design/d5/`가 최신 기준 문서. 예전 라운드 문서는 전부 `design/_archive/`로 옮김(IMPLEMENT-1~4 포함). 남은 갭은 `docs/design/d5/GAPS-FOR-NEXT-ROUND.md`에 정리해둠 — 다음 핸드오프 받을 때 그 파일부터 확인할 것.
   - **A절(대시/메시지 상태 규칙, A1~A7) 완료** — A1 읽음 상태(`messages.is_read` 단일 파생), A3/A4 대시 보내기 통합(`sendDash`, `0058_send_dash.sql`, `?c=` 경로 통일), A5 조건수정 프리필, A6 취소요청 철회(`0059_cancellation_withdraw.sql`), A7 라벨 변경. A2(탭)는 탭 UI 자체가 없어서 원칙만 남기고 보류.
