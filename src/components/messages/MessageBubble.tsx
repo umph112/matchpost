@@ -1,5 +1,6 @@
 'use client'
 
+import { Paperclip } from 'lucide-react'
 import { initial } from '@/lib/initial'
 import { attachmentDaysLeft } from '@/lib/storage'
 
@@ -126,7 +127,8 @@ export default function MessageBubble({
                 download={msg.file_name}
                 className={`flex items-center gap-1.5 underline ${isMine ? 'text-white/70' : 'text-[#B45309]'}`}
               >
-                📎 <span className="truncate max-w-[180px]">{msg.file_name}</span>
+                <Paperclip size={13} strokeWidth={1.75} className="shrink-0" />
+                <span className="truncate max-w-[180px]">{msg.file_name}</span>
               </a>
               <p className={`text-[10px] mt-0.5 ${isMine ? 'text-white/40' : 'text-gray-400'}`}>
                 {attachmentDaysLeft(msg.created_at) <= 1
@@ -137,7 +139,8 @@ export default function MessageBubble({
           )}
           {msg.file_url && msg.file_deleted_at && (
             <p className={`flex items-center gap-1.5 mb-1 ${isMine ? 'text-white/50' : 'text-gray-400'}`}>
-              📎 <span className="truncate max-w-[180px] line-through">{msg.file_name}</span>
+              <Paperclip size={13} strokeWidth={1.75} className="shrink-0" />
+              <span className="truncate max-w-[180px] line-through">{msg.file_name}</span>
               <span className="text-[10px]">(만료됨)</span>
             </p>
           )}

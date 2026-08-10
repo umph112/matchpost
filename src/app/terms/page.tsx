@@ -8,7 +8,7 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-white">
       <nav className="max-w-3xl mx-auto px-6 py-5">
-        <Link href="/intro" className="text-sm text-gray-400 hover:text-gray-600">← 매치포스트</Link>
+        <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">← 매치포스트</Link>
       </nav>
 
       <main className="max-w-3xl mx-auto px-6 pb-16">

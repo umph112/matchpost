@@ -1,120 +1,58 @@
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
-import HomeCalendar from '@/components/HomeCalendar'
+import Logo from '@/components/Logo'
+import Footer from '@/components/Footer'
+import RoleLoginPanel from '@/components/RoleLoginPanel'
 
-export const dynamic = 'force-dynamic'
+// D7 부록 3 — 랜딩(/)과 로그인을 한 화면(좌 검정 / 우 흰색 2단)으로 합쳤다.
+// 장식용 달력 격자(부록 3-4)는 "구현이 부담되면 생략" 허용 문구에 따라 생략 — 검정 배경만 유지.
+const POINTS = [
+  { n: '01', title: '날짜와 장소, 키워드로 손쉽게 찾는 협업건', desc: '광고주와 인플루언서가 서로 원하는대로 자동 매칭까지 가능해요!' },
+  { n: '02', title: '자동생성 딜시트로 손쉽게 협업관리', desc: '협업 조율부터 결제까지 자동생성 딜시트로 쉽고 꼼꼼하게 챙겨줘요!' },
+  { n: '03', title: '인플루언서 마케팅, 매치포스트에서 다 된다', desc: '인플루언서 마케팅에 최적화된 시스템을 경험해보세요!' },
+]
 
-function pad(n: number) {
-  return String(n).padStart(2, '0')
-}
-
-export default async function HomePage() {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = now.getMonth() + 1
-  const start = `${year}-${pad(month)}-01`
-  const end = `${year}-${pad(month)}-${new Date(year, month, 0).getDate()}`
-
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // 오픈(인플루언서 일정)
-  const { data: opens } = await supabase
-    .from('schedules')
-    .select('date')
-    .eq('is_public', true)
-    .eq('status', 'open')
-    .gte('date', start)
-    .lte('date', end)
-
-  // 캠페인(광고주) — 테이블 없으면 error로 빈 배열 처리
-  const { data: campsData, error: campErr } = await supabase
-    .from('campaigns')
-    .select('date')
-    .eq('is_public', true)
-    .eq('status', 'open')
-    .gte('date', start)
-    .lte('date', end)
-  const camps = campErr ? [] : campsData ?? []
-
-  const countsByDate: Record<string, { open: number; campaign: number }> = {}
-  for (const r of opens ?? []) {
-    ;(countsByDate[r.date as string] ??= { open: 0, campaign: 0 }).open++
-  }
-  for (const r of camps) {
-    ;(countsByDate[(r as { date: string }).date] ??= { open: 0, campaign: 0 }).campaign++
-  }
-
-  const totalOpen = (opens ?? []).length
-  const totalCampaign = camps.length
-
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 상단바 */}
-      <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-[#17171B]">
-            MatchPost
-          </Link>
-          {user ? (
-            <Link
-              href="/influencer/dashboard"
-              className="text-sm font-medium text-gray-600 hover:text-[#B45309]"
-            >
-              내 대시보드 →
-            </Link>
-          ) : (
-            <div className="flex gap-2">
-              <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-[#B45309] px-3 py-1.5">
-                로그인
-              </Link>
-              <Link
-                href="/signup"
-                className="text-sm font-medium bg-[#F59E0B] text-white rounded-lg px-3 py-1.5 hover:bg-[#D97706]"
-              >
-                시작하기
-              </Link>
-            </div>
-          )}
-        </div>
-      </nav>
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* 좌: 검정 — 브랜드 + 헤드라인 + 3포인트 + 사업자정보 */}
+      <div className="flex-1 bg-[#17171B] px-6 py-10 lg:px-[52px] lg:py-10 flex flex-col">
+        <Logo size={20} dark beta />
 
-      <main className="max-w-lg mx-auto px-4 py-6">
-        {/* 이달 요약 */}
-        <div className="mb-4">
-          <h1 className="text-lg font-bold text-gray-900">이달의 매칭 캘린더</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            이번 달 <span className="text-amber-600 font-medium">캠페인 {totalCampaign}</span> ·{' '}
-            <span className="text-blue-600 font-medium">오픈 {totalOpen}</span>
+        <div className="flex-1 flex flex-col justify-center py-10 lg:py-0 max-w-[560px]">
+          <h1 style={{ fontSize: 46, fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 1.28, color: '#fff' }}>
+            내가 필요할 때!<br />손쉽게~
+          </h1>
+          <p className="mt-6 text-[16px] leading-[1.85]" style={{ color: 'rgba(255,255,255,0.62)' }}>
+            광고주와 인플루언서가 직접 만나는 협업 플랫폼입니다.<br className="hidden sm:block" />
+            날짜 · 지역 · 분야로 찾고, 대화 한 번으로 협업이 시작됩니다.
           </p>
+
+          <div className="mt-11 flex flex-col gap-[15px]">
+            {POINTS.map((p) => (
+              <div key={p.n} className="flex gap-3">
+                <span className="shrink-0 pt-[3px]" style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.04em', color: '#F59E0B', width: 22 }}>
+                  {p.n}
+                </span>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', color: '#fff' }}>{p.title}</p>
+                  <p className="mt-[5px]" style={{ fontSize: 13, color: 'rgba(255,255,255,0.48)', lineHeight: 1.65 }}>{p.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* 달력 */}
-        <HomeCalendar year={year} month={month} countsByDate={countsByDate} isLoggedIn={!!user} />
+        <div className="hidden lg:block">
+          <Footer dark />
+        </div>
+      </div>
 
-        {!user && (
-          <p className="text-center text-xs text-gray-400 mt-3">
-            날짜를 누르면 그날의 캠페인·오픈 일정을 볼 수 있어요 (로그인 필요)
-          </p>
-        )}
-
-        {/* 하단: 공지 · 최신 동향 */}
-        <section className="mt-8">
-          <h2 className="text-sm font-bold text-gray-800 mb-3">📢 공지사항</h2>
-          <div className="bg-white rounded-2xl p-4 shadow-sm text-sm text-gray-500">
-            등록된 공지가 없어요.
-          </div>
-        </section>
-
-        <section className="mt-6">
-          <h2 className="text-sm font-bold text-gray-800 mb-3">✨ 매치포스트 최신 동향</h2>
-          <div className="bg-white rounded-2xl p-4 shadow-sm text-sm text-gray-500">
-            곧 다양한 소식으로 찾아올게요.
-          </div>
-        </section>
-      </main>
+      {/* 우: 흰색 — 로그인 */}
+      <div className="lg:w-[460px] shrink-0 bg-white px-6 py-10 lg:px-[52px] lg:py-11 flex flex-col justify-center">
+        <RoleLoginPanel />
+        <div className="lg:hidden mt-8">
+          <Footer />
+        </div>
+      </div>
     </div>
   )
 }

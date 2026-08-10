@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Download } from 'lucide-react'
 import PaidConfirmModal from '@/components/PaidConfirmModal'
-import { kstDateString } from '@/lib/date'
+import { kstDateString, dDayLabel, listDateLabel } from '@/lib/date'
 
 type OverdueRow = {
   campaignId: string
@@ -13,6 +14,8 @@ type OverdueRow = {
   advertiserId: string
   proposalId: string
   settlementDate: string
+  budget: number | null
+  reminderCount: number
 }
 
 const STATUS_FILTERS = ['전체', '예정', '진행중', '완료', '결제완료']
@@ -84,7 +87,7 @@ export default function EarningsPage() {
     // D6 A9/C6 — 미수(예정일 지났는데 미기록)를 인플루언서 화면에도 같은 기준으로 보여준다
     const { data: myProps } = await supabase
       .from('proposals')
-      .select('id, campaign_id, advertiser_id, settlement_status, advertiser_confirmed, influencer_confirmed')
+      .select('id, campaign_id, advertiser_id, budget, settlement_status, advertiser_confirmed, influencer_confirmed')
       .eq('influencer_id', user.id)
       .eq('advertiser_confirmed', true)
       .eq('influencer_confirmed', true)
@@ -94,7 +97,7 @@ export default function EarningsPage() {
       const today = kstDateString()
       const { data: camps } = await supabase
         .from('campaigns')
-        .select('id, title, settlement_date')
+        .select('id, title, settlement_date, overdue_reminder_count')
         .in('id', campIds)
         .lt('settlement_date', today)
       const campById = Object.fromEntries((camps ?? []).map((c) => [c.id, c]))
@@ -106,6 +109,8 @@ export default function EarningsPage() {
           advertiserId: p.advertiser_id,
           proposalId: p.id,
           settlementDate: campById[p.campaign_id as string].settlement_date,
+          budget: p.budget,
+          reminderCount: campById[p.campaign_id as string].overdue_reminder_count ?? 0,
         }))
       setOverdue(overdueRows)
     }
@@ -201,9 +206,9 @@ export default function EarningsPage() {
         </div>
         <button
           onClick={handleDownloadCSV}
-          className="text-sm text-[#B45309] border border-[#FCD34D] px-3 py-1.5 rounded-lg hover:bg-[#FEF3C7] transition"
+          className="flex items-center gap-1.5 text-sm text-[#B45309] border border-[#FCD34D] px-3 py-1.5 rounded-lg hover:bg-[#FEF3C7] transition"
         >
-          📥 CSV 다운로드
+          <Download size={14} strokeWidth={1.75} /> CSV 다운로드
         </button>
       </div>
 
@@ -229,8 +234,15 @@ export default function EarningsPage() {
           {overdue.map((r) => (
             <div key={r.proposalId} className="bg-[#FEF2F2] border border-[#FECACA] rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-[#DC2626]">미수 · {r.title}</p>
-                <p className="text-[11px] text-[#B91C1C] mt-0.5">정산 예정일 {r.settlementDate}이 지났어요</p>
+                <p className="text-xs font-semibold text-[#DC2626] flex items-center gap-1.5">
+                  미수 · {r.title}
+                  <span className="bg-[#DC2626] text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold">{dDayLabel(r.settlementDate)}</span>
+                </p>
+                <p className="text-[11px] text-[#B91C1C] mt-0.5">
+                  정산 예정일 {listDateLabel(r.settlementDate + 'T00:00:00')}
+                  {r.budget != null && ` · ${r.budget.toLocaleString()}원`}
+                  {r.reminderCount > 0 && ` · 지연 알림 ${r.reminderCount}회 발송`}
+                </p>
               </div>
               <button
                 onClick={() => inquireInChat(r)}
@@ -267,7 +279,7 @@ export default function EarningsPage() {
           <p className="text-3xl font-bold text-[#B45309]">{totalAmount.toLocaleString()}원</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">예정 수입</p>
+          <p className="text-sm text-gray-500 mb-1">예정 매출</p>
           <p className="text-xl font-bold text-orange-500">{pendingAmount.toLocaleString()}원</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
@@ -326,8 +338,8 @@ export default function EarningsPage() {
             <div>
               <p className="text-sm font-medium text-gray-800">{e.category}</p>
               <p className="text-xs text-gray-400 mt-0.5">
-                {new Date(e.created_at).toLocaleDateString('ko-KR')}
-                {e.due_date && ` · 지급예정 ${new Date(e.due_date).toLocaleDateString('ko-KR')}`}
+                {listDateLabel(e.created_at)}
+                {e.due_date && ` · 지급예정 ${listDateLabel(e.due_date)}`}
               </p>
               {e.tax_invoice_issued && (
                 <span className="text-xs text-[#B45309]">세금계산서 발행</span>

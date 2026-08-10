@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, type ChangeEvent } from 'reac
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { ArrowLeft, Paperclip, Loader2 } from 'lucide-react'
 import DealConfirmBar from '@/components/DealConfirmBar'
 import MessageBubble from '@/components/messages/MessageBubble'
 import ReportModal from '@/components/ReportModal'
@@ -19,6 +20,7 @@ export default function InfluencerMessageRoomPage() {
   const [advertiserId, setAdvertiserId] = useState<string | null>(null)
   const [advertiserName, setAdvertiserName] = useState('')
   const [proposalId, setProposalId] = useState<string | null>(null)
+  const [proposalState, setProposalState] = useState<{ proposedDate: string | null; startAt: string | null } | null>(null)
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
@@ -47,7 +49,12 @@ export default function InfluencerMessageRoomPage() {
       .order('created_at', { ascending: true })
     setMessages(msgs ?? [])
     const last = (msgs ?? [])[(msgs ?? []).length - 1]
-    setProposalId(last?.proposal_id ?? null)
+    const pid = last?.proposal_id ?? null
+    setProposalId(pid)
+    if (pid) {
+      const { data: prop } = await supabase.from('proposals').select('proposed_date, start_at').eq('id', pid).single()
+      setProposalState(prop ? { proposedDate: prop.proposed_date, startAt: prop.start_at } : null)
+    }
 
     await supabase.from('messages').update({ is_read: true })
       .eq('sender_id', conv.advertiser_id).eq('receiver_id', user.id).eq('is_read', false)
@@ -112,34 +119,50 @@ export default function InfluencerMessageRoomPage() {
     load()
   }
 
-  if (loading) return <div className="max-w-lg mx-auto px-4 py-16 text-center text-gray-400">불러오는 중...</div>
-  if (!advertiserId) return <div className="max-w-lg mx-auto px-4 py-16 text-center text-gray-400">대화를 찾을 수 없어요.</div>
+  if (loading) return <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">불러오는 중...</div>
+  if (!advertiserId) return <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">대화를 찾을 수 없어요.</div>
+
+  // D7 3-7 — 마지막 날짜제안 메시지만 live/accepted, 그 이전 것은 answered
+  const lastDateMsgId = [...messages].reverse().find((m) => m.proposed_date)?.id ?? null
+  const dateStatusFor = (msg: any): 'live' | 'accepted' | 'answered' | null => {
+    if (!msg.proposed_date) return null
+    if (msg.id !== lastDateMsgId) return 'answered'
+    if (!proposalState) return 'live'
+    if (proposalState.proposedDate === msg.proposed_date) return 'live'
+    if (proposalState.startAt && proposalState.startAt.slice(0, 10) === msg.proposed_date) return 'accepted'
+    return 'answered'
+  }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 flex flex-col h-screen">
-      <div className="flex items-center mb-1">
-        <Link href="/influencer/messages" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
-        <div className="w-9 h-9 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold mr-3">
+    <div className="flex flex-col flex-1 min-h-0 [.inf-pc_&]:h-full">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#EAEAEE] [.inf-pc_&]:px-5">
+        <Link href="/influencer/messages" className="text-gray-400 hover:text-gray-600 [.inf-pc_&]:hidden">
+          <ArrowLeft size={18} strokeWidth={1.75} />
+        </Link>
+        <div className="w-9 h-9 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold shrink-0">
           {initial(advertiserName)}
         </div>
-        <p className="font-semibold text-gray-800">{advertiserName}</p>
+        <div className="min-w-0">
+          <p className="font-semibold text-gray-800 truncate">{advertiserName}</p>
+          <p className="text-[11px] text-gray-400">광고주와 나만 볼 수 있어요</p>
+        </div>
         {/* D6 E4 — 신고 입구는 대화 헤더 한 곳뿐 */}
         {proposalId && (
-          <button onClick={() => setReportOpen(true)} className="ml-auto text-[11px] text-gray-400 hover:text-red-500">
+          <button onClick={() => setReportOpen(true)} className="ml-auto text-[11px] text-gray-400 hover:text-red-500 shrink-0">
             문제 신고
           </button>
         )}
       </div>
-      {/* D6 A4 — 여러 명이 있는 방인 줄 알면 할 말을 못 한다: 항상 1:1임을 명시 */}
-      <p className="text-[11px] text-gray-400 mb-3 ml-[52px]">{advertiserName} · 광고주와 나만 볼 수 있어요</p>
 
       {proposalId && currentUser && (
-        <DealConfirmBar proposalId={proposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
+        <div className="px-4 pt-2 [.inf-pc_&]:px-5">
+          <DealConfirmBar proposalId={proposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
+        </div>
       )}
 
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-3 mb-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-3 px-4 py-4 [.inf-pc_&]:px-5">
         {messages.length === 0 && (
-          <p className="text-center text-gray-400 text-sm py-8">아직 메시지가 없어요. 먼저 인사해보세요!</p>
+          <p className="text-center text-gray-400 text-sm py-8">아직 대시가 없어요. 먼저 인사해보세요!</p>
         )}
         {messages.map((msg) => (
           <MessageBubble
@@ -147,43 +170,45 @@ export default function InfluencerMessageRoomPage() {
             msg={msg}
             isMine={msg.sender_id === currentUser?.id}
             groupSentBadge={!!msg.broadcast_id && msg.sender_id !== currentUser?.id}
-            dateProposalStatus={msg.proposed_date ? 'live' : null}
+            dateProposalStatus={dateStatusFor(msg)}
             canAcceptDate={msg.sender_id !== currentUser?.id}
             onAcceptDate={() => handleAcceptDate(msg.proposal_id)}
           />
         ))}
       </div>
 
-      {proposalId && (
-        <div className="flex items-center gap-2 text-[11px] text-gray-500 mb-1.5">
-          <span>다음 파일을 등록:</span>
-          {([['draft', '원고'], ['publish', '게재'], ['', '체크포인트 아님']] as const).map(([v, label]) => (
-            <label key={v} className="flex items-center gap-1">
-              <input type="radio" name="checkpointKind" checked={checkpointKind === v}
-                onChange={() => setCheckpointKind(v)} className="w-3 h-3 accent-amber-500" />
-              {label}
-            </label>
-          ))}
+      <div className="px-4 pb-4 [.inf-pc_&]:px-5">
+        {proposalId && (
+          <div className="flex items-center gap-2 text-[11px] text-gray-500 mb-1.5">
+            <span>다음 파일을 등록:</span>
+            {([['draft', '원고'], ['publish', '게재'], ['', '체크포인트 아님']] as const).map(([v, label]) => (
+              <label key={v} className="flex items-center gap-1">
+                <input type="radio" name="checkpointKind" checked={checkpointKind === v}
+                  onChange={() => setCheckpointKind(v)} className="w-3 h-3 accent-amber-500" />
+                {label}
+              </label>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <input ref={fileRef} type="file" onChange={handleFile} className="hidden"
+            accept=".pdf,.doc,.docx,.hwp,.hwpx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.zip" />
+          <button onClick={() => fileRef.current?.click()} disabled={uploading}
+            className="px-3 py-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50" title="파일 첨부">
+            {uploading ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} strokeWidth={1.75} />}
+          </button>
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            placeholder="대시에 쓸 말을 입력하세요"
+          />
+          <button onClick={sendMessage} className="bg-[#F59E0B] text-white px-4 py-2.5 rounded-xl hover:bg-[#D97706] transition">
+            전송
+          </button>
         </div>
-      )}
-      <div className="flex gap-2">
-        <input ref={fileRef} type="file" onChange={handleFile} className="hidden"
-          accept=".pdf,.doc,.docx,.hwp,.hwpx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.zip" />
-        <button onClick={() => fileRef.current?.click()} disabled={uploading}
-          className="px-3 py-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50" title="파일 첨부">
-          {uploading ? '⏳' : '📎'}
-        </button>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-          placeholder="메시지 입력..."
-        />
-        <button onClick={sendMessage} className="bg-[#F59E0B] text-white px-4 py-2.5 rounded-xl hover:bg-[#D97706] transition">
-          전송
-        </button>
       </div>
 
       {reportOpen && proposalId && (

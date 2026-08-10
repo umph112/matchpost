@@ -1,16 +1,19 @@
 'use client'
 
 import Link from 'next/link'
+import { Users } from 'lucide-react'
 import { initial } from '@/lib/initial'
 
 // 대화 목록 행 — 모양으로 캠페인(1:N, 파란 사각) / 개인(1:1, 노란 원) 구분 (D6 A1)
+// D7 4-5: 안 읽음(검정 원 숫자)과 미응답(내 응답 2일↑ 지연, 빨강)은 다른 신호 — 섞어 쓰지 않는다.
 export default function ConversationRow({
   href,
   kind,
   title,
   subtitle,
   timeLabel,
-  unread,
+  unreadCount = 0,
+  overdue = false,
   participantCount,
 }: {
   href: string
@@ -18,7 +21,8 @@ export default function ConversationRow({
   title: string
   subtitle: string | null
   timeLabel: string
-  unread: boolean
+  unreadCount?: number
+  overdue?: boolean
   participantCount?: number
 }) {
   const isCampaign = kind === 'campaign'
@@ -32,7 +36,7 @@ export default function ConversationRow({
           isCampaign ? 'rounded-[10px] bg-[#DBEAFE] text-[#1D4ED8]' : 'rounded-full bg-[#FEF3C7] text-[#B45309]'
         }`}
       >
-        {isCampaign ? '👥' : initial(title)}
+        {isCampaign ? <Users size={18} strokeWidth={1.75} /> : initial(title)}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -48,9 +52,13 @@ export default function ConversationRow({
         {subtitle && <p className="text-sm text-gray-400 truncate">{subtitle}</p>}
       </div>
       <div className="flex flex-col items-end gap-1 ml-2 shrink-0">
-        {unread && (
+        {overdue ? (
           <span className="text-[10.5px] font-bold bg-red-100 text-red-500 px-2 py-0.5 rounded-full">미응답</span>
-        )}
+        ) : unreadCount > 0 ? (
+          <span className="text-[10.5px] font-bold bg-[#17171B] text-white rounded-full px-1.5 min-w-[18px] text-center">
+            {unreadCount}
+          </span>
+        ) : null}
         <p className="text-xs text-gray-300">{timeLabel}</p>
       </div>
     </Link>

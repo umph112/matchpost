@@ -43,11 +43,24 @@ function UsersContent() {
     setLoading(false)
   }
 
+  const deleteBizDoc = async (userId: string) => {
+    await fetch('/api/admin/biz-doc', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId }) })
+  }
+
+  const viewBizDoc = async (userId: string) => {
+    const res = await fetch(`/api/admin/biz-doc?userId=${userId}`)
+    const j = await res.json()
+    if (res.ok) window.open(j.url, '_blank')
+    else alert(j.error ?? '서류를 열 수 없어요.')
+  }
+
   const handleApprove = async (userId: string) => {
     await supabase
       .from('profiles')
       .update({ status: 'approved' })
       .eq('id', userId)
+    // D7 5-2 — 승인 즉시 서류 원본 삭제, 확인 결과(사업자등록번호)만 남긴다
+    await deleteBizDoc(userId)
     fetchUsers()
   }
 
@@ -58,6 +71,7 @@ function UsersContent() {
       .from('profiles')
       .update({ status: 'rejected', rejection_reason: reason })
       .eq('id', userId)
+    await deleteBizDoc(userId)
     fetchUsers()
   }
 
@@ -161,6 +175,14 @@ function UsersContent() {
                   <p className="text-[11px] text-gray-400 mb-2">
                     승인하면 가입 축하금 {signupCreditAmount(user.role).toLocaleString()}C가 지급됩니다.
                   </p>
+                  {user.role === 'advertiser' && (
+                    <button
+                      onClick={() => viewBizDoc(user.id)}
+                      className="w-full mb-2 py-2 rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
+                    >
+                      사업자등록증 보기
+                    </button>
+                  )}
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => handleReject(user.id)}

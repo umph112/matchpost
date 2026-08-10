@@ -6,13 +6,16 @@ import { signupCreditAmount } from '@/lib/creditConfig'
 // (베타 진입 시 이메일 인증·본인인증 등 보안 절차 추가 예정)
 export async function POST(req: Request) {
   const body = await req.json()
-  const { role, name, activityName, email, phone, managerPhone, companyPhone, password, categories } = body
+  const { role, name, activityName, email, phone, managerPhone, companyPhone, password, categories, companyName, bizRegNumber, address } = body
 
   if (!role || !name || !email || !password) {
     return NextResponse.json({ error: '필수 항목이 누락됐어요.' }, { status: 400 })
   }
   if (role === 'advertiser' && !managerPhone) {
     return NextResponse.json({ error: '담당자 휴대폰이 필요해요.' }, { status: 400 })
+  }
+  if (role === 'advertiser' && (!companyName || !bizRegNumber)) {
+    return NextResponse.json({ error: '상호와 사업자등록번호를 입력해주세요.' }, { status: 400 })
   }
 
   const admin = createClient(
@@ -63,7 +66,12 @@ export async function POST(req: Request) {
       categories: categories ?? [], // index 0 = 메이저
     })
   } else {
-    await admin.from('advertiser_profiles').insert({ user_id: uid })
+    await admin.from('advertiser_profiles').insert({
+      user_id: uid,
+      company_name: companyName,
+      biz_reg_number: bizRegNumber,
+      address: address || null,
+    })
 
     // 팀 초대(C2) — 이 이메일로 온 초대(invited)가 있으면 가입과 동시에 연결한다
     await admin

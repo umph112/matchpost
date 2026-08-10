@@ -7,28 +7,34 @@ import MyOpensList from '@/components/MyOpensList'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
 import { BlogAnalyticsSummaryCard } from '@/components/BlogAnalyticsCard'
 import { initial } from '@/lib/initial'
+import {
+  CalendarDays, Search, Hourglass, Inbox, Handshake, BarChart3, Wallet, Bell,
+  MessageSquare, Plus, Megaphone, Pencil, CheckCircle2, Ban, CalendarPlus, CheckSquare,
+  type LucideIcon,
+} from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 
-const NOTIF_ICON: Record<string, string> = {
-  campaign_created: '📣', campaign_updated: '📝', campaign_completed: '✅', campaign_cancelled: '🚫',
-  open_created: '📅', open_completed: '✅', open_cancelled: '🚫',
-  deal_made: '🤝', dash_received: '💬', settlement_due: '💰',
-  deal_confirm_request: '⏳', deal_confirm_self: '☑️',
+const NOTIF_ICON: Record<string, LucideIcon> = {
+  campaign_created: Megaphone, campaign_updated: Pencil, campaign_completed: CheckCircle2, campaign_cancelled: Ban,
+  open_created: CalendarPlus, open_completed: CheckCircle2, open_cancelled: Ban,
+  deal_made: Handshake, dash_received: MessageSquare, settlement_due: Wallet,
+  deal_confirm_request: Hourglass, deal_confirm_self: CheckSquare,
 }
 
-// 딜시트와 같은 8단계 — "다음 할 일" 라벨 파생용
+// 딜시트와 같은 9단계(D6 B1) — "다음 할 일" 라벨 파생용
 const NEXT_STEP: Record<string, string> = {
-  신청: '광고주 확정 대기',
-  확정: '가이드 수령 대기',
+  협의: '광고주 확정 대기',
+  수락: '가이드 수령 대기',
   가이드: '방문/제작 준비',
   방문: '콘텐츠 업로드',
-  업로드: '검사 대기',
-  '수정/컴프': '수정 반영',
-  검사: '정산 대기',
+  원고: '컨펌 대기',
+  '수정/컨펌': '수정 반영',
+  게재: '정산 대기',
+  게재뒤수정: '수정 반영',
   정산: '완료',
 }
 
@@ -237,6 +243,7 @@ export default async function InfluencerMyPage() {
   return (
     <InfluencerShell
       name={profile?.name ?? '인플루언서'}
+      sub={`인플루언서 콘솔 · ${new Date().getFullYear()}년 ${new Date().getMonth() + 1}월`}
       matchScore={ip?.match_score ?? null}
       reviewCount={ip?.review_count ?? 0}
       blogGrade={blogAnalytics?.blog_grade ?? null}
@@ -278,7 +285,7 @@ export default async function InfluencerMyPage() {
           <div className="text-[22px] font-extrabold mt-1">{inProgress.length}건</div>
         </div>
         <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4">
-          <div className="text-xs font-semibold text-[#7C7C88]">이번 달 수익</div>
+          <div className="text-xs font-semibold text-[#7C7C88]">이번 달 매출</div>
           <div className="text-[22px] font-extrabold mt-1">{monthTotal.toLocaleString()}원</div>
         </div>
         <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4">
@@ -293,8 +300,9 @@ export default async function InfluencerMyPage() {
           href="/influencer/messages"
           className="block bg-[#FFFBEB] border border-[#FDE68A] [.inf-pc_&]:rounded-[14px] rounded-2xl px-4 py-3 hover:bg-[#FEF3C7] transition"
         >
-          <p className="text-[13px] font-bold text-[#92400E]">
-            ⏳ 답을 기다리는 제안 {awaitingProposals.length}건
+          <p className="text-[13px] font-bold text-[#92400E] flex items-center gap-1.5">
+            <Hourglass size={14} strokeWidth={1.75} />
+            답을 기다리는 제안 {awaitingProposals.length}건
           </p>
           <p className="text-[11.5px] text-[#B45309] mt-0.5">
             {awaitingProposals[0].advertiserName}님 외 — 대시에서 확인하고 수락하거나 조율하세요
@@ -307,7 +315,9 @@ export default async function InfluencerMyPage() {
         <div className="flex flex-col gap-6 [.inf-pc_&]:gap-5 min-w-0">
           {/* 이번 주 일정 7일 스트립 (모바일) / 캘린더(PC) */}
           <section className="[.inf-pc_&]:hidden">
-            <h2 className="text-sm font-bold text-gray-800 mb-2">📅 이번 주 일정</h2>
+            <h2 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1.5">
+              <CalendarDays size={15} strokeWidth={1.75} className="opacity-70" /> 이번 주 일정
+            </h2>
             <div className="grid grid-cols-7 gap-1.5">
               {weekStrip.map((d) => (
                 <Link
@@ -345,14 +355,14 @@ export default async function InfluencerMyPage() {
               href="/influencer/schedule"
               className="bg-[#F59E0B] text-white rounded-2xl p-4 shadow-sm hover:bg-[#D97706] transition text-center"
             >
-              <div className="text-2xl mb-1">＋</div>
+              <Plus size={22} strokeWidth={2} className="mx-auto mb-1" />
               <p className="font-semibold text-sm">오픈 등록</p>
             </Link>
             <Link
               href="/influencer/search"
               className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition text-center"
             >
-              <div className="text-2xl mb-1">🔍</div>
+              <Search size={22} strokeWidth={1.75} className="mx-auto mb-1 text-gray-700" />
               <p className="font-semibold text-sm text-gray-800">캠페인 찾기</p>
             </Link>
           </section>
@@ -360,7 +370,9 @@ export default async function InfluencerMyPage() {
           {/* 받은 제안 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800">📨 받은 제안</h2>
+              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+                <Inbox size={15} strokeWidth={1.75} className="opacity-70" /> 받은 제안
+              </h2>
               <Link href="/influencer/messages" className="text-xs text-[#B45309] hover:underline">전체보기 →</Link>
             </div>
             {awaitingProposals.length === 0 ? (
@@ -400,7 +412,9 @@ export default async function InfluencerMyPage() {
           {/* 진행중 협업 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800">🤝 진행중 협업</h2>
+              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+                <Handshake size={15} strokeWidth={1.75} className="opacity-70" /> 진행중 협업
+              </h2>
             </div>
             {inProgress.length === 0 ? (
               <p className="text-sm text-gray-400 bg-white [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] rounded-2xl [.inf-pc_&]:rounded-[14px] p-4 shadow-sm [.inf-pc_&]:shadow-none">
@@ -416,7 +430,7 @@ export default async function InfluencerMyPage() {
                   >
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-sm text-gray-800 truncate">{p.title}</p>
-                      <p className="text-xs text-gray-400 truncate">{p.stage ?? '신청'} · 다음: {NEXT_STEP[p.stage ?? '신청']}</p>
+                      <p className="text-xs text-gray-400 truncate">{p.stage ?? '협의'} · 다음: {NEXT_STEP[p.stage ?? '협의']}</p>
                     </div>
                     <span className="ml-2 shrink-0 text-xs font-semibold text-gray-500">
                       {p.budget ? `${p.budget.toLocaleString()}원` : ''}
@@ -438,7 +452,9 @@ export default async function InfluencerMyPage() {
           {/* 내 채널 분석 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800">📊 내 채널 분석</h2>
+              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+                <BarChart3 size={15} strokeWidth={1.75} className="opacity-70" /> 내 채널 분석
+              </h2>
               <Link href="/influencer/channel-analytics" className="text-xs text-[#B45309] hover:underline">상세보기 →</Link>
             </div>
             <BlogAnalyticsSummaryCard data={blogAnalytics} />
@@ -452,7 +468,9 @@ export default async function InfluencerMyPage() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">💰 이번 달 수익</p>
+                  <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                    <Wallet size={14} strokeWidth={1.75} className="opacity-70" /> 이번 달 매출
+                  </p>
                   <p className="text-2xl font-bold text-gray-900 mt-0.5">{monthTotal.toLocaleString()}원</p>
                   {pendingTotal > 0 && (
                     <p className="text-xs text-orange-500 mt-0.5">정산 예정 {pendingTotal.toLocaleString()}원</p>
@@ -469,8 +487,8 @@ export default async function InfluencerMyPage() {
           {/* 알림함 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800">
-                🔔 알림함
+              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+                <Bell size={15} strokeWidth={1.75} className="opacity-70" /> 알림함
                 {unreadNotif > 0 && (
                   <span className="ml-1.5 text-[11px] bg-red-500 text-white px-2 py-0.5 rounded-full align-middle">
                     {unreadNotif}
@@ -493,7 +511,10 @@ export default async function InfluencerMyPage() {
                       n.is_read ? 'bg-white [.inf-pc_&]:bg-transparent' : 'bg-[#FEF3C7] hover:bg-[#FDE68A] [.inf-pc_&]:bg-[#FFFBEB]'
                     }`}
                   >
-                    <span className="text-lg shrink-0">{NOTIF_ICON[n.type] ?? '🔔'}</span>
+                    {(() => {
+                      const Icon = NOTIF_ICON[n.type] ?? Bell
+                      return <Icon size={16} strokeWidth={1.75} className="shrink-0 mt-0.5 opacity-70" />
+                    })()}
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm ${n.is_read ? 'text-gray-700' : 'font-semibold text-gray-900'}`}>{n.title}</p>
                       {n.body && <p className="text-xs text-gray-400 truncate">{n.body}</p>}
@@ -508,7 +529,9 @@ export default async function InfluencerMyPage() {
           {/* 대시 · 메시지 미리보기 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800">💬 대시 · 메시지</h2>
+              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+                <MessageSquare size={15} strokeWidth={1.75} className="opacity-70" /> 대시
+              </h2>
               <Link href="/influencer/messages" className="text-xs text-[#B45309] hover:underline">전체보기 →</Link>
             </div>
             {convPreview.length === 0 ? (

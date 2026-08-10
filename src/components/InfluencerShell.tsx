@@ -6,30 +6,55 @@ import { useEffect, useState } from 'react'
 import { Home, CalendarDays, MessageSquare, BarChart3, Wallet, Search, Bell } from 'lucide-react'
 import LogoutButton from './LogoutButton'
 import MatchScore from './MatchScore'
+import Logo from './Logo'
 import { creditAmount } from '@/lib/creditConfig'
+import { initial } from '@/lib/initial'
 
-// 인플루언서 셸 — 광고주 AdvertiserShell과 같은 PC/모바일 전환 패턴.
-// 지금은 /influencer/dashboard 페이지에만 적용(다른 페이지는 아직 기존 TopBar 유지).
+// 인플루언서 셸 — 광고주 AdvertiserShell과 같은 PC/모바일 자동 감지 패턴(D7 4-8, 토글 없음).
+// 지금은 /influencer/dashboard, /influencer/messages(/[id]) 페이지에만 적용(나머지는 아직 기존 방식 유지).
 const MOBILE_TABS = [
   { href: '/influencer/dashboard', label: '홈', Icon: Home },
   { href: '/influencer/schedule/list', label: '오픈', Icon: CalendarDays },
   { href: '/influencer/messages', label: '대시', Icon: MessageSquare, badge: 'msg' as const },
   { href: '/influencer/channel-analytics', label: '내 채널', Icon: BarChart3 },
-  { href: '/influencer/earnings', label: '수익', Icon: Wallet },
+  { href: '/influencer/earnings', label: '매출', Icon: Wallet },
 ]
 
-const PC_NAV = [
-  { href: '/influencer/dashboard', label: '홈', Icon: Home, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/influencer/schedule/list', label: '오픈 일정', Icon: CalendarDays, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/influencer/messages', label: '대시', Icon: MessageSquare, badge: 'msg' as const },
-  { href: '/influencer/search', label: '캠페인 찾기', Icon: Search, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/influencer/channel-analytics', label: '내 채널', Icon: BarChart3, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/influencer/earnings', label: '수익', Icon: Wallet, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/influencer/notifications', label: '알림', Icon: Bell, badge: 'notif' as const },
+const PC_NAV_GROUPS: {
+  group: string
+  items: { href: string; label: string; Icon: typeof Home; badge?: 'msg' | 'notif' }[]
+}[] = [
+  {
+    group: '일정 열기',
+    items: [
+      { href: '/influencer/dashboard', label: '홈', Icon: Home },
+      { href: '/influencer/schedule/list', label: '오픈 일정', Icon: CalendarDays },
+    ],
+  },
+  {
+    group: '기회 찾기',
+    items: [{ href: '/influencer/search', label: '캠페인 찾기', Icon: Search }],
+  },
+  {
+    group: '이야기하기',
+    items: [{ href: '/influencer/messages', label: '대시', Icon: MessageSquare, badge: 'msg' }],
+  },
+  {
+    group: '성과 보기',
+    items: [
+      { href: '/influencer/channel-analytics', label: '내 채널', Icon: BarChart3 },
+      { href: '/influencer/earnings', label: '매출', Icon: Wallet },
+    ],
+  },
+  {
+    group: '계정',
+    items: [{ href: '/influencer/notifications', label: '알림', Icon: Bell, badge: 'notif' }],
+  },
 ]
 
 export default function InfluencerShell({
   name,
+  sub = '인플루언서 콘솔',
   matchScore,
   reviewCount = 0,
   blogGrade,
@@ -38,6 +63,7 @@ export default function InfluencerShell({
   children,
 }: {
   name: string
+  sub?: string
   matchScore: number | null
   reviewCount?: number
   blogGrade?: string | null
@@ -46,16 +72,16 @@ export default function InfluencerShell({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const fullBleed = pathname.startsWith('/influencer/messages')
   const [mode, setMode] = useState<'pc' | 'mobile'>('mobile')
   const [creditBalance, setCreditBalance] = useState<number | null>(null)
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
-  const badgeVal = (key: string) => (key === 'msg' ? msgCount : key === 'notif' ? notifCount : 0)
+  const badgeVal = (key?: 'msg' | 'notif') => (key === 'msg' ? msgCount : key === 'notif' ? notifCount : 0)
+  const [subLine1, subLine2] = sub.split(' · ')
 
   useEffect(() => {
     const detectMobile = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-    const saved = localStorage.getItem('infViewMode')
-    if (saved === 'mobile' || saved === 'pc') setMode(saved)
-    else setMode(detectMobile() ? 'mobile' : 'pc')
+    setMode(detectMobile() ? 'mobile' : 'pc')
   }, [])
 
   useEffect(() => {
@@ -65,42 +91,18 @@ export default function InfluencerShell({
       .catch(() => {})
   }, [])
 
-  const toggleMode = () => {
-    const next = mode === 'pc' ? 'mobile' : 'pc'
-    setMode(next)
-    localStorage.setItem('infViewMode', next)
-  }
-
-  const modeToggle = (
-    <div className="flex bg-[#F1F1F4] rounded-lg p-[3px]">
-      <button
-        onClick={() => mode !== 'pc' && toggleMode()}
-        className={`text-[11.5px] px-[11px] py-[5px] rounded-md ${mode === 'pc' ? 'bg-white text-[#17171B] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.06)]' : 'text-[#8A8A96] font-semibold'}`}
-      >
-        PC
-      </button>
-      <button
-        onClick={() => mode !== 'mobile' && toggleMode()}
-        className={`text-[11.5px] px-[11px] py-[5px] rounded-md ${mode === 'mobile' ? 'bg-white text-[#17171B] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.06)]' : 'text-[#8A8A96] font-semibold'}`}
-      >
-        모바일
-      </button>
-    </div>
-  )
-
   if (mode === 'mobile') {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="h-[52px] bg-white border-b border-gray-100 flex items-center gap-2 px-4 sticky top-0 z-40">
-          <Link href="/influencer/dashboard" className="text-lg font-bold text-[#17171B]">
-            MatchPost
+          <Link href="/influencer/dashboard">
+            <Logo size={14} />
           </Link>
           <div className="ml-auto flex items-center gap-2">
-            {modeToggle}
             <LogoutButton />
           </div>
         </header>
-        <main className="max-w-lg mx-auto px-4 py-5 pb-24 space-y-6">{children}</main>
+        <main className={fullBleed ? 'h-[calc(100vh-52px-58px)] flex flex-col' : 'max-w-lg mx-auto px-4 py-5 pb-24 space-y-6'}>{children}</main>
         <nav className="fixed bottom-0 left-0 right-0 h-[58px] bg-white border-t border-gray-100 flex items-center z-40">
           {MOBILE_TABS.map((t) => {
             const active = isActive(t.href)
@@ -132,39 +134,36 @@ export default function InfluencerShell({
   return (
     <div className="flex min-h-screen min-w-[1360px] bg-[#F6F6F7] text-[#1A1A1F]">
       <aside className="w-[236px] shrink-0 bg-white border-r border-[#EAEAEE] sticky top-0 h-screen flex flex-col">
-        <div className="h-16 flex items-center gap-[10px] px-5 border-b border-[#F1F1F4]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo/matchpost-mark.svg" width={24} height={24} alt="" aria-hidden />
-          <span
-            style={{ fontFamily: 'Archivo, ui-sans-serif, system-ui, sans-serif', fontWeight: 900, fontSize: 19, letterSpacing: '0.055em' }}
-            className="text-[#17171B] leading-none"
-          >
-            MATCH<span className="text-[#F59E0B]">·</span>POST
-          </span>
+        <div className="h-16 flex items-center px-5 border-b border-[#F1F1F4]">
+          <Logo size={19} />
         </div>
         <nav className="flex flex-col gap-0.5 p-3">
-          <div className="text-[10px] font-bold text-[#B0B0BB] tracking-[0.06em] px-2.5 pt-2 pb-1.5">활동</div>
-          {PC_NAV.map((n) => {
-            const b = badgeVal(n.badge)
-            const active = isActive(n.href)
-            return (
-              <Link
-                key={n.href}
-                href={n.href}
-                className={`flex items-center gap-2.5 px-2.5 py-[9px] rounded-lg text-[13.5px] font-semibold transition ${
-                  active ? 'bg-[#FEF3C7] text-[#B45309] font-bold' : 'text-[#5C5C68] hover:bg-[#F6F6F7]'
-                }`}
-              >
-                <n.Icon size={16} strokeWidth={1.75} className="opacity-75 shrink-0" />
-                <span>{n.label}</span>
-                {b > 0 && (
-                  <span className="ml-auto text-[10.5px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded-full px-1.5 min-w-[18px] text-center">
-                    {b}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
+          {PC_NAV_GROUPS.map((g) => (
+            <div key={g.group}>
+              <div className="text-[10px] font-bold text-[#B0B0BB] tracking-[0.06em] px-2.5 pt-2.5 pb-1.5">{g.group}</div>
+              {g.items.map((n) => {
+                const b = badgeVal(n.badge)
+                const active = isActive(n.href)
+                return (
+                  <Link
+                    key={n.href}
+                    href={n.href}
+                    className={`flex items-center gap-2.5 px-2.5 py-[9px] rounded-lg text-[13.5px] font-semibold transition ${
+                      active ? 'bg-[#FEF3C7] text-[#B45309] font-bold' : 'text-[#5C5C68] hover:bg-[#F6F6F7]'
+                    }`}
+                  >
+                    <n.Icon size={16} strokeWidth={1.75} className="opacity-75 shrink-0" />
+                    <span>{n.label}</span>
+                    {b > 0 && (
+                      <span className="ml-auto text-[10.5px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded-full px-1.5 min-w-[18px] text-center">
+                        {b}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          ))}
         </nav>
         <div className="mt-auto border-t border-[#F1F1F4] px-4 py-3.5 flex flex-col gap-2.5">
           <Link href="/credits" className="block hover:opacity-80">
@@ -185,17 +184,11 @@ export default function InfluencerShell({
 
       <div className="flex-1 min-w-0 flex flex-col">
         <header className="h-16 bg-white/[.88] backdrop-blur-[10px] border-b border-[#EAEAEE] flex items-center gap-3.5 px-7 sticky top-0 z-30">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold tracking-[-0.01em]">{name}</span>
-            <MatchScore score={matchScore} reviewCount={reviewCount} />
-            {blogGrade && (
-              <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309]">
-                블로그 {blogGrade}
-              </span>
-            )}
+          <div className="flex flex-col">
+            <span className="text-sm font-bold tracking-[-0.01em]">{subLine1}</span>
+            {subLine2 && <span className="text-[11px] text-[#9A9AA5] mt-px">{subLine2}</span>}
           </div>
           <div className="ml-auto flex items-center gap-2.5">
-            {modeToggle}
             <Link
               href="/influencer/notifications"
               className="relative w-[34px] h-[34px] rounded-lg border border-[#EAEAEE] flex items-center justify-center text-[#5C5C68] hover:bg-[#F6F6F7]"
@@ -207,8 +200,15 @@ export default function InfluencerShell({
                 </span>
               )}
             </Link>
-            <div className="w-[34px] h-[34px] rounded-full bg-[#FEF3C7] text-[#B45309] text-[13px] font-extrabold flex items-center justify-center">
-              {name[0]}
+            <MatchScore score={matchScore} reviewCount={reviewCount} />
+            {blogGrade && (
+              <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309]">
+                블로그 {blogGrade}
+              </span>
+            )}
+            <span className="text-[13px] font-semibold text-[#3C3C46] max-w-[120px] truncate">{name}</span>
+            <div className="w-[34px] h-[34px] rounded-full bg-[#FEF3C7] text-[#B45309] text-[13px] font-extrabold flex items-center justify-center shrink-0">
+              {initial(name)}
             </div>
             <LogoutButton />
           </div>

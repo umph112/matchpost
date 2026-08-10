@@ -11,6 +11,10 @@ export async function sendCampaignMessage(input: {
   campaignId: string
   content: string
   onlyInfluencerId?: string | null
+  fileUrl?: string | null
+  fileName?: string | null
+  fileType?: string | null
+  checkpointKind?: 'guide' | 'draft' | 'publish' | null
 }): Promise<SendResult> {
   const auth = await createClient()
   const { data: { user } } = await auth.auth.getUser()
@@ -34,6 +38,10 @@ export async function sendCampaignMessage(input: {
     p_content: input.content,
     p_only_influencer_id: input.onlyInfluencerId ?? null,
     p_proxy: proxy,
+    p_file_url: input.fileUrl ?? null,
+    p_file_name: input.fileName ?? null,
+    p_file_type: input.fileType ?? null,
+    p_checkpoint_kind: input.checkpointKind ?? null,
   })
 
   if (error) return { ok: false, error: error.message }

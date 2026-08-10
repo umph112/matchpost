@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import DashSendButton from './DashSendButton'
+import { initial } from '@/lib/initial'
 
 // 광고주 마이페이지 캘린더 — 월 그리드 + 날짜별 캠페인/오픈 카운트 칩 + 날짜 팝업(목록→상세).
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -160,7 +161,7 @@ export default function CampaignCalendar({
                   })}
                   {dayOpens.map((o) => (
                     <button key={'o' + o.id} onClick={() => setItem({ type: 'open', data: o })} className="w-full flex items-center gap-3 p-3 rounded-[10px] hover:bg-[#FAFAFB] text-left">
-                      <div className="w-9 h-9 rounded-full bg-[#DBEAFE] text-[#1D4ED8] text-[13px] font-extrabold flex items-center justify-center shrink-0">{o.name[0]}</div>
+                      <div className="w-9 h-9 rounded-full bg-[#DBEAFE] text-[#1D4ED8] text-[13px] font-extrabold flex items-center justify-center shrink-0">{initial(o.name)}</div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-[7px]">
                           <span className={CHIP_O}>공개 오픈</span>

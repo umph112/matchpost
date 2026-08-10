@@ -38,7 +38,23 @@ async function handler(req: Request) {
     else deleted++
   }
 
-  return NextResponse.json({ ok: true, checked: rows?.length ?? 0, deleted, failed })
+  // D7 5-2 — 사업자등록증은 승인/반려 즉시 지워지는 게 정상 경로지만, 확인이 지연되는 경우를 대비해
+  // 업로드 30일 뒤에는 여기서도 강제로 지운다(약관 제17조 ⑤ · 처리방침 4절 ⑤).
+  const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: staleDocs } = await auth.admin
+    .from('advertiser_profiles')
+    .select('user_id, biz_doc_url')
+    .not('biz_doc_url', 'is', null)
+    .lt('biz_doc_uploaded_at', THIRTY_DAYS_AGO)
+
+  let bizDocsDeleted = 0
+  for (const d of staleDocs ?? []) {
+    await auth.admin.storage.from('biz-docs').remove([d.biz_doc_url as string])
+    const { error } = await auth.admin.from('advertiser_profiles').update({ biz_doc_url: null }).eq('user_id', d.user_id)
+    if (!error) bizDocsDeleted++
+  }
+
+  return NextResponse.json({ ok: true, checked: rows?.length ?? 0, deleted, failed, bizDocsDeleted })
 }
 
 export const GET = handler

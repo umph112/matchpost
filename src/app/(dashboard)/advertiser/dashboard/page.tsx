@@ -4,16 +4,20 @@ import { createClient } from '@/lib/supabase/server'
 import CampaignCalendar from '@/components/CampaignCalendar'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
 import { initial } from '@/lib/initial'
+import {
+  Search, Bell, FileText, Megaphone, Pencil, CheckCircle2, Ban, CalendarPlus,
+  Handshake, MessageSquare, Wallet, Hourglass, CheckSquare, type LucideIcon,
+} from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-const NOTIF_ICON: Record<string, string> = {
-  campaign_created: '📣', campaign_updated: '📝', campaign_completed: '✅', campaign_cancelled: '🚫',
-  open_created: '📅', open_completed: '✅', open_cancelled: '🚫',
-  deal_made: '🤝', dash_received: '💬', settlement_due: '💰',
-  deal_confirm_request: '⏳', deal_confirm_self: '☑️',
+const NOTIF_ICON: Record<string, LucideIcon> = {
+  campaign_created: Megaphone, campaign_updated: Pencil, campaign_completed: CheckCircle2, campaign_cancelled: Ban,
+  open_created: CalendarPlus, open_completed: CheckCircle2, open_cancelled: Ban,
+  deal_made: Handshake, dash_received: MessageSquare, settlement_due: Wallet,
+  deal_confirm_request: Hourglass, deal_confirm_self: CheckSquare,
 }
 
 export default async function AdvertiserMyPage() {
@@ -220,10 +224,10 @@ export default async function AdvertiserMyPage() {
         </div>
         <div className="flex gap-2 [.adv-pc_&]:ml-auto">
           <Link href="/advertiser/search" className="flex items-center gap-1.5 h-[38px] px-[15px] rounded-[9px] border border-[#E2E2E8] bg-white text-[13px] font-semibold text-[#3C3C46] hover:bg-[#F6F6F7]">
-            🔍 인플루언서 찾기
+            <Search size={14} strokeWidth={1.75} /> 인플루언서 찾기
           </Link>
           <Link href="/advertiser/connections" className="flex items-center gap-1.5 h-[38px] px-[15px] rounded-[9px] border border-[#E2E2E8] bg-white text-[13px] font-semibold text-[#3C3C46] hover:bg-[#F6F6F7]">
-            ⭐ 내 인플루언서
+            <Handshake size={14} strokeWidth={1.75} /> 내 인플루언서
           </Link>
           <Link href="/advertiser/campaigns/new" className="flex items-center gap-1.5 h-[38px] px-4 rounded-[9px] bg-[#F59E0B] text-white text-[13px] font-bold hover:bg-[#D97706] shadow-[0_1px_2px_rgba(245,158,11,0.35)]">
             ＋ 캠페인 등록
@@ -338,7 +342,7 @@ export default async function AdvertiserMyPage() {
           {/* 대시·메시지 */}
           <section className={card}>
             <div className={cardHead + ' px-[18px]'}>
-              <h2 className="text-[13.5px] font-bold">대시 · 메시지</h2>
+              <h2 className="text-[13.5px] font-bold">대시</h2>
               {respWaiting > 0 && <span className="ml-[7px] text-[10.5px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded-full px-1.5">{respWaiting}</span>}
               <Link href="/advertiser/messages" className="ml-auto text-[11.5px] font-semibold text-[#B45309]">전체보기 →</Link>
             </div>
@@ -376,7 +380,10 @@ export default async function AdvertiserMyPage() {
             ) : (
               notifPreview.map((n) => (
                 <Link key={n.id} href="/advertiser/notifications" className={`flex gap-[11px] px-[18px] py-3 border-b border-[#F5F5F7] ${n.is_read ? 'bg-white' : 'bg-[#FFFBEB]'}`}>
-                  <span className="text-sm shrink-0 leading-snug">{NOTIF_ICON[n.type] ?? '🔔'}</span>
+                  {(() => {
+                    const Icon = NOTIF_ICON[n.type] ?? Bell
+                    return <Icon size={15} strokeWidth={1.75} className="shrink-0 mt-0.5 opacity-70" />
+                  })()}
                   <div className="min-w-0 flex-1">
                     <div className={`text-[12.5px] tracking-[-0.01em] ${n.is_read ? 'font-medium text-[#5C5C68]' : 'font-bold'}`}>{n.title}</div>
                     {n.body && <div className="text-[11.5px] text-[#9A9AA5] truncate mt-0.5">{n.body}</div>}
@@ -395,7 +402,7 @@ export default async function AdvertiserMyPage() {
             </div>
             {favInfluencers.map((inf) => (
               <div key={inf.id} className="flex items-center gap-[11px] px-[18px] py-[11px] border-b border-[#F5F5F7]">
-                <div className="w-8 h-8 rounded-full bg-[#F1F1F4] text-[#5C5C68] text-[12.5px] font-bold flex items-center justify-center shrink-0">{inf.name[0]}</div>
+                <div className="w-8 h-8 rounded-full bg-[#F1F1F4] text-[#5C5C68] text-[12.5px] font-bold flex items-center justify-center shrink-0">{initial(inf.name)}</div>
                 <div className="min-w-0 flex-1">
                   <div className="text-[12.5px] font-semibold truncate">{inf.name}</div>
                   <div className="text-[11px] text-[#9A9AA5] mt-px">{inf.category} · 팔로워 {inf.followers.toLocaleString()}</div>
@@ -414,7 +421,7 @@ export default async function AdvertiserMyPage() {
             <div className="p-2.5 pt-2">
               {savedForms.map((f) => (
                 <div key={f.id} className="flex items-center gap-2.5 px-2.5 py-[9px] rounded-lg hover:bg-[#FAFAFB]">
-                  <span className="text-[13px] opacity-60">📄</span>
+                  <FileText size={14} strokeWidth={1.75} className="opacity-60 shrink-0" />
                   <span className="text-[12.5px] font-medium flex-1 min-w-0 truncate">{f.name}</span>
                   {f.sample && <span className="text-[9.5px] font-bold text-[#9A9AA5] bg-[#F1F1F4] rounded px-[5px] py-0.5">예시</span>}
                 </div>

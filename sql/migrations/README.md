@@ -76,3 +76,5 @@ Supabase에서 직접 생성되어 **이 폴더에 없다.** 완전한 재생을
 - `0071_settlement_overdue_reminder.sql` — (C1/C6) campaigns.overdue_reminder_count 추가 + run_settlement_reminder_batch()(정산일 지난 미확정 건에 알림+대화 시스템메시지, 3회째부터 운영팀 언급 문구로 확대)
 - `0072_credit_policy_changes.sql` — (D1 관련 E1) credit_policy_changes 테이블(크레딧 금액 변경 예고 기록, admin 전용). 실제 금액은 여전히 creditConfig.ts가 원본 — 여긴 공지 이력만 기록
 - `0073_attachment_purge.sql` — (F3) messages.file_deleted_at 추가 + 인덱스. 대시 첨부파일 7일 자동삭제 크론(`/api/cron/purge-attachments`)이 실제 파일만 지우고 이 컬럼을 채움 — 파일명/시각/보낸사람은 대화 기록에 그대로 남음
+- `0074_campaign_message_file.sql` — (D7 3-6) send_campaign_message()(0066)에 파일 필드(file_url/file_name/file_type) + checkpoint_kind 파라미터 추가. 캠페인 대화(전원/개별)에서도 가이드 파일을 보낼 수 있게 함 — 파일 첨부 시 딜시트 체크포인트 자동완료 트리거(0056)가 그대로 작동
+- `0075_advertiser_biz_info.sql` — (D7 5-1/5-2) advertiser_profiles.biz_reg_number/address/biz_doc_url/biz_doc_uploaded_at 추가 + 비공개 Storage 버킷 `biz-docs` 생성. 가입 폼이 사업자 정보·서류를 받지 않아 콘솔 상단 회사명이 항상 비어있던 문제(advertiser/layout.tsx가 이 값을 읽음) + 관리자 승인 심사에 확인할 서류가 없던 문제를 함께 해결. 서류는 승인/반려 즉시(`/api/admin/biz-doc` DELETE) 또는 업로드 30일 뒤(`/api/cron/purge-attachments`에 추가) 자동 삭제

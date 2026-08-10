@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { acceptCancellation, withdrawCancellation } from '@/lib/cancellations/actions'
 import { setProposalTime } from '@/lib/deals/time'
+import { CheckCircle2, Square, Phone, MessageSquare, Mail } from 'lucide-react'
 
 type PendingCancellation = {
   id: string
@@ -235,8 +236,9 @@ export default function DealConfirmBar({
           <p className="text-[11px] text-gray-500">{proposal.campaign_id ? '캠페인' : '오픈'} 협업</p>
           <p className="text-sm font-semibold text-gray-800 truncate">{title}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-[11px] text-gray-500">
-              나 {myConfirmed ? '✅' : '⬜'} · 상대 {otherConfirmed ? '✅' : '⬜'}
+            <p className="text-[11px] text-gray-500 flex items-center gap-1">
+              나 {myConfirmed ? <CheckCircle2 size={12} className="inline text-green-600" /> : <Square size={12} className="inline text-gray-300" />}
+              · 상대 {otherConfirmed ? <CheckCircle2 size={12} className="inline text-green-600" /> : <Square size={12} className="inline text-gray-300" />}
             </p>
             <span className={`text-[11px] font-semibold ${stageLabel.color}`}>
               {stageLabel.text}
@@ -255,7 +257,7 @@ export default function DealConfirmBar({
         <div className="shrink-0 flex flex-col items-end gap-1">
           {done ? (
             <>
-              <span className="text-sm font-bold text-green-600">협업 확정 ✅</span>
+              <span className="text-sm font-bold text-green-600 flex items-center gap-1"><CheckCircle2 size={14} /> 협업 확정</span>
               <button
                 onClick={toggle}
                 disabled={busy}
@@ -346,17 +348,17 @@ export default function DealConfirmBar({
           <div className="flex flex-wrap gap-2">
             {contact.phone && (
               <>
-                <a href={`tel:${contact.phone}`} className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-600">
-                  📞 {contact.phone}
+                <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-600">
+                  <Phone size={13} strokeWidth={1.75} /> {contact.phone}
                 </a>
-                <a href={`sms:${contact.phone}`} className="flex items-center gap-1 bg-white text-green-700 border border-green-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-50">
-                  💬 문자
+                <a href={`sms:${contact.phone}`} className="flex items-center gap-1.5 bg-white text-green-700 border border-green-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-50">
+                  <MessageSquare size={13} strokeWidth={1.75} /> 문자
                 </a>
               </>
             )}
             {contact.email && (
-              <a href={`mailto:${contact.email}`} className="flex items-center gap-1 bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50">
-                ✉️ {contact.email}
+              <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50">
+                <Mail size={13} strokeWidth={1.75} /> {contact.email}
               </a>
             )}
           </div>

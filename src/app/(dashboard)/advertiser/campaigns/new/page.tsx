@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
 import TimeSelect from '@/components/TimeSelect'
 import { computeEnabledStages, stageHintLine } from '@/lib/campaign-stages'
+import { PartyPopper, ClipboardList, Search, Paperclip } from 'lucide-react'
 
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
 // 채널별 콘텐츠 단위 (수량 입력 라벨)
@@ -554,7 +555,7 @@ export default function NewCampaignPage() {
   if (success) {
     return (
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="text-5xl mb-4">🎉</div>
+        <PartyPopper size={40} strokeWidth={1.5} className="mx-auto mb-4 text-[#F59E0B]" />
         <h2 className="text-xl font-bold text-gray-800">캠페인이 등록됐어요!</h2>
         <p className="text-gray-500 text-sm mt-2">인플루언서들에게 노출되기 시작했어요.</p>
       </div>
@@ -588,7 +589,7 @@ export default function NewCampaignPage() {
             onClick={() => setShowLoadList((v) => !v)}
             className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between shadow-sm"
           >
-            <span>📋 이전 캠페인 불러오기 (복사 재등록)</span>
+            <span className="flex items-center gap-1.5"><ClipboardList size={14} strokeWidth={1.75} /> 이전 캠페인 불러오기 (복사 재등록)</span>
             <span className="text-gray-400">{showLoadList ? '▲' : '▼'}</span>
           </button>
           {showLoadList && (
@@ -954,12 +955,13 @@ export default function NewCampaignPage() {
 
           {/* 장소 검색 (자동완성) */}
           <div className="relative">
+            <Search size={14} strokeWidth={1.75} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             <input
               type="text"
               value={placeQuery}
               onChange={(e) => setPlaceQuery(e.target.value)}
-              className={input}
-              placeholder="🔍 장소명 검색 (예: 스타벅스 강남점)"
+              className={`${input} pl-8`}
+              placeholder="장소명 검색 (예: 스타벅스 강남점)"
             />
             {placeResults.length > 0 && (
               <div className="absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
@@ -1254,7 +1256,7 @@ export default function NewCampaignPage() {
         <p className="text-xs text-gray-400 mb-2">PDF·워드·한글 등 가이드 파일. 지금 안 올려도 되고, 확정 후 대시에서 개별 전달해도 돼요.</p>
         {guideName ? (
           <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-            <span className="text-sm text-gray-700 truncate flex-1">📎 {guideName}</span>
+            <span className="text-sm text-gray-700 truncate flex-1 flex items-center gap-1.5"><Paperclip size={13} strokeWidth={1.75} className="shrink-0" /> {guideName}</span>
             {guideUrl && (
               <a href={guideUrl} target="_blank" rel="noreferrer" className="text-xs text-amber-600 shrink-0">보기</a>
             )}

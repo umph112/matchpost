@@ -3,19 +3,49 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Megaphone, Users, MessageSquare, Bell, Wallet, UserPlus } from 'lucide-react'
+import { LayoutDashboard, Megaphone, Users, UserCheck, MessageSquare, Bell, Wallet, CreditCard, UserPlus, Menu } from 'lucide-react'
 import LogoutButton from './LogoutButton'
+import Logo from './Logo'
+import { initial } from '@/lib/initial'
 
-// 광고주 셸 — PC(사이드바) / 모바일(앱형)을 사용자가 선택(환경 자동 감지 기본, localStorage 우선).
+// 광고주 셸 — PC(사이드바) / 모바일(앱형)을 화면폭·UA로 자동 감지(사용자 토글 없음, D7 4-8).
 // PC 모드 비주얼은 design/mypage-pc/README.md 스펙 기준.
-const NAV = [
-  { href: '/advertiser/dashboard', label: '대시보드', Icon: LayoutDashboard, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/advertiser/campaigns', label: '캠페인', Icon: Megaphone, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/advertiser/search', label: '인플루언서', Icon: Users, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/advertiser/messages', label: '메시지', Icon: MessageSquare, badge: 'msg' as const },
-  { href: '/advertiser/settlements', label: '정산', Icon: Wallet, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/advertiser/team', label: '팀 멤버', Icon: UserPlus, badge: '' as 'msg' | 'notif' | '' },
-  { href: '/advertiser/notifications', label: '알림', Icon: Bell, badge: 'notif' as const },
+const NAV_GROUPS: {
+  group: string
+  items: { href: string; label: string; Icon: typeof LayoutDashboard; badge?: 'msg' | 'notif' }[]
+}[] = [
+  {
+    group: '캠페인 열기',
+    items: [
+      { href: '/advertiser/dashboard', label: '대시보드', Icon: LayoutDashboard },
+      { href: '/advertiser/campaigns', label: '캠페인', Icon: Megaphone },
+    ],
+  },
+  {
+    group: '사람 찾기',
+    items: [
+      { href: '/advertiser/search', label: '인플루언서', Icon: Users },
+      { href: '/advertiser/connections', label: '내 인플루언서', Icon: UserCheck },
+    ],
+  },
+  {
+    group: '이야기하기',
+    items: [{ href: '/advertiser/messages', label: '대시', Icon: MessageSquare, badge: 'msg' }],
+  },
+  {
+    group: '정산하기',
+    items: [
+      { href: '/advertiser/settlements', label: '정산', Icon: Wallet },
+      { href: '/credits', label: '크레딧', Icon: CreditCard },
+    ],
+  },
+  {
+    group: '계정',
+    items: [
+      { href: '/advertiser/team', label: '팀 멤버', Icon: UserPlus },
+      { href: '/advertiser/notifications', label: '알림', Icon: Bell, badge: 'notif' },
+    ],
+  },
 ]
 
 export default function AdvertiserShell({
@@ -34,20 +64,17 @@ export default function AdvertiserShell({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const fullBleed = pathname.startsWith('/advertiser/messages')
   const [mode, setMode] = useState<'pc' | 'mobile'>('pc')
   const [open, setOpen] = useState(false)
   const [creditBalance, setCreditBalance] = useState<number | null>(null)
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
-  const badgeVal = (key: string) => (key === 'msg' ? msgCount : key === 'notif' ? notifCount : 0)
+  const badgeVal = (key?: 'msg' | 'notif') => (key === 'msg' ? msgCount : key === 'notif' ? notifCount : 0)
+  const [subLine1, subLine2] = sub.split(' · ')
 
   useEffect(() => {
-    const detectMobile = () =>
-      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-    const apply = () => {
-      const saved = localStorage.getItem('advViewMode')
-      if (saved === 'mobile' || saved === 'pc') setMode(saved)
-      else setMode(detectMobile() ? 'mobile' : 'pc')
-    }
+    const detectMobile = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+    const apply = () => setMode(detectMobile() ? 'mobile' : 'pc')
     apply()
     window.addEventListener('resize', apply)
     return () => window.removeEventListener('resize', apply)
@@ -60,73 +87,42 @@ export default function AdvertiserShell({
       .catch(() => {})
   }, [])
 
-  const toggleMode = () => {
-    const next = mode === 'pc' ? 'mobile' : 'pc'
-    setMode(next)
-    localStorage.setItem('advViewMode', next)
-    setOpen(false)
-  }
-
   const brand = (
-    <div className="h-16 flex items-center gap-[10px] px-5 border-b border-[#F1F1F4]">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo/matchpost-mark.svg" width={24} height={24} alt="" aria-hidden />
-      <span
-        style={{ fontFamily: 'Archivo, ui-sans-serif, system-ui, sans-serif', fontWeight: 900, fontSize: 19, letterSpacing: '0.055em' }}
-        className="text-[#17171B] leading-none"
-      >
-        MATCH<span className="text-[#F59E0B]">·</span>POST
-      </span>
+    <div className="h-16 flex items-center px-5 border-b border-[#F1F1F4]">
+      <Logo size={19} />
     </div>
   )
 
   const navList = (
     <nav className="flex flex-col gap-0.5 p-3">
-      <div className="text-[10px] font-bold text-[#B0B0BB] tracking-[0.06em] px-2.5 pt-2 pb-1.5">운영</div>
-      {NAV.map((n) => {
-        const b = badgeVal(n.badge)
-        const active = isActive(n.href)
-        return (
-          <Link
-            key={n.href}
-            href={n.href}
-            onClick={() => setOpen(false)}
-            className={`flex items-center gap-2.5 px-2.5 py-[9px] rounded-lg text-[13.5px] font-semibold transition ${
-              active ? 'bg-[#FEF3C7] text-[#B45309] font-bold' : 'text-[#5C5C68] hover:bg-[#F6F6F7]'
-            }`}
-          >
-            <n.Icon size={16} strokeWidth={1.75} className="opacity-75 shrink-0" />
-            <span>{n.label}</span>
-            {b > 0 && (
-              <span className="ml-auto text-[10.5px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded-full px-1.5 min-w-[18px] text-center">
-                {b}
-              </span>
-            )}
-          </Link>
-        )
-      })}
+      {NAV_GROUPS.map((g) => (
+        <div key={g.group}>
+          <div className="text-[10px] font-bold text-[#B0B0BB] tracking-[0.06em] px-2.5 pt-2.5 pb-1.5">{g.group}</div>
+          {g.items.map((n) => {
+            const b = badgeVal(n.badge)
+            const active = isActive(n.href)
+            return (
+              <Link
+                key={n.href}
+                href={n.href}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-2.5 px-2.5 py-[9px] rounded-lg text-[13.5px] font-semibold transition ${
+                  active ? 'bg-[#FEF3C7] text-[#B45309] font-bold' : 'text-[#5C5C68] hover:bg-[#F6F6F7]'
+                }`}
+              >
+                <n.Icon size={16} strokeWidth={1.75} className="opacity-75 shrink-0" />
+                <span>{n.label}</span>
+                {b > 0 && (
+                  <span className="ml-auto text-[10.5px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded-full px-1.5 min-w-[18px] text-center">
+                    {b}
+                  </span>
+                )}
+              </Link>
+            )
+          })}
+        </div>
+      ))}
     </nav>
-  )
-
-  const modeToggle = (
-    <div className="flex bg-[#F1F1F4] rounded-lg p-[3px]">
-      <button
-        onClick={() => mode !== 'pc' && toggleMode()}
-        className={`text-[11.5px] px-[11px] py-[5px] rounded-md ${
-          mode === 'pc' ? 'bg-white text-[#17171B] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.06)]' : 'text-[#8A8A96] font-semibold'
-        }`}
-      >
-        PC
-      </button>
-      <button
-        onClick={() => mode !== 'mobile' && toggleMode()}
-        className={`text-[11.5px] px-[11px] py-[5px] rounded-md ${
-          mode === 'mobile' ? 'bg-white text-[#17171B] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.06)]' : 'text-[#8A8A96] font-semibold'
-        }`}
-      >
-        모바일
-      </button>
-    </div>
   )
 
   // ── 모바일 버전 (앱형) ──
@@ -134,12 +130,11 @@ export default function AdvertiserShell({
     return (
       <div className="min-h-screen bg-[#F6F6F7]">
         <header className="h-14 bg-white border-b border-[#EAEAEE] flex items-center gap-3 px-4 sticky top-0 z-30">
-          <button className="text-[#5C5C68] text-lg" onClick={() => setOpen(true)} aria-label="메뉴">
-            ☰
+          <button className="text-[#5C5C68]" onClick={() => setOpen(true)} aria-label="메뉴">
+            <Menu size={20} strokeWidth={1.75} />
           </button>
           <span className="text-sm font-semibold text-[#17171B] truncate">{name}</span>
           <div className="ml-auto flex items-center gap-3">
-            {modeToggle}
             <LogoutButton />
           </div>
         </header>
@@ -152,7 +147,7 @@ export default function AdvertiserShell({
             </aside>
           </div>
         )}
-        <main className="adv-mobile max-w-lg mx-auto p-4">{children}</main>
+        <main className={fullBleed ? 'adv-mobile h-[calc(100vh-56px)] flex flex-col' : 'adv-mobile max-w-lg mx-auto p-4'}>{children}</main>
       </div>
     )
   }
@@ -189,11 +184,10 @@ export default function AdvertiserShell({
       <div className="flex-1 min-w-0 flex flex-col">
         <header className="h-16 bg-white/[.88] backdrop-blur-[10px] border-b border-[#EAEAEE] flex items-center gap-3.5 px-7 sticky top-0 z-30">
           <div className="flex flex-col">
-            <span className="text-sm font-bold tracking-[-0.01em]">{name}</span>
-            <span className="text-[11px] text-[#9A9AA5] mt-px">{sub}</span>
+            <span className="text-sm font-bold tracking-[-0.01em]">{subLine1}</span>
+            {subLine2 && <span className="text-[11px] text-[#9A9AA5] mt-px">{subLine2}</span>}
           </div>
           <div className="ml-auto flex items-center gap-2.5">
-            {modeToggle}
             <Link
               href="/advertiser/notifications"
               className="relative w-[34px] h-[34px] rounded-lg border border-[#EAEAEE] flex items-center justify-center text-[#5C5C68] hover:bg-[#F6F6F7]"
@@ -205,8 +199,9 @@ export default function AdvertiserShell({
                 </span>
               )}
             </Link>
-            <div className="w-[34px] h-[34px] rounded-full bg-[#FEF3C7] text-[#B45309] text-[13px] font-extrabold flex items-center justify-center">
-              {name[0]}
+            <span className="text-[13px] font-semibold text-[#3C3C46] max-w-[140px] truncate">{name}</span>
+            <div className="w-[34px] h-[34px] rounded-full bg-[#FEF3C7] text-[#B45309] text-[13px] font-extrabold flex items-center justify-center shrink-0">
+              {initial(name)}
             </div>
             <LogoutButton />
           </div>

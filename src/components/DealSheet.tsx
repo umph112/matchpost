@@ -13,6 +13,7 @@ import { reSettleCampaign } from '@/lib/deals/settle'
 import { requestCancellation, acceptCancellation, CANCEL_REASONS, type CancelReason } from '@/lib/cancellations/actions'
 import { proposeConnection } from '@/lib/connections/actions'
 import { computeEnabledStages, reindexStage, stageHintLine, type Stage } from '@/lib/campaign-stages'
+import { CalendarDays, MapPin, AlertTriangle } from 'lucide-react'
 
 // 체크포인트가 있는 단계 → checkpoint kind (방문·수정/컨펌 제외)
 const STAGE_TO_CP: Record<string, string> = {
@@ -677,7 +678,7 @@ export default function DealSheet({
           const conn = connections[p.influencer_id]
           const active = conn && conn.a_ok && conn.b_ok
           const proposedByMe = conn && !active && ((conn.a_id === userId && conn.a_ok) || (conn.a_id !== userId && conn.b_ok))
-          if (active) return <span className="text-[10px] text-[#15803D]">상호 등록됨 — 대시 없이 메시지 가능</span>
+          if (active) return <span className="text-[10px] text-[#15803D]">상호 등록됨 — 대시 없이 바로 대화 가능</span>
           if (proposedByMe) return <span className="text-[10px] text-[#9A9AA5]">상호 등록 제안함 — 상대 수락 대기</span>
           return (
             <button
@@ -785,9 +786,13 @@ export default function DealSheet({
                 {ch}
               </span>
             ))}
-            <span className="text-[12px] text-[#7C7C88]">
-              {campaign.date && `📅 ${campaign.date}`}
-              {campaign.location_city && `　📍 ${campaign.location_city} ${campaign.location_district ?? ''}`}
+            <span className="text-[12px] text-[#7C7C88] inline-flex items-center gap-2.5">
+              {campaign.date && (
+                <span className="inline-flex items-center gap-1"><CalendarDays size={12} strokeWidth={1.75} />{campaign.date}</span>
+              )}
+              {campaign.location_city && (
+                <span className="inline-flex items-center gap-1"><MapPin size={12} strokeWidth={1.75} />{campaign.location_city} {campaign.location_district ?? ''}</span>
+              )}
             </span>
           </div>
         </div>
@@ -825,9 +830,9 @@ export default function DealSheet({
           {campaign.upload_deadline && (
             <div className="text-[12px]">
               <span className="text-[#9A9AA5] mr-1.5">업로드 마감</span>
-              <span className={`font-semibold ${uploadDeadlineWarning ? 'text-[#DC2626]' : 'text-[#3C3C46]'}`}>
+              <span className={`font-semibold inline-flex items-center gap-1 ${uploadDeadlineWarning ? 'text-[#DC2626]' : 'text-[#3C3C46]'}`}>
                 {campaign.upload_deadline}
-                {uploadDeadlineWarning && ' ⚠️'}
+                {uploadDeadlineWarning && <AlertTriangle size={12} strokeWidth={1.75} />}
               </span>
             </div>
           )}
@@ -849,7 +854,7 @@ export default function DealSheet({
       {/* ── 갭 경고 배너 ── */}
       {taxGap.length > 0 && (
         <div className="bg-[#FFFBEB] border border-[#FCD34D] rounded-[10px] px-4 py-3 mb-4 flex items-center gap-2">
-          <span className="text-[#B45309] text-sm">⚠️</span>
+          <AlertTriangle size={15} strokeWidth={1.75} className="text-[#B45309] shrink-0" />
           <p className="text-[12.5px] text-[#B45309] font-semibold">
             세무자료 미수령 {taxGap.length}명 — 정산 전 수령 여부를 확인하세요.
           </p>
