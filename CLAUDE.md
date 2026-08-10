@@ -21,6 +21,29 @@
   - `0019_schedules_open_group.sql` — `schedules.open_group_id` 추가. "오픈 1건=1,000C, 날짜 수 무관" 정책을 지키기 위해 같은 그룹의 첫 행에서만 차감·응원 지급하도록 오픈 트리거 함수 교체. 현재 인플루언서 오픈 등록 폼(`influencer/schedule/page.tsx`)은 한 번에 한 날짜만 insert하므로 즉시 동작에 영향 없음(각 행이 default로 자기 자신만의 group_id를 받음) — 나중에 오픈 등록이 여러 날짜를 한 번에 묶어 넣는 폼으로 바뀌면 그 삽입 코드가 여러 행에 **같은 open_group_id를 명시적으로 넘겨야** 이 정책이 실제로 작동한다.
   - 이번 차수에서 훅을 안 붙인 reason_code(다음 차수에서 연결): `unlock_profile`(프로필 유료열람 기능 자체 미구현), `deal_complete`(정산 흐름 `settleCampaign` — 지시서 8번), `review`/`invite` 보상, `visit_weekly`/`visit_monthly`/`comeback`/휴면배치(크론 인프라 없음).
 
+## 현재 상태 (2026-08-10 — D7 빌드 결함 수정 라운드 전체 완료, 커밋(fdef553)+push 완료)
+- **D7(`docs/design/d7/`)**: D6 전수 대조 결과 대부분 정상 구현됐음을 확인 후, 남은 결함(1~8절) +
+  랜딩/로그인/가입 재구성(부록) 전부 처리. 마이그레이션 0074(캠페인 대화 파일첨부)·0075(광고주
+  사업자정보+`biz-docs` 비공개 버킷) DB 대조 확인 완료.
+  - **치명 버그**: `(auth)/pending/pgae.tsx` 파일명 오타로 광고주가 가입을 완주할 수 없었음 → 수정
+  - **랜딩(`/`)·로그인·가입 전면 재구성**: `/`는 좌(검정 브랜드)·우(로그인) 2단, 광고주 가입은
+    3단계 마법사(회사정보+사업자등록증→팀초대→완료), 인플루언서는 PC에서 QR 안내로 전환.
+    `/intro`는 `/`로 리다이렉트 통합. 로고 컴포넌트(`components/Logo.tsx`) 단일화해 7곳 교체
+  - **대시(메시지) PC 2단 레이아웃**: `advertiser`·`influencer` 양쪽 `messages/layout.tsx` 신설
+    (목록 좌측 고정 + 대화창 우측, `MessagesSplit`/`ConversationList` 컴포넌트). 캠페인/개인 탭,
+    캠페인 제목 표시, 캠페인룸 신고·파일첨부 허용, 날짜제안 상태(live/accepted/answered) 실계산,
+    담당자 이름 조회 버그 수정
+  - **용어 통일**: 메시지→대시, 수익→매출, `initial()` 아바타 통일, `lib/date.ts`에 목록용 상대
+    날짜(`listDateLabel`) 추가, 미응답(지연)/안읽음 배지 분리, PC/모바일 토글 제거
+  - **광고주 사업자정보**: 가입폼에 상호·사업자등록번호·서류 업로드 추가(`biz-docs` 비공개 버킷),
+    관리자 승인/반려 즉시 삭제(`/api/admin/biz-doc`) + 업로드 30일 뒤 자동삭제
+    (`/api/cron/purge-attachments`에 통합)
+  - **남은 갭 9개**는 `docs/design/d7/GAPS-FOR-NEXT-ROUND.md` 참고 — 소셜 로그인 버튼은
+    시각적으로만 존재(OAuth 미연동, disabled 처리), earnings 완료/결제완료 상태값 미병합,
+    `max-w-lg`/`toLocaleDateString` 잔존 페이지 15개 이상(D7이 지정한 6개 파일만 감사함) 등
+  - `npx tsc --noEmit` + `npm run build` 통과 확인(빌드 로그에 `/pending` 라우트 정상 생성 확인 —
+    파일명 수정 검증됨)
+
 ## 현재 상태 (2026-08-10 — D6 핸드오프 A~F 전체 완료, 커밋+push 완료)
 - **디자인 핸드오프 6차(D6, delta)**: `docs/design/d6/`가 최신 기준 문서(D5를 완전히 대체). A~F 6개 절, 29개 항목 **전부 구현·마이그레이션(0065~0073) 실행·DB 대조 검증·커밋(e1b8841)·push 완료**.
   - A: 대시/메시지 구조 개편(캠페인룸 1:N / 개인룸 1:1 구분, 담당자 대리발송, 날짜제안-수락, 취소수락→딜시트 전파)
