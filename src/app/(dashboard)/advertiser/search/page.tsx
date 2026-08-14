@@ -7,6 +7,7 @@ import MatchScore from '@/components/MatchScore'
 import { BlogAnalyticsCompact } from '@/components/BlogAnalyticsCard'
 import DashSendButton from '@/components/DashSendButton'
 import { initial } from '@/lib/initial'
+import { dateWithDow } from '@/lib/date'
 
 const REGIONS = ['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '강원', '충남', '충북', '전남', '전북', '경남', '경북', '제주']
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
@@ -137,8 +138,7 @@ export default function AdvertiserSearchPage() {
     return g
   }, [sorted])
 
-  const fmtDate = (d: string) =>
-    new Date(d).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
+  const fmtDate = (d: string) => dateWithDow(d)
 
   const fmtFee = (fee: string | null) => fee || '협의'
 

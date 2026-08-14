@@ -3,6 +3,7 @@
 import { Paperclip } from 'lucide-react'
 import { initial } from '@/lib/initial'
 import { attachmentDaysLeft } from '@/lib/storage'
+import { dateWithDow } from '@/lib/date'
 
 export type BubbleMessage = {
   id: string
@@ -55,7 +56,7 @@ export default function MessageBubble({
         <div className="max-w-xs w-full bg-[#FFFBEB] border border-[#FDE68A] rounded-2xl px-4 py-3">
           <p className="text-[10.5px] font-bold text-[#B45309]">날짜 제안</p>
           <p className="text-lg font-extrabold text-[#17171B] mt-0.5">
-            {new Date(msg.proposed_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}
+            {dateWithDow(msg.proposed_date)}
           </p>
           <p className="text-[11px] text-[#92400E] mt-1">
             {dateProposalStatus === 'accepted'

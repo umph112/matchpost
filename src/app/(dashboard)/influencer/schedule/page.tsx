@@ -80,8 +80,7 @@ export default function SchedulePage() {
 
   if (success) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="text-5xl mb-4">🎉</div>
+      <div className="max-w-lg mx-auto px-4 py-16 text-center [.inf-pc_&]:max-w-none">
         <h2 className="text-xl font-bold text-gray-800">일정이 등록됐어요!</h2>
         <p className="text-gray-500 text-sm mt-2">광고주들에게 노출되기 시작했어요.</p>
       </div>
@@ -89,7 +88,7 @@ export default function SchedulePage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center mb-8">
         <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">

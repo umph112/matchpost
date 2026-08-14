@@ -66,15 +66,13 @@ export default function RoleLoginPanel() {
               : { borderColor: '#E2E2E8', background: '#fff', color: '#7C7C88' }}
           >
             <span
-              className="w-[22px] h-[22px] flex items-center justify-center text-[10px]"
+              className="w-[22px] h-[22px] flex items-center justify-center shrink-0 text-[10px] font-extrabold"
               style={{
                 borderRadius: r === 'advertiser' ? 6 : 999,
                 background: role === r ? 'rgba(255,255,255,0.16)' : '#F1F1F4',
                 color: role === r ? '#fff' : '#9A9AA5',
               }}
-            >
-              {r === 'advertiser' ? '□' : '○'}
-            </span>
+            />
             {r === 'advertiser' ? '광고주' : '인플루언서'}
           </button>
         ))}

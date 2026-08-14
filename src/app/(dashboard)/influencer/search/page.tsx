@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
+import { dateWithDow } from '@/lib/date'
+import { Building2, CalendarDays, Search, MapPin, Clock } from 'lucide-react'
 
 export default function InfluencerSearchPage() {
   const [date, setDate] = useState('')
@@ -75,7 +77,7 @@ export default function InfluencerSearchPage() {
     'w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500'
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center mb-8">
         <Link href="/influencer/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">
@@ -126,7 +128,7 @@ export default function InfluencerSearchPage() {
 
         <button onClick={handleSearch} disabled={loading}
           className="w-full bg-amber-500 text-white py-2.5 rounded-lg font-medium hover:bg-amber-600 transition disabled:opacity-50">
-          {loading ? '검색 중...' : '🔍 캠페인 검색'}
+          {loading ? '검색 중...' : <span className="inline-flex items-center gap-1"><Search size={16} strokeWidth={1.75} /> 캠페인 검색</span>}
         </button>
       </div>
 
@@ -141,7 +143,7 @@ export default function InfluencerSearchPage() {
             <div key={c.id} className="bg-white rounded-2xl p-5 shadow-sm mb-3 border-l-4 border-amber-400">
               <p className="font-semibold text-gray-900">{c.title}</p>
               <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
-                🏢 {c.advertiserName}
+                <Building2 size={16} strokeWidth={1.75} /> {c.advertiserName}
                 {c.onTimeRate != null && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium">
                     <span className={`w-1.5 h-1.5 rounded-full ${c.onTimeRate >= 90 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
@@ -151,10 +153,10 @@ export default function InfluencerSearchPage() {
               </p>
 
               <div className="bg-gray-50 rounded-xl p-3 my-3 text-xs text-gray-500 space-y-0.5">
-                <p>📅 {new Date(c.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</p>
-                <p>📍 {c.location_city} {c.location_district}</p>
+                <p className="flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {dateWithDow(c.date)}</p>
+                <p className="flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {c.location_city} {c.location_district}</p>
                 {c.start_time && (
-                  <p>🕐 {c.start_time.slice(0, 5)}{c.end_time ? ` ~ ${c.end_time.slice(0, 5)}` : ''}</p>
+                  <p className="flex items-center gap-1"><Clock size={16} strokeWidth={1.75} /> {c.start_time.slice(0, 5)}{c.end_time ? ` ~ ${c.end_time.slice(0, 5)}` : ''}</p>
                 )}
               </div>
 

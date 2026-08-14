@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { sendDash } from '@/lib/deals/sendDash'
+import { dateWithDow } from '@/lib/date'
 
 // 대시 보내기 확인 팝업 — 같은 상대(+같은 캠페인/오픈)에 아직 미확정 proposals 행이
 // 있으면 "다시 보내기"로, 없으면 "대시 보내기"로 문구를 바꾼다 (IMPLEMENT-5-DELTA.md A4).
@@ -130,7 +131,7 @@ export default function ConfirmDashModal({
                       : 'bg-white text-[#5C5C68] border-[#EAEAEE] hover:border-[#C4C4CE]'
                   }`}
                 >
-                  {new Date(d).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}
+                  {dateWithDow(d)}
                 </button>
               ))}
               <button

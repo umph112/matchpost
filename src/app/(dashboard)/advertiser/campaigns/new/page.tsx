@@ -7,6 +7,7 @@ import { INFLUENCER_CATEGORIES } from '@/lib/categories'
 import TimeSelect from '@/components/TimeSelect'
 import { computeEnabledStages, stageHintLine } from '@/lib/campaign-stages'
 import { PartyPopper, ClipboardList, Search, Paperclip } from 'lucide-react'
+import { dateWithDow } from '@/lib/date'
 
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
 // 채널별 콘텐츠 단위 (수량 입력 라벨)
@@ -456,8 +457,7 @@ export default function NewCampaignPage() {
     return { start: (wknd ? weekendStart : weekdayStart) || '', end: (wknd ? weekendEnd : weekdayEnd) || '' }
   }
 
-  const fmtDate = (s: string) =>
-    new Date(s).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
+  const fmtDate = (s: string) => dateWithDow(s)
 
   const hasWeekend = dates.some(isWeekend) // 선택 일정에 주말 포함 여부
 
@@ -554,7 +554,7 @@ export default function NewCampaignPage() {
 
   if (success) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+      <div className="max-w-lg mx-auto px-4 py-16 text-center [.adv-pc_&]:max-w-none">
         <PartyPopper size={40} strokeWidth={1.5} className="mx-auto mb-4 text-[#F59E0B]" />
         <h2 className="text-xl font-bold text-gray-800">캠페인이 등록됐어요!</h2>
         <p className="text-gray-500 text-sm mt-2">인플루언서들에게 노출되기 시작했어요.</p>

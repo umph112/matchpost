@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { CalendarDays, MapPin, Users, Copy } from 'lucide-react'
 
 type Campaign = {
   id: string
@@ -30,8 +31,14 @@ const STATUS_STYLE: Record<string, string> = {
 // 캔슬 → 취소 (표시용)
 const statusLabel = (s: string) => s === '캔슬' ? '취소' : s
 
-// 채널 단축 이모지
-const CH_ICON: Record<string, string> = { 블로그: '✍️', 유튜브: '▶️', 인스타그램: '📷', 틱톡: '🎵' }
+// 채널 색 배지 (블로그 ▶ 유튜브 ▶ 인스타그램 ▶ 틱톡 고정 순서)
+const CH_BADGE: Record<string, { bg: string; fg: string; label: string }> = {
+  블로그:   { bg: '#DCFCE7', fg: '#15803D', label: '블로그' },
+  유튜브:   { bg: '#FEE2E2', fg: '#DC2626', label: '유튜브' },
+  인스타그램: { bg: '#FCE7F3', fg: '#BE185D', label: '인스타' },
+  틱톡:     { bg: '#F1F1F4', fg: '#3C3C46', label: '틱톡' },
+}
+const CH_ORDER = ['블로그', '유튜브', '인스타그램', '틱톡']
 
 type FilterTab = '전체' | '진행중' | '마감' | '완료' | '취소'
 type SortKey = 'created_desc' | 'created_asc' | 'budget_desc' | 'budget_asc'
@@ -172,8 +179,18 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
                   {c.campaign_type && (
                     <span className="text-[11px] font-semibold bg-[#F1F1F4] text-[#5C5C68] rounded px-2 py-0.5 mr-1">{c.campaign_type}</span>
                   )}
-                  <span className="text-[12px] text-[#7C7C88]">
-                    {(c.channels ?? []).map((ch) => CH_ICON[ch] ?? ch).join(' ')}
+                  <span className="inline-flex flex-wrap items-center gap-1 align-middle">
+                    {CH_ORDER.filter((ch) => (c.channels ?? []).includes(ch)).map((ch) => {
+                      const b = CH_BADGE[ch]
+                      return (
+                        <span key={ch} style={{ background: b.bg, color: b.fg, fontSize: '10.5px', fontWeight: 700, borderRadius: 5, padding: '2px 7px' }}>
+                          {b.label}
+                        </span>
+                      )
+                    })}
+                    {(c.channels ?? []).filter((ch) => !CH_ORDER.includes(ch)).map((ch) => (
+                      <span key={ch} className="text-[12px] text-[#7C7C88]">{ch}</span>
+                    ))}
                   </span>
                 </div>
 
@@ -239,8 +256,9 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-semibold text-gray-900 truncate">{c.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {c.date && `📅 ${c.date}`}{c.location_city && `　📍 ${c.location_city} ${c.location_district ?? ''}`}
+                    <p className="text-xs text-gray-500 mt-0.5 flex items-center flex-wrap gap-x-2 gap-y-0.5">
+                      {c.date && <span className="inline-flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {c.date}</span>}
+                      {c.location_city && <span className="inline-flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {c.location_city} {c.location_district ?? ''}</span>}
                     </p>
                   </div>
                   <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[c.derivedStatus]}`}>
@@ -248,7 +266,7 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
                   </span>
                 </div>
                 <div className="flex items-center gap-3 mt-2 text-xs">
-                  <span className="text-gray-600">👥 참여 {c.stats.total}</span>
+                  <span className="text-gray-600 inline-flex items-center gap-1"><Users size={16} strokeWidth={1.75} /> 참여 {c.stats.total}</span>
                   <span className="text-green-600">확정 {c.stats.confirmed}</span>
                   <span className="text-amber-600">협의중 {c.stats.negotiating}</span>
                 </div>
@@ -259,9 +277,9 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
                 </Link>
                 <Link
                   href={`/advertiser/campaigns/new?copy=${c.id}`}
-                  className="ml-auto text-xs text-gray-600 border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200"
+                  className="ml-auto text-xs text-gray-600 border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 inline-flex items-center gap-1"
                 >
-                  📋 복사 재등록
+                  <Copy size={16} strokeWidth={1.75} /> 복사 재등록
                 </Link>
               </div>
             </div>

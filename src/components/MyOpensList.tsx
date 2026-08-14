@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { ClipboardList, CalendarDays, MapPin, MessageSquare } from 'lucide-react'
 
 type Open = {
   id: string
@@ -41,7 +42,7 @@ export default function MyOpensList({ opens }: { opens: Open[] }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-bold text-gray-800">📋 내가 등록한 오픈</h2>
+        <h2 className="text-sm font-bold text-gray-800 flex items-center gap-1"><ClipboardList size={16} strokeWidth={1.75} /> 내가 등록한 오픈</h2>
         <button
           onClick={() => setOnlyActive((v) => !v)}
           className={`text-xs px-3 py-1.5 rounded-full font-medium transition ${
@@ -65,10 +66,11 @@ export default function MyOpensList({ opens }: { opens: Open[] }) {
                 <Link href={o.dashHref} className="flex items-start justify-between gap-2 -m-1 p-1 rounded-xl hover:bg-gray-50 transition">
                   <div className="min-w-0">
                     <p className="font-medium text-gray-900 truncate">{o.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      📅 {o.date}　📍 {o.location_city} {o.location_district}
+                    <p className="text-xs text-gray-500 mt-0.5 flex items-center flex-wrap gap-x-2 gap-y-0.5">
+                      <span className="inline-flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {o.date}</span>
+                      <span className="inline-flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {o.location_city} {o.location_district}</span>
                     </p>
-                    <p className="text-[11px] text-[#B45309] font-medium mt-1">💬 대시 열기 →</p>
+                    <p className="text-[11px] text-[#B45309] font-medium mt-1 flex items-center gap-1"><MessageSquare size={16} strokeWidth={1.75} /> 대시 열기 →</p>
                   </div>
                   <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[o.derivedStatus]}`}>
                     {o.derivedStatus}
@@ -78,8 +80,9 @@ export default function MyOpensList({ opens }: { opens: Open[] }) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-medium text-gray-900 truncate">{o.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      📅 {o.date}　📍 {o.location_city} {o.location_district}
+                    <p className="text-xs text-gray-500 mt-0.5 flex items-center flex-wrap gap-x-2 gap-y-0.5">
+                      <span className="inline-flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {o.date}</span>
+                      <span className="inline-flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {o.location_city} {o.location_district}</span>
                     </p>
                   </div>
                   <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[o.derivedStatus]}`}>

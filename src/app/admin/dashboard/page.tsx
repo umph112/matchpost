@@ -2,6 +2,7 @@ import LogoutButton from '@/components/LogoutButton'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { TriangleAlert, Users, Clock, Coins } from 'lucide-react'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -58,7 +59,7 @@ export default async function AdminDashboard() {
       {pendingUsers.length > 0 && (
         <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-6 flex items-center justify-between">
           <div className="flex items-center">
-            <span className="text-2xl mr-3">⚠️</span>
+            <TriangleAlert size={16} strokeWidth={1.75} className="mr-3 text-orange-500" />
             <div>
               <p className="font-semibold text-orange-800">승인 대기 중인 회원이 있어요</p>
               <p className="text-sm text-orange-600">{pendingUsers.length}명이 승인을 기다리고 있어요</p>
@@ -101,22 +102,22 @@ export default async function AdminDashboard() {
       {/* 빠른 메뉴 */}
       <div className="grid grid-cols-2 gap-4">
         <Link href="/admin/users" className="bg-[#F59E0B] text-white rounded-2xl p-5 shadow-sm hover:bg-[#D97706] transition">
-          <div className="text-2xl mb-2">👥</div>
+          <div className="mb-2"><Users size={16} strokeWidth={1.75} /></div>
           <p className="font-semibold">회원 관리</p>
           <p className="text-white/80 text-sm mt-1">승인 및 회원 목록</p>
         </Link>
         <Link href="/admin/users?filter=pending" className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-          <div className="text-2xl mb-2">⏳</div>
+          <div className="mb-2"><Clock size={16} strokeWidth={1.75} /></div>
           <p className="font-semibold text-gray-800">승인 대기</p>
           <p className="text-gray-400 text-sm mt-1">{pendingUsers.length}명 대기 중</p>
         </Link>
         <Link href="/admin/credits" className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition col-span-2">
-          <div className="text-2xl mb-2">🪙</div>
+          <div className="mb-2"><Coins size={16} strokeWidth={1.75} /></div>
           <p className="font-semibold text-gray-800">크레딧 관리</p>
           <p className="text-gray-400 text-sm mt-1">회원별 잔액 조회 · 지급 · 차감 · 이력</p>
         </Link>
         <Link href="/admin/reports" className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition col-span-2">
-          <div className="text-2xl mb-2">🚨</div>
+          <div className="mb-2"><TriangleAlert size={16} strokeWidth={1.75} /></div>
           <p className="font-semibold text-gray-800">신고 관리</p>
           <p className="text-gray-400 text-sm mt-1">
             {openReportsCount ? `처리 대기 ${openReportsCount}건` : '접수된 신고 없음'}

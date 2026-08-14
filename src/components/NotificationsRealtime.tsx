@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Bell } from 'lucide-react'
 
 // 내 알림 새 행이 들어오면 서버 컴포넌트를 새로고침(router.refresh) → 배너·알림함 자동 갱신
 export default function NotificationsRealtime({ userId }: { userId: string }) {
@@ -35,7 +36,7 @@ export default function NotificationsRealtime({ userId }: { userId: string }) {
   return (
     <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 max-w-[90%]">
       <div className="bg-gray-900 text-white text-sm px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 animate-pulse">
-        <span>🔔</span>
+        <span><Bell size={16} strokeWidth={1.75} /></span>
         <span className="truncate">{toast}</span>
       </div>
     </div>

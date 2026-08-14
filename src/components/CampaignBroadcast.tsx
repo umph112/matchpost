@@ -2,6 +2,7 @@
 
 import { useState, useRef, type ChangeEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Megaphone, Paperclip, CircleCheck, FileText } from 'lucide-react'
 
 type P = { influencerId: string; name: string; proposalId: string; confirmed?: boolean }
 
@@ -72,7 +73,7 @@ export default function CampaignBroadcast({
 
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm">
-      <h2 className="text-sm font-bold text-gray-800 mb-1">📢 메시지 · 가이드 보내기</h2>
+      <h2 className="text-sm font-bold text-gray-800 mb-1 flex items-center gap-1"><Megaphone size={16} strokeWidth={1.75} /> 가이드 · 공지 보내기</h2>
       <p className="text-xs text-gray-400 mb-3">
         확정자에게 기본 선택돼요. <span className="text-gray-500">1명만 선택하면 1:1</span>, 여러 명이면 일괄 발송됩니다.
       </p>
@@ -98,11 +99,11 @@ export default function CampaignBroadcast({
       <div className="flex items-center gap-2 mb-2">
         <button onClick={() => fileRef.current?.click()} disabled={uploading}
           className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-xs hover:bg-gray-200 disabled:opacity-50">
-          {uploading ? '업로드 중…' : '📎 가이드 파일 첨부'}
+          {uploading ? '업로드 중…' : <span className="inline-flex items-center gap-1"><Paperclip size={16} strokeWidth={1.75} /> 가이드 파일 첨부</span>}
         </button>
         {file && (
           <span className="text-xs text-gray-600 flex items-center gap-1 truncate max-w-[160px]">
-            📄 {file.name}
+            <FileText size={16} strokeWidth={1.75} className="shrink-0" /> {file.name}
             <button onClick={() => setFile(null)} className="text-gray-400 hover:text-red-500">✕</button>
           </span>
         )}
@@ -116,7 +117,7 @@ export default function CampaignBroadcast({
         placeholder="예: 가이드 첨부드립니다. 확인 후 촬영 일정 회신 부탁드려요."
       />
 
-      {sentCount > 0 && <p className="text-xs text-green-600 mt-2">✅ {sentCount}명에게 전송했어요</p>}
+      {sentCount > 0 && <p className="text-xs text-green-600 mt-2 flex items-center gap-1"><CircleCheck size={16} strokeWidth={1.75} className="text-[#15803D]" /> {sentCount}명에게 전송했어요</p>}
 
       <button
         onClick={send}

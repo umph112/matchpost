@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
+import { CircleCheck, BarChart3 } from 'lucide-react'
 
 const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
 const PLATFORMS = ['인스타그램', '유튜브', '블로그', '틱톡']
@@ -121,7 +122,7 @@ export default function InfluencerProfilePage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
@@ -137,7 +138,7 @@ export default function InfluencerProfilePage() {
         <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>
       )}
       {success && (
-        <div className="bg-green-50 text-green-600 text-sm p-3 rounded-lg mb-4">✅ 저장됐어요!</div>
+        <div className="bg-green-50 text-green-600 text-sm p-3 rounded-lg mb-4 flex items-center gap-1"><CircleCheck size={16} strokeWidth={1.75} className="text-[#15803D]" /> 저장됐어요!</div>
       )}
 
       {/* 기본 정보 */}
@@ -264,7 +265,7 @@ export default function InfluencerProfilePage() {
         href="/influencer/channel-analytics"
         className="flex items-center justify-between mt-4 bg-[#F6F6F7] rounded-2xl px-4 py-3 hover:bg-[#EAEAEE] transition"
       >
-        <span className="text-sm font-medium text-gray-700">📊 내 채널 분석 보기</span>
+        <span className="text-sm font-medium text-gray-700 flex items-center gap-1"><BarChart3 size={16} strokeWidth={1.75} /> 내 채널 분석 보기</span>
         <span className="text-sm text-gray-400">→</span>
       </Link>
     </div>

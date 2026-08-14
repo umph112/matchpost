@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { listTime } from '@/lib/date'
 
 const TYPE_LABELS: Record<string, string> = {
   unpaid: '대금 미지급',
@@ -92,7 +93,7 @@ export default async function AdminReportsPage({
                 {r.status}
               </span>
               <span className="text-xs text-gray-400">
-                {new Date(r.created_at).toLocaleDateString('ko-KR')}
+                {listTime(r.created_at)}
               </span>
             </div>
             <p className="font-semibold text-gray-800">{TYPE_LABELS[r.type] ?? r.type}</p>

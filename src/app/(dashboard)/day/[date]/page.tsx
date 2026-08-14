@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { Building2, MapPin, Clock, User } from 'lucide-react'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -70,7 +71,7 @@ export default async function DayDetailPage({
   const infById = Object.fromEntries((infProfs ?? []).map((i) => [i.user_id, i]))
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0 [.adv-pc_&]:py-0 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center mb-6">
         <Link href="/" className="mr-4 text-gray-400 hover:text-gray-600">
@@ -92,15 +93,15 @@ export default async function DayDetailPage({
                 <div className="flex items-start justify-between">
                   <div className="min-w-0">
                     <p className="font-semibold text-gray-900">{c.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      🏢 {companyById[c.advertiser_id] ?? nameById[c.advertiser_id] ?? '광고주'}
+                    <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                      <Building2 size={16} strokeWidth={1.75} /> {companyById[c.advertiser_id] ?? nameById[c.advertiser_id] ?? '광고주'}
                     </p>
                   </div>
                 </div>
                 <div className="text-xs text-gray-500 mt-2 space-y-0.5">
-                  <p>📍 {c.location_city} {c.location_district}</p>
+                  <p className="flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {c.location_city} {c.location_district}</p>
                   {(c.start_time || c.end_time) && (
-                    <p>🕐 {c.start_time?.slice(0, 5)}{c.end_time ? ` ~ ${c.end_time.slice(0, 5)}` : ''}</p>
+                    <p className="flex items-center gap-1"><Clock size={16} strokeWidth={1.75} /> {c.start_time?.slice(0, 5)}{c.end_time ? ` ~ ${c.end_time.slice(0, 5)}` : ''}</p>
                   )}
                 </div>
                 {(c.predefined_categories?.length > 0 || c.free_tags?.length > 0) && (
@@ -142,17 +143,17 @@ export default async function DayDetailPage({
               <div key={o.id} className="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-blue-400">
                 <div className="min-w-0">
                   <p className="font-semibold text-gray-900">{o.title}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    👤 {nameById[o.influencer_id] ?? '인플루언서'}
+                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                    <User size={16} strokeWidth={1.75} /> {nameById[o.influencer_id] ?? '인플루언서'}
                     {infById[o.influencer_id]?.follower_count
                       ? ` · 팔로워 ${infById[o.influencer_id].follower_count.toLocaleString()}`
                       : ''}
                   </p>
                 </div>
                 <div className="text-xs text-gray-500 mt-2 space-y-0.5">
-                  <p>📍 {o.location_city} {o.location_district}</p>
+                  <p className="flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {o.location_city} {o.location_district}</p>
                   {(o.start_time || o.end_time) && (
-                    <p>🕐 {o.start_time?.slice(0, 5)}{o.end_time ? ` ~ ${o.end_time.slice(0, 5)}` : ''}</p>
+                    <p className="flex items-center gap-1"><Clock size={16} strokeWidth={1.75} /> {o.start_time?.slice(0, 5)}{o.end_time ? ` ~ ${o.end_time.slice(0, 5)}` : ''}</p>
                   )}
                 </div>
                 {(o.predefined_categories?.length > 0 || o.free_tags?.length > 0) && (

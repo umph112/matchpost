@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { dateWithDow } from '@/lib/date'
+import { Phone } from 'lucide-react'
 
 type PendingProposal = {
   id: string
@@ -31,9 +33,7 @@ export default function PaidConfirmModal({
     proposals[0]?.campaign?.title ??
     '광고주'
   const settledDate = proposals[0]?.settled_at
-    ? new Date(proposals[0].settled_at).toLocaleDateString('ko-KR', {
-        month: 'long', day: 'numeric',
-      })
+    ? dateWithDow(proposals[0].settled_at)
     : ''
 
   // 담당자 휴대폰 › 회사 대표번호 순 — 대표번호는 담당자에게 안 닿아 미수 상황엔 소용없다
@@ -135,7 +135,7 @@ export default function PaidConfirmModal({
               onClick={(e) => e.stopPropagation()}
               className="flex items-center justify-center gap-1.5 w-full py-2.5 text-sm font-semibold text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition"
             >
-              📞 {contactLabel && `${contactLabel} · `}{contactPhone}
+              <Phone size={16} strokeWidth={1.75} className="shrink-0" /> {contactLabel && `${contactLabel} · `}{contactPhone}
             </a>
           ) : (
             <p className="text-[11px] text-gray-400 text-center">

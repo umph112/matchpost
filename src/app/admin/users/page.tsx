@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { initial } from '@/lib/initial'
 import { signupCreditAmount } from '@/lib/creditConfig'
+import { listTime } from '@/lib/date'
+import { Smartphone } from 'lucide-react'
 
 function UsersContent() {
   const [users, setUsers] = useState<any[]>([])
@@ -158,9 +160,9 @@ function UsersContent() {
               </div>
 
               <div className="text-xs text-gray-400 mb-3">
-                <span>📱 {user.phone}</span>
+                <span className="inline-flex items-center gap-1"><Smartphone size={16} strokeWidth={1.75} /> {user.phone}</span>
                 <span className="mx-2">·</span>
-                <span>가입일 {new Date(user.created_at).toLocaleDateString('ko-KR')}</span>
+                <span>가입일 {listTime(user.created_at)}</span>
               </div>
 
               {user.rejection_reason && (

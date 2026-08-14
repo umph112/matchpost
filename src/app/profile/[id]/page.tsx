@@ -2,6 +2,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import Link from 'next/link'
 import { initial } from '@/lib/initial'
 import DashSendButton from '@/components/DashSendButton'
+import { dateWithDow } from '@/lib/date'
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -33,7 +34,7 @@ console.log('profile:', profile)
     if (!profile) return <div>존재하지 않는 인플루언서예요</div>
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-2xl mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0 [.adv-pc_&]:py-0 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       <Link href="/advertiser/search" className="text-gray-400 hover:text-gray-600 text-sm mb-6 inline-block">
         ← 검색으로 돌아가기
       </Link>
@@ -71,7 +72,7 @@ console.log('profile:', profile)
               <div key={schedule.id} className="border border-gray-100 rounded-xl p-4">
                 <p className="font-medium text-gray-800 mb-1">{schedule.title}</p>
                 <p className="text-xs text-gray-500 mb-2">
-                  {new Date(schedule.date).toLocaleDateString('ko-KR')} / {schedule.location_city} {schedule.location_district}
+                  {dateWithDow(schedule.date)} / {schedule.location_city} {schedule.location_district}
                 </p>
                 <DashSendButton
                   influencerId={profile.id}

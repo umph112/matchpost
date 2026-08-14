@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { sendDash } from '@/lib/deals/sendDash'
+import { dateWithDow } from '@/lib/date'
+import { CalendarDays, MapPin, Send } from 'lucide-react'
 
 const COLLABORATION_TYPES = ['협찬', '광고', '체험단', '기타']
 
@@ -88,8 +90,8 @@ function NewProposalForm() {
 
   if (success) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="text-5xl mb-4">💌</div>
+      <div className="max-w-lg mx-auto px-4 py-16 text-center [.adv-pc_&]:max-w-none">
+        <Send size={32} strokeWidth={1.5} className="text-[#C4C4CE] mx-auto mb-4" />
         <h2 className="text-xl font-bold text-gray-800">제안을 보냈어요!</h2>
         <p className="text-gray-500 text-sm mt-2">인플루언서의 답변을 기다려주세요.</p>
       </div>
@@ -97,7 +99,7 @@ function NewProposalForm() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0 [.adv-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center mb-8">
         <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">
@@ -124,9 +126,9 @@ function NewProposalForm() {
           </div>
           <div className="bg-white rounded-xl p-3 text-sm">
             <p className="font-medium text-gray-800">{schedule.title}</p>
-            <p className="text-xs text-gray-500 mt-1">
-              📅 {new Date(schedule.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}
-              　📍 {schedule.location_city} {schedule.location_district}
+            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+              <CalendarDays size={16} strokeWidth={1.75} /> {dateWithDow(schedule.date)}
+              <MapPin size={16} strokeWidth={1.75} className="ml-1.5" /> {schedule.location_city} {schedule.location_district}
             </p>
           </div>
         </div>
@@ -169,7 +171,7 @@ function NewProposalForm() {
 
       {/* 제안 메시지 */}
       <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">제안 메시지 *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">첫 인사 *</label>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -185,7 +187,7 @@ function NewProposalForm() {
         disabled={loading}
         className="w-full bg-[#F59E0B] text-white py-3 rounded-xl font-medium hover:bg-[#D97706] transition disabled:opacity-50"
       >
-        {loading ? '전송 중...' : '💌 제안 보내기'}
+        {loading ? '전송 중...' : '대시 보내기'}
       </button>
     </div>
   )

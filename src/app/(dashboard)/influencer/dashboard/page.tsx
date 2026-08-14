@@ -371,13 +371,13 @@ export default async function InfluencerMyPage() {
           <section>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
-                <Inbox size={15} strokeWidth={1.75} className="opacity-70" /> 받은 제안
+                <Inbox size={15} strokeWidth={1.75} className="opacity-70" /> 받은 대시
               </h2>
               <Link href="/influencer/messages" className="text-xs text-[#B45309] hover:underline">전체보기 →</Link>
             </div>
             {awaitingProposals.length === 0 ? (
               <p className="text-sm text-gray-400 bg-white [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] rounded-2xl [.inf-pc_&]:rounded-[14px] p-4 shadow-sm [.inf-pc_&]:shadow-none">
-                받은 제안이 없어요.
+                받은 대시가 없어요.
               </p>
             ) : (
               <div className="space-y-2 [.inf-pc_&]:space-y-0 [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] [.inf-pc_&]:rounded-[14px] [.inf-pc_&]:overflow-hidden [.inf-pc_&]:bg-white">

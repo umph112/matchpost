@@ -4,20 +4,22 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { listTime } from '@/lib/date'
+import { Megaphone, PencilLine, CircleCheck, CircleSlash, CalendarDays, Handshake, MessageSquare, Wallet, Clock, SquareCheck, Bell, type LucideIcon } from 'lucide-react'
 
-const ICON: Record<string, string> = {
-  campaign_created: '📣',
-  campaign_updated: '📝',
-  campaign_completed: '✅',
-  campaign_cancelled: '🚫',
-  open_created: '📅',
-  open_completed: '✅',
-  open_cancelled: '🚫',
-  deal_made: '🤝',
-  dash_received: '💬',
-  settlement_due: '💰',
-  deal_confirm_request: '⏳',
-  deal_confirm_self: '☑️',
+const ICON: Record<string, { Comp: LucideIcon; className: string }> = {
+  campaign_created: { Comp: Megaphone, className: '' },
+  campaign_updated: { Comp: PencilLine, className: '' },
+  campaign_completed: { Comp: CircleCheck, className: 'text-[#15803D]' },
+  campaign_cancelled: { Comp: CircleSlash, className: 'text-[#9A9AA5]' },
+  open_created: { Comp: CalendarDays, className: 'text-[#3B82F6]' },
+  open_completed: { Comp: CircleCheck, className: 'text-[#15803D]' },
+  open_cancelled: { Comp: CircleSlash, className: 'text-[#9A9AA5]' },
+  deal_made: { Comp: Handshake, className: 'text-[#15803D]' },
+  dash_received: { Comp: MessageSquare, className: 'text-[#F59E0B]' },
+  settlement_due: { Comp: Wallet, className: 'text-[#F59E0B]' },
+  deal_confirm_request: { Comp: Clock, className: 'text-[#F59E0B]' },
+  deal_confirm_self: { Comp: SquareCheck, className: '' },
 }
 
 function timeAgo(iso: string) {
@@ -27,7 +29,7 @@ function timeAgo(iso: string) {
   if (m < 60) return `${m}분 전`
   const h = Math.floor(m / 60)
   if (h < 24) return `${h}시간 전`
-  return new Date(iso).toLocaleDateString('ko-KR')
+  return listTime(iso)
 }
 
 export default function NotificationsPage() {
@@ -80,7 +82,7 @@ export default function NotificationsPage() {
   const unread = items.filter((n) => !n.is_read).length
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Link href="/influencer/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">
@@ -102,7 +104,7 @@ export default function NotificationsPage() {
 
       {!loading && items.length === 0 && (
         <div className="text-center py-16">
-          <div className="text-5xl mb-4">🔔</div>
+          <Bell size={32} className="text-[#C4C4CE] mx-auto mb-4" />
           <p className="text-gray-500">아직 알림이 없어요</p>
         </div>
       )}
@@ -116,7 +118,7 @@ export default function NotificationsPage() {
               n.is_read ? 'bg-white' : 'bg-[#FEF3C7] hover:bg-[#FDE68A]'
             }`}
           >
-            <span className="text-xl shrink-0">{ICON[n.type] ?? '🔔'}</span>
+            {(() => { const c = ICON[n.type] ?? { Comp: Bell, className: '' }; const I = c.Comp; return <I size={16} strokeWidth={1.75} className={`shrink-0 mt-0.5 ${c.className}`} /> })()}
             <div className="flex-1 min-w-0">
               <p className={`text-sm ${n.is_read ? 'text-gray-700' : 'font-semibold text-gray-900'}`}>{n.title}</p>
               {n.body && <p className="text-xs text-gray-500 mt-0.5 truncate">{n.body}</p>}

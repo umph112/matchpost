@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { listTime, dateWithDow } from '@/lib/date'
+import { CalendarDays, Wallet, MapPin, Inbox } from 'lucide-react'
 
 export default function InfluencerProposalsPage() {
   const [proposals, setProposals] = useState<any[]>([])
@@ -52,13 +54,13 @@ export default function InfluencerProposalsPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center mb-8">
         <Link href="/influencer/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">
           ← 뒤로
         </Link>
-        <h1 className="text-xl font-bold text-gray-900">받은 제안</h1>
+        <h1 className="text-xl font-bold text-gray-900">받은 대시</h1>
       </div>
 
       {/* 필터 */}
@@ -84,8 +86,8 @@ export default function InfluencerProposalsPage() {
 
       {!loading && filtered.length === 0 && (
         <div className="text-center py-16">
-          <div className="text-5xl mb-4">💌</div>
-          <p className="text-gray-500">아직 받은 제안이 없어요</p>
+          <Inbox size={32} strokeWidth={1.5} className="text-[#C4C4CE] mx-auto mb-4" />
+          <p className="text-gray-500">아직 받은 대시가 없어요</p>
         </div>
       )}
 
@@ -107,16 +109,16 @@ export default function InfluencerProposalsPage() {
             {/* 일정 정보 */}
             <div className="bg-gray-50 rounded-xl p-3 mb-3 text-sm">
               <p className="font-medium text-gray-700">{proposal.schedules?.title}</p>
-              <p className="text-xs text-gray-400 mt-1">
-                📅 {new Date(proposal.schedules?.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}
-                　📍 {proposal.schedules?.location_city} {proposal.schedules?.location_district}
+              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                <CalendarDays size={16} strokeWidth={1.75} /> {dateWithDow(proposal.schedules?.date)}
+                <MapPin size={16} strokeWidth={1.75} className="ml-1.5" /> {proposal.schedules?.location_city} {proposal.schedules?.location_district}
               </p>
             </div>
 
             {/* 예산 */}
             {proposal.budget && (
-              <p className="text-sm text-gray-600 mb-2">
-                💰 제안 예산: <span className="font-semibold">{proposal.budget.toLocaleString()}원</span>
+              <p className="text-sm text-gray-600 mb-2 flex items-center gap-1">
+                <Wallet size={16} strokeWidth={1.75} /> 제안 예산: <span className="font-semibold">{proposal.budget.toLocaleString()}원</span>
               </p>
             )}
 
@@ -146,12 +148,12 @@ export default function InfluencerProposalsPage() {
     href={"/influencer/messages?proposalId=" + proposal.id + "&receiverId=" + proposal.advertiser_id}
     className="w-full mt-2 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition text-center block"
   >
-    💬 메시지 보내기
+    대시 열기
   </a>
 )}
 
             <p className="text-xs text-gray-300 mt-3">
-              {new Date(proposal.created_at).toLocaleDateString('ko-KR')}
+              {listTime(proposal.created_at)}
             </p>
           </div>
         )

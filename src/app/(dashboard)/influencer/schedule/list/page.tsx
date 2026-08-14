@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { dateWithDow } from '@/lib/date'
+import { CalendarDays, Clock, Eye, Lock } from 'lucide-react'
 
 export default async function ScheduleListPage() {
   const supabase = await createClient()
@@ -42,9 +44,9 @@ export default async function ScheduleListPage() {
         </div>
 
         <div className="flex items-center gap-4 text-sm text-gray-500">
-          <span>📅 {new Date(schedule.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</span>
+          <span className="flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {dateWithDow(schedule.date)}</span>
           {schedule.start_time && (
-            <span>🕐 {schedule.start_time.slice(0, 5)}
+            <span className="flex items-center gap-1"><Clock size={16} strokeWidth={1.75} /> {schedule.start_time.slice(0, 5)}
               {schedule.end_time && ` ~ ${schedule.end_time.slice(0, 5)}`}
             </span>
           )}
@@ -67,7 +69,9 @@ export default async function ScheduleListPage() {
 
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
           <span className="text-xs text-gray-400">
-            {schedule.is_public ? '👁 공개' : '🔒 비공개'}
+            {schedule.is_public
+              ? <span className="flex items-center gap-1"><Eye size={16} strokeWidth={1.75} /> 공개</span>
+              : <span className="flex items-center gap-1"><Lock size={16} strokeWidth={1.75} /> 비공개</span>}
           </span>
         </div>
       </div>
@@ -75,7 +79,7 @@ export default async function ScheduleListPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
@@ -95,7 +99,7 @@ export default async function ScheduleListPage() {
       {/* 일정이 없을 때 */}
       {schedules?.length === 0 && (
         <div className="text-center py-16">
-          <div className="text-5xl mb-4">📅</div>
+          <div className="mb-4"><CalendarDays size={16} strokeWidth={1.75} className="mx-auto" /></div>
           <p className="text-gray-500 mb-4">아직 등록된 일정이 없어요</p>
           <Link
             href="/influencer/schedule"

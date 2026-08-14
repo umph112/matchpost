@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { listTime } from '@/lib/date'
 
 type Row = {
   id: string
@@ -64,7 +65,7 @@ export default function CreditsHistoryClient({ rows }: { rows: Row[] }) {
           filtered.map((r) => (
             <div key={r.id} className="grid grid-cols-[100px_minmax(0,1fr)_110px_100px] gap-2 px-4 py-3 border-b border-[#F5F5F7] items-center text-[12.5px]">
               <span className="text-[#9A9AA5] text-[11.5px]">
-                {new Date(r.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}
+                {listTime(r.created_at)}
               </span>
               <span className="truncate font-medium text-[#3C3C46]">{r.label}{r.memo ? ` · ${r.memo}` : ''}</span>
               <span className={`text-right font-bold ${r.delta > 0 ? 'text-emerald-600' : 'text-[#DC2626]'}`}>

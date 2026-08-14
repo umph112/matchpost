@@ -98,7 +98,7 @@ export default function TeamPage() {
   const kpiActive = members.filter((m) => m.status === 'active').length
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-2xl mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0 [.adv-pc_&]:py-0">
       <div className="flex items-center mb-6">
         <Link href="/advertiser/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
         <h1 className="text-xl font-bold text-gray-900">팀 멤버</h1>

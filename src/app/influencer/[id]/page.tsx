@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { initial } from '@/lib/initial'
+import { dateWithDow } from '@/lib/date'
+import { CalendarDays, MapPin } from 'lucide-react'
 
 export default async function InfluencerProfilePage({
   params,
@@ -38,7 +40,7 @@ export default async function InfluencerProfilePage({
   const isAdvertiser = userData?.user ? true : false
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-2xl mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0 [.adv-pc_&]:py-0 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       <Link href="/advertiser/search" className="text-gray-400 hover:text-gray-600 text-sm mb-6 inline-block">
         ← 검색으로 돌아가기
       </Link>
@@ -108,7 +110,7 @@ export default async function InfluencerProfilePage({
       </div>
 
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-4">
-        <h2 className="font-bold text-gray-800 mb-4">📅 공개 일정</h2>
+        <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> 공개 일정</h2>
         {schedules && schedules.length > 0 ? (
           <div className="space-y-3">
             {schedules.map((schedule) => (
@@ -118,8 +120,8 @@ export default async function InfluencerProfilePage({
                   <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">모집 중</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
-                  <span>📅 {new Date(schedule.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</span>
-                  <span>📍 {schedule.location_city} {schedule.location_district}</span>
+                  <span className="flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {dateWithDow(schedule.date)}</span>
+                  <span className="flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {schedule.location_city} {schedule.location_district}</span>
                 </div>
                 {schedule.start_time && (
                   <p className="text-xs text-gray-500 mb-2">
@@ -140,7 +142,7 @@ export default async function InfluencerProfilePage({
                     href={"/advertiser/proposals/new?scheduleId=" + schedule.id + "&influencerId=" + profile.id}
                     className="mt-3 w-full block text-center bg-[#F59E0B] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#D97706] transition"
                   >
-                    💌 이 일정에 제안하기
+                    이 날짜로 대시 보내기
                   </Link>
                 )}
               </div>

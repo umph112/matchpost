@@ -99,7 +99,7 @@ export default function AdvertiserConnectionsPage() {
   const sent = rows.filter((r) => !r.active && r.proposedByMe)
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0 [.adv-pc_&]:py-0">
       <div className="flex items-center mb-8">
         <Link href="/advertiser/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
         <h1 className="text-xl font-bold text-gray-900">내 인플루언서</h1>
@@ -155,7 +155,7 @@ export default function AdvertiserConnectionsPage() {
                   대시 보내기
                 </DashSendButton>
                 <button onClick={() => goToConversation(r.otherId)} className="text-xs text-[#B45309] hover:underline">
-                  메시지
+                  대시
                 </button>
                 <button onClick={() => revoke(r.id)} disabled={busyId === r.id}
                   className="text-xs text-gray-300 hover:text-red-500">해제</button>

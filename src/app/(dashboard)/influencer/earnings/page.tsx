@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Download } from 'lucide-react'
 import PaidConfirmModal from '@/components/PaidConfirmModal'
-import { kstDateString, dDayLabel, listDateLabel } from '@/lib/date'
+import { kstDateString, dDayLabel, listDateLabel, listTime } from '@/lib/date'
 
 type OverdueRow = {
   campaignId: string
@@ -158,7 +158,7 @@ export default function EarningsPage() {
   const handleDownloadCSV = () => {
     const headers = ['날짜', '카테고리', '금액', '상태', '세금계산서']
     const rows = filteredEarnings.map(e => [
-      new Date(e.created_at).toLocaleDateString('ko-KR'),
+      listTime(e.created_at),
       e.category,
       e.amount,
       e.status,
@@ -182,7 +182,7 @@ export default function EarningsPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
+    <div className="max-w-lg mx-auto px-4 py-8 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
       {confirmModal && pendingConfirm.length > 0 && (
         <PaidConfirmModal
           proposals={pendingConfirm}

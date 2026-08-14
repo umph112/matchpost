@@ -41,3 +41,18 @@ export function listDateLabel(iso: string | null | undefined): string {
   const [cy] = todayStr.split('-').map(Number)
   return ty === cy ? `${tm}/${String(td).padStart(2, '0')}` : `${ty}. ${tm}/${String(td).padStart(2, '0')}`
 }
+
+// D8 3 — 대화·알림 목록용 상대 시각. listDateLabel과 동일 규칙(오늘=시각 / 어제 / 올해=M/D / 그 전=YYYY. M/D).
+export function listTime(iso: string | null | undefined): string {
+  return listDateLabel(iso)
+}
+
+// D8 3 — 일정 표기용 「8/26 (수)」. 날짜만(YYYY-MM-DD)이면 그대로, 타임스탬프면 KST 달력일로 환산.
+const DOW_KO = ['일', '월', '화', '수', '목', '금', '토']
+export function dateWithDow(value: string | null | undefined): string {
+  if (!value) return ''
+  const ymd = value.length === 10 ? value : kstDateString(new Date(value))
+  const [, m, d] = ymd.split('-').map(Number)
+  const dow = DOW_KO[new Date(ymd + 'T00:00:00').getDay()]
+  return `${m}/${d} (${dow})`
+}

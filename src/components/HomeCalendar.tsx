@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { dateWithDow } from '@/lib/date'
+import { Lock } from 'lucide-react'
 
 type DayCounts = { open: number; campaign: number }
 
@@ -116,10 +118,10 @@ export default function HomeCalendar({
       {selected && !isLoggedIn && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 p-4" onClick={() => setSelected(null)}>
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="text-4xl mb-3">🔒</div>
+            <Lock size={32} strokeWidth={1.5} className="text-[#C4C4CE] mx-auto mb-3" />
             <h3 className="font-bold text-gray-900 mb-1">로그인이 필요해요</h3>
             <p className="text-sm text-gray-500 mb-5">
-              {new Date(selected).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}의
+              {dateWithDow(selected)}의
               캠페인·오픈 일정은 로그인 후 볼 수 있어요.
             </p>
             <div className="flex gap-2">
