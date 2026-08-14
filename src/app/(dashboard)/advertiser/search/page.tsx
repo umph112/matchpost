@@ -473,7 +473,7 @@ export default function AdvertiserSearchPage() {
       <h1 className="text-xl font-bold text-[#17171B] mb-5 [.adv-pc_&]:hidden">인플루언서 찾기</h1>
 
       {/* PC: 2-col grid (284px sidebar + content) / Mobile: stacked */}
-      <div className="flex flex-col gap-4 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[284px_minmax(0,1fr)] [.adv-pc_&]:gap-5 [.adv-pc_&]:items-start">
+      <div className="flex flex-col gap-4 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[284px_minmax(0,1fr)] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-start">
         <aside className="[.adv-pc_&]:sticky [.adv-pc_&]:top-[84px]">{filterSidebar}</aside>
         {resultsPanel}
       </div>

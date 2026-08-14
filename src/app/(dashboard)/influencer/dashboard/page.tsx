@@ -310,9 +310,9 @@ export default async function InfluencerMyPage() {
         </Link>
       )}
 
-      <div className="flex flex-col gap-6 [.inf-pc_&]:grid [.inf-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] [.inf-pc_&]:gap-5 [.inf-pc_&]:items-start">
+      <div className="flex flex-col gap-6 [.inf-pc_&]:grid [.inf-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] [.inf-pc_&]:gap-[14px] [.inf-pc_&]:items-stretch">
         {/* 좌 (PC) / 상단 (모바일) */}
-        <div className="flex flex-col gap-6 [.inf-pc_&]:gap-5 min-w-0">
+        <div className="flex flex-col gap-6 [.inf-pc_&]:gap-[14px] min-w-0">
           {/* 이번 주 일정 7일 스트립 (모바일) / 캘린더(PC) */}
           <section className="[.inf-pc_&]:hidden">
             <h2 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1.5">
@@ -448,7 +448,7 @@ export default async function InfluencerMyPage() {
         </div>
 
         {/* 우 (PC) / 하단 (모바일) */}
-        <div className="flex flex-col gap-6 [.inf-pc_&]:gap-5 min-w-0">
+        <div className="flex flex-col gap-6 [.inf-pc_&]:gap-[14px] min-w-0">
           {/* 내 채널 분석 */}
           <section>
             <div className="flex items-center justify-between mb-3">

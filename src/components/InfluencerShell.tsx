@@ -213,7 +213,7 @@ export default function InfluencerShell({
             <LogoutButton />
           </div>
         </header>
-        <main className="inf-pc flex-1 flex flex-col gap-5 pt-[26px] px-7 pb-10">{children}</main>
+        <main className="inf-pc flex-1 flex flex-col gap-[14px] pt-[26px] px-7 pb-10">{children}</main>
       </div>
     </div>
   )

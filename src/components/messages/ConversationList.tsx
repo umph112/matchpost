@@ -13,6 +13,9 @@ export type ConvRow = {
   unreadCount: number
   overdue: boolean
   participantCount?: number
+  matchScore?: number | null
+  reviewCount?: number
+  stage?: 'talking' | 'inner' | 'both' | 'canceled'
 }
 
 // D7 3-2/3-4 — 캠페인/개인 탭(광고주만) + 빈 상태에 다음 행동 버튼.
@@ -80,7 +83,9 @@ export default function ConversationList({
             timeLabel={r.timeLabel}
             unreadCount={r.unreadCount}
             overdue={r.overdue}
-            participantCount={r.participantCount}
+            matchScore={r.matchScore}
+            reviewCount={r.reviewCount}
+            stage={r.stage}
           />
         ))
       )}

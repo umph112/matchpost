@@ -16,7 +16,7 @@ export default async function AdvertiserMessagesLayout({ children }: { children:
 
   const { data: proposals } = await supabase
     .from('proposals')
-    .select('id, campaign_id, influencer_id, created_at')
+    .select('id, campaign_id, influencer_id, created_at, advertiser_confirmed, influencer_confirmed')
     .eq('advertiser_id', user.id)
 
   const { data: campaigns } = await supabase
@@ -66,6 +66,28 @@ export default async function AdvertiserMessagesLayout({ children }: { children:
 
   const campaignIds = Object.keys(byCampaign)
   const personalIds = Object.keys(byPersonal)
+
+  // D10 §1-2 — 단계 배지: 방에 속한 제안들의 확정 플래그를 집계해 가장 앞선 단계로.
+  const stageOf = (list: { advertiser_confirmed?: boolean; influencer_confirmed?: boolean }[]): 'talking' | 'inner' | 'both' => {
+    let best: 'talking' | 'inner' | 'both' = 'talking'
+    for (const p of list) {
+      const a = !!p.advertiser_confirmed, i = !!p.influencer_confirmed
+      if (a && i) return 'both'
+      if (a || i) best = 'inner'
+    }
+    return best
+  }
+  const campaignStage: Record<string, 'talking' | 'inner' | 'both'> = {}
+  const personalStage: Record<string, 'talking' | 'inner' | 'both'> = {}
+  for (const cid of campaignIds) campaignStage[cid] = stageOf((proposals ?? []).filter((p) => p.campaign_id === cid))
+  for (const oid of personalIds) personalStage[oid] = stageOf((proposals ?? []).filter((p) => !p.campaign_id && p.influencer_id === oid))
+
+  // D10 §1-2 — 개인방(1:1)만 매치스코어 노출. 캠페인방은 참여자 다수라 단일 점수 없음.
+  const { data: ips } = personalIds.length
+    ? await supabase.from('influencer_profiles').select('user_id, match_score, review_count').in('user_id', personalIds)
+    : { data: [] }
+  const scoreById = Object.fromEntries((ips ?? []).map((p) => [p.user_id, p]))
+
   const db = createServiceClient()
   const convRows: { id: string; kind: 'campaign' | 'personal'; campaign_id: string | null; other_id: string | null }[] = []
   for (const cid of campaignIds) {
@@ -82,7 +104,8 @@ export default async function AdvertiserMessagesLayout({ children }: { children:
   }
 
   const OVERDUE_MS = 2 * 24 * 60 * 60 * 1000
-  const toRow = (c: (typeof convRows)[number], p: Preview | undefined, title: string, participantCount?: number): ConvRow & { time: string } => ({
+  type RowOpts = { participantCount?: number; matchScore?: number | null; reviewCount?: number; stage?: 'talking' | 'inner' | 'both' | 'canceled' }
+  const toRow = (c: (typeof convRows)[number], p: Preview | undefined, title: string, opts: RowOpts = {}): ConvRow & { time: string } => ({
     convId: c.id,
     title,
     subtitle: p?.last?.content || null,
@@ -90,16 +113,26 @@ export default async function AdvertiserMessagesLayout({ children }: { children:
     timeLabel: p?.last?.created_at ? listDateLabel(p.last.created_at) : '',
     unreadCount: p?.unreadCount ?? 0,
     overdue: !!(p?.last && p.last.sender_id !== user.id && Date.now() - new Date(p.last.created_at).getTime() >= OVERDUE_MS),
-    participantCount,
+    participantCount: opts.participantCount,
+    matchScore: opts.matchScore,
+    reviewCount: opts.reviewCount,
+    stage: opts.stage,
   })
 
   const campaignRows = convRows
     .filter((c) => c.kind === 'campaign')
-    .map((c) => toRow(c, campaignPreview[c.campaign_id!], campTitleById[c.campaign_id!] ?? '캠페인', byCampaign[c.campaign_id!].influencerIds.size))
+    .map((c) => toRow(c, campaignPreview[c.campaign_id!], campTitleById[c.campaign_id!] ?? '캠페인', {
+      participantCount: byCampaign[c.campaign_id!].influencerIds.size,
+      stage: campaignStage[c.campaign_id!],
+    }))
     .sort((a, b) => b.time.localeCompare(a.time))
   const personalRows = convRows
     .filter((c) => c.kind === 'personal')
-    .map((c) => toRow(c, personalPreview[`p:${c.other_id}`], nameById[c.other_id!] ?? '인플루언서'))
+    .map((c) => toRow(c, personalPreview[`p:${c.other_id}`], nameById[c.other_id!] ?? '인플루언서', {
+      matchScore: scoreById[c.other_id!]?.match_score ?? null,
+      reviewCount: scoreById[c.other_id!]?.review_count ?? 0,
+      stage: personalStage[c.other_id!],
+    }))
     .sort((a, b) => b.time.localeCompare(a.time))
 
   return (

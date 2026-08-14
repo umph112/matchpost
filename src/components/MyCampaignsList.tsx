@@ -130,7 +130,7 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
         {/* 표 헤더 */}
         <div
           className="grid text-[11px] font-bold text-[#9A9AA5] bg-[#FAFAFB] border-b border-[#F1F1F4] px-5 py-[9px]"
-          style={{ gridTemplateColumns: 'minmax(0,1fr) 92px 150px 122px 158px 128px 108px' }}
+          style={{ gridTemplateColumns: 'minmax(0,1fr) 92px 128px 104px 152px 124px 126px' }}
         >
           <span>캠페인</span>
           <span className="text-center">상태</span>
@@ -157,7 +157,7 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
               <div
                 key={c.id}
                 className="grid items-center px-5 py-[13px] border-b border-[#F5F5F7] last:border-b-0 hover:bg-[#FAFAFB] transition cursor-pointer group"
-                style={{ gridTemplateColumns: 'minmax(0,1fr) 92px 150px 122px 158px 128px 108px' }}
+                style={{ gridTemplateColumns: 'minmax(0,1fr) 92px 128px 104px 152px 124px 126px' }}
               >
                 {/* 캠페인 */}
                 <Link href={`/advertiser/campaigns/${c.id}`} className="min-w-0 block">

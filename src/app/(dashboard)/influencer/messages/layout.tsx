@@ -41,6 +41,22 @@ export default async function InfluencerMessagesLayout({ children }: { children:
     : { data: [] }
   const nameById = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.name]))
 
+  // D10 §1-2 — 단계 배지: 내 제안들을 광고주별로 묶어 가장 앞선 확정 단계로.
+  const { data: myProposals } = otherIds.length
+    ? await supabase.from('proposals').select('advertiser_id, advertiser_confirmed, influencer_confirmed').eq('influencer_id', user.id)
+    : { data: [] }
+  const stageOf = (list: { advertiser_confirmed?: boolean; influencer_confirmed?: boolean }[]): 'talking' | 'inner' | 'both' => {
+    let best: 'talking' | 'inner' | 'both' = 'talking'
+    for (const p of list) {
+      const a = !!p.advertiser_confirmed, i = !!p.influencer_confirmed
+      if (a && i) return 'both'
+      if (a || i) best = 'inner'
+    }
+    return best
+  }
+  const personalStage: Record<string, 'talking' | 'inner' | 'both'> = {}
+  for (const oid of otherIds) personalStage[oid] = stageOf((myProposals ?? []).filter((p) => p.advertiser_id === oid))
+
   const db = createServiceClient()
   const OVERDUE_MS = 2 * 24 * 60 * 60 * 1000
   const personalRows: (ConvRow & { time: string })[] = await Promise.all(
@@ -57,6 +73,7 @@ export default async function InfluencerMessagesLayout({ children }: { children:
         timeLabel: p.last?.created_at ? listDateLabel(p.last.created_at) : '',
         unreadCount: p.unreadCount,
         overdue: !!(p.last && p.last.sender_id !== user.id && Date.now() - new Date(p.last.created_at).getTime() >= OVERDUE_MS),
+        stage: personalStage[oid],
       }
     })
   )

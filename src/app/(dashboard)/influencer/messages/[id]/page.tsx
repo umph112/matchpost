@@ -134,7 +134,8 @@ export default function InfluencerMessageRoomPage() {
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 [.inf-pc_&]:h-full">
+    <div className="flex flex-col [.inf-pc_&]:flex-row flex-1 min-h-0 [.inf-pc_&]:h-full">
+     <div className="flex flex-col flex-1 min-w-0 min-h-0">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-[#EAEAEE] [.inf-pc_&]:px-5">
         <Link href="/influencer/messages" className="text-gray-400 hover:text-gray-600 [.inf-pc_&]:hidden">
           <ArrowLeft size={18} strokeWidth={1.75} />
@@ -154,8 +155,9 @@ export default function InfluencerMessageRoomPage() {
         )}
       </div>
 
+      {/* D10 §1 — 모바일에서는 대화창 상단 인라인, PC에서는 우측 aside(아래)로 이동 */}
       {proposalId && currentUser && (
-        <div className="px-4 pt-2 [.inf-pc_&]:px-5">
+        <div className="px-4 pt-2 [.inf-pc_&]:hidden">
           <DealConfirmBar proposalId={proposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
         </div>
       )}
@@ -214,6 +216,16 @@ export default function InfluencerMessageRoomPage() {
       {reportOpen && proposalId && (
         <ReportModal proposalId={proposalId} role="influencer" onClose={() => setReportOpen(false)} onDone={() => setReportOpen(false)} />
       )}
+     </div>
+
+      {/* D10 §1 — PC 우측 열(300px): 협의 조건 요약 + 확정 바. 모바일에는 없음(위 인라인 유지) */}
+      <aside className="hidden [.inf-pc_&]:flex [.inf-pc_&]:flex-col [.inf-pc_&]:w-[300px] [.inf-pc_&]:shrink-0 [.inf-pc_&]:border-l [.inf-pc_&]:border-[#EAEAEE] [.inf-pc_&]:overflow-y-auto [.inf-pc_&]:p-4">
+        {proposalId && currentUser ? (
+          <DealConfirmBar proposalId={proposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
+        ) : (
+          <p className="text-[12px] text-[#9A9AA5] leading-relaxed">협의를 시작하면 확정 바가 여기 표시돼요.</p>
+        )}
+      </aside>
     </div>
   )
 }

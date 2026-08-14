@@ -253,7 +253,7 @@ export default async function AdvertiserMyPage() {
       </div>
 
       {/* 2단 그리드 */}
-      <div className="flex flex-col gap-5 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] [.adv-pc_&]:gap-5 [.adv-pc_&]:items-stretch">
+      <div className="flex flex-col gap-5 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-stretch">
         {/* 좌 */}
         <div className="flex flex-col gap-5 min-w-0">
           {/* 캘린더 */}

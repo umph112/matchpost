@@ -206,7 +206,7 @@ export default function AdvertiserShell({
             <LogoutButton />
           </div>
         </header>
-        <main className="adv-pc flex-1 flex flex-col gap-5 pt-[26px] px-7 pb-10">{children}</main>
+        <main className="adv-pc flex-1 flex flex-col gap-[14px] pt-[26px] px-7 pb-10">{children}</main>
       </div>
     </div>
   )

@@ -240,7 +240,8 @@ export default function AdvertiserMessageRoomPage() {
   const canReport = isCampaign ? !!reportProposalId : !!singleProposalId
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 [.adv-pc_&]:h-full">
+    <div className="flex flex-col [.adv-pc_&]:flex-row flex-1 min-h-0 [.adv-pc_&]:h-full">
+     <div className="flex flex-col flex-1 min-w-0 min-h-0">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-[#EAEAEE] [.adv-pc_&]:px-5">
         <Link href="/advertiser/messages" className="text-gray-400 hover:text-gray-600 [.adv-pc_&]:hidden">
           <ArrowLeft size={18} strokeWidth={1.75} />
@@ -301,8 +302,9 @@ export default function AdvertiserMessageRoomPage() {
         </div>
       )}
 
+      {/* D10 §1 — 모바일에서는 대화창 상단 인라인, PC에서는 우측 aside(아래)로 이동 */}
       {!isCampaign && singleProposalId && currentUser && (
-        <div className="px-4 pt-2 [.adv-pc_&]:px-5">
+        <div className="px-4 pt-2 [.adv-pc_&]:hidden">
           <DealConfirmBar proposalId={singleProposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
         </div>
       )}
@@ -396,6 +398,18 @@ export default function AdvertiserMessageRoomPage() {
       {reportOpen && reportProposalId && (
         <ReportModal proposalId={reportProposalId} role="advertiser" onClose={() => setReportOpen(false)} onDone={() => setReportOpen(false)} />
       )}
+     </div>
+
+      {/* D10 §1 — PC 우측 열(288px): 협의 조건 요약 + 확정 바. 모바일에는 없음(위 인라인 유지) */}
+      <aside className="hidden [.adv-pc_&]:flex [.adv-pc_&]:flex-col [.adv-pc_&]:w-[288px] [.adv-pc_&]:shrink-0 [.adv-pc_&]:border-l [.adv-pc_&]:border-[#EAEAEE] [.adv-pc_&]:overflow-y-auto [.adv-pc_&]:p-4">
+        {reportProposalId && currentUser ? (
+          <DealConfirmBar proposalId={reportProposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
+        ) : (
+          <p className="text-[12px] text-[#9A9AA5] leading-relaxed">
+            {isCampaign ? '참여자를 선택하면 협의 조건이 여기 표시돼요.' : '협의를 시작하면 확정 바가 여기 표시돼요.'}
+          </p>
+        )}
+      </aside>
     </div>
   )
 }

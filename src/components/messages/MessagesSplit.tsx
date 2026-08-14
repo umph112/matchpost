@@ -13,8 +13,8 @@ const WRAP_PC_CLASS = {
   'inf-pc': '[.inf-pc_&]:h-[calc(100vh-96px)] [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] [.inf-pc_&]:rounded-[14px] [.inf-pc_&]:overflow-hidden [.inf-pc_&]:bg-white',
 }
 const LIST_PC_CLASS = {
-  'adv-pc': '[.adv-pc_&]:w-[320px] [.adv-pc_&]:shrink-0 [.adv-pc_&]:border-r [.adv-pc_&]:border-[#EAEAEE]',
-  'inf-pc': '[.inf-pc_&]:w-[320px] [.inf-pc_&]:shrink-0 [.inf-pc_&]:border-r [.inf-pc_&]:border-[#EAEAEE]',
+  'adv-pc': '[.adv-pc_&]:w-[296px] [.adv-pc_&]:shrink-0 [.adv-pc_&]:border-r [.adv-pc_&]:border-[#EAEAEE]',
+  'inf-pc': '[.inf-pc_&]:w-[296px] [.inf-pc_&]:shrink-0 [.inf-pc_&]:border-r [.inf-pc_&]:border-[#EAEAEE]',
 }
 const LIST_SHOW_ON_PC = {
   'adv-pc': '[.adv-pc_&]:block',

@@ -614,7 +614,7 @@ export default function NewCampaignPage() {
       )}
 
       {/* 등록 항목들 — PC: 1fr + 320px 사이드바 그리드 */}
-      <div className="[.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1fr)_320px] [.adv-pc_&]:gap-5 [.adv-pc_&]:items-start">
+      <div className="[.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1fr)_320px] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-start">
       <div className="min-w-0">
 
       {/* ① 채널 (복수) */}
