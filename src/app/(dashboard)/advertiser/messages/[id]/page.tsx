@@ -376,7 +376,7 @@ export default function AdvertiserMessageRoomPage() {
       </div>
 
       {confirmTargeted && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setConfirmTargeted(null)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(17,17,21,0.42)] px-4" onClick={() => setConfirmTargeted(null)}>
           <div className="bg-white rounded-2xl w-full max-w-[380px] p-5" onClick={(e) => e.stopPropagation()}>
             <p className="text-base font-bold text-[#17171B]">{confirmTargeted.name}님에게만 보낼까요?</p>
             <p className="text-[12px] text-[#7C7C88] mt-2 leading-relaxed">

@@ -230,10 +230,10 @@ export default function AdvertiserSearchPage() {
     </div>
   )
 
-  // ── Filter sidebar (same markup used in PC sticky aside + mobile block) ──
+  // ── Filter card (top full-width on PC, stacked on mobile) ──
   const filterSidebar = (
-    <div className="bg-white border border-[#EAEAEE] rounded-[14px] p-5 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+    <div className="bg-white border border-[#EAEAEE] rounded-[14px] p-5 flex flex-col gap-4 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-4 [.adv-pc_&]:gap-x-5 [.adv-pc_&]:gap-y-[17px] [.adv-pc_&]:pt-4 [.adv-pc_&]:pb-[18px]">
+      <div className="flex items-center justify-between [.adv-pc_&]:col-span-full">
         <h2 className="text-[13.5px] font-bold text-[#17171B]">필터</h2>
         <button
           onClick={resetFilters}
@@ -243,8 +243,8 @@ export default function AdvertiserSearchPage() {
         </button>
       </div>
 
-      {/* 날짜 */}
-      <div>
+      {/* 날짜 — input[type=date] 유지(달력은 2단계) */}
+      <div className="[.adv-pc_&]:col-span-full [.adv-pc_&]:pb-4 [.adv-pc_&]:border-b [.adv-pc_&]:border-[#F1F1F4]">
         <div className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em] mb-1.5">날짜</div>
         <input
           type="date"
@@ -295,7 +295,7 @@ export default function AdvertiserSearchPage() {
       </div>
 
       {/* 분야 */}
-      <div>
+      <div className="[.adv-pc_&]:col-span-full">
         <div className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em] mb-1.5">
           분야 <span className="font-normal opacity-60">({INFLUENCER_CATEGORIES.length})</span>
         </div>
@@ -354,7 +354,7 @@ export default function AdvertiserSearchPage() {
 
       {/* 친구등록만 (비활성 — favorites 미구현) */}
       <div
-        className="flex items-center justify-between opacity-40 cursor-not-allowed select-none"
+        className="flex items-center justify-between opacity-40 cursor-not-allowed select-none [.adv-pc_&]:col-span-full"
         title="즐겨찾기 기능 준비 중"
       >
         <span className="text-[12.5px] font-semibold text-[#5C5C68]">☆ 친구등록만</span>
@@ -366,7 +366,7 @@ export default function AdvertiserSearchPage() {
       <button
         onClick={handleSearch}
         disabled={loading}
-        className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold py-2.5 rounded-[9px] text-[13.5px] transition disabled:opacity-50 shadow-[0_1px_2px_rgba(245,158,11,.35)]"
+        className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold py-2.5 rounded-[9px] text-[13.5px] transition disabled:opacity-50 shadow-[0_1px_2px_rgba(245,158,11,.35)] [.adv-pc_&]:col-span-full"
       >
         {loading ? '검색 중...' : '검색하기'}
       </button>
@@ -441,6 +441,7 @@ export default function AdvertiserSearchPage() {
                   {d === '날짜 미정' ? d : fmtDate(d)}
                 </h3>
                 <span className="text-[11.5px] text-[#B0B0BB]">{items.length}명</span>
+                <div className="flex-1 h-px bg-[#E4E4E8]" />
               </div>
               <div className="grid grid-cols-1 [.adv-pc_&]:grid-cols-2 gap-[11px]">
                 {items.map((s) => openCard(s))}
@@ -456,6 +457,7 @@ export default function AdvertiserSearchPage() {
                 <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0" />
                 <h3 className="text-[13px] font-bold text-[#3C3C46]">{name}</h3>
                 <span className="text-[11.5px] text-[#B0B0BB]">{items.length}개 날짜</span>
+                <div className="flex-1 h-px bg-[#E4E4E8]" />
               </div>
               <div className="grid grid-cols-1 [.adv-pc_&]:grid-cols-2 gap-[11px]">
                 {items.map((s) => openCard(s))}
@@ -472,9 +474,9 @@ export default function AdvertiserSearchPage() {
       {/* Page title — mobile only */}
       <h1 className="text-xl font-bold text-[#17171B] mb-5 [.adv-pc_&]:hidden">인플루언서 찾기</h1>
 
-      {/* PC: 2-col grid (284px sidebar + content) / Mobile: stacked */}
-      <div className="flex flex-col gap-4 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[284px_minmax(0,1fr)] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-start">
-        <aside className="[.adv-pc_&]:sticky [.adv-pc_&]:top-[84px]">{filterSidebar}</aside>
+      {/* PC: 필터 카드(상단 전체폭) + 결과(하단 전체폭) / Mobile: stacked */}
+      <div className="flex flex-col gap-[14px]">
+        {filterSidebar}
         {resultsPanel}
       </div>
     </div>

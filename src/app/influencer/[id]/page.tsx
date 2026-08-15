@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { initial } from '@/lib/initial'
 import { dateWithDow } from '@/lib/date'
 import { CalendarDays, MapPin } from 'lucide-react'
+import DashSendButton from '@/components/DashSendButton'
 
 export default async function InfluencerProfilePage({
   params,
@@ -138,12 +139,15 @@ export default async function InfluencerProfilePage({
                   ))}
                 </div>
                 {isAdvertiser && (
-                  <Link
-                    href={"/advertiser/proposals/new?scheduleId=" + schedule.id + "&influencerId=" + profile.id}
+                  <DashSendButton
+                    influencerId={profile.id}
+                    influencerName={profile.name ?? '인플루언서'}
+                    scheduleId={schedule.id}
+                    scheduleDate={schedule.date}
                     className="mt-3 w-full block text-center bg-[#F59E0B] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#D97706] transition"
                   >
                     이 날짜로 대시 보내기
-                  </Link>
+                  </DashSendButton>
                 )}
               </div>
             ))}

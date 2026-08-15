@@ -96,7 +96,7 @@ export default function ConfirmDashModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(17,17,21,0.5)] px-4" onClick={onClose}>
       <div
         className="bg-white rounded-2xl w-full max-w-[380px] overflow-hidden shadow-xl"
         onClick={(e) => e.stopPropagation()}

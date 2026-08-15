@@ -140,7 +140,7 @@ export default function SettlementsView({
 
   return (
     <div className="flex flex-col gap-[14px] [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1fr)_300px] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-start">
-      <div className="flex flex-col gap-5 min-w-0">
+      <div className="flex flex-col gap-5 [.adv-pc_&]:gap-[14px] min-w-0">
         <h1 className="text-[23px] font-extrabold tracking-[-0.03em] text-[#17171B]">정산</h1>
 
         {/* 요약 4칸 */}

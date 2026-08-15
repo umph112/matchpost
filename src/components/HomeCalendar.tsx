@@ -116,7 +116,7 @@ export default function HomeCalendar({
 
       {/* 비로그인 클릭 안내 */}
       {selected && !isLoggedIn && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 p-4" onClick={() => setSelected(null)}>
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-[rgba(23,23,27,0.42)] p-4" onClick={() => setSelected(null)}>
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center" onClick={(e) => e.stopPropagation()}>
             <Lock size={32} strokeWidth={1.5} className="text-[#C4C4CE] mx-auto mb-3" />
             <h3 className="font-bold text-gray-900 mb-1">로그인이 필요해요</h3>

@@ -73,7 +73,7 @@ export default function PaidConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(23,23,27,0.45)] p-4"
       onClick={confirmAndClose}
     >
       <div

@@ -63,7 +63,7 @@ export default function ReviewModal({
   const displayRating = hovered || rating
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(18,18,24,0.44)] px-4">
       <div className="bg-white rounded-2xl w-full max-w-[460px] overflow-hidden shadow-xl">
         {/* 헤더 */}
         <div className="px-5 pt-5 pb-4 border-b border-[#F1F1F4]">

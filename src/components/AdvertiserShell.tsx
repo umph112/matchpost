@@ -140,7 +140,7 @@ export default function AdvertiserShell({
         </header>
         {open && (
           <div className="fixed inset-0 z-40">
-            <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
+            <div className="absolute inset-0 bg-[rgba(0,0,0,0.3)]" onClick={() => setOpen(false)} />
             <aside className="absolute left-0 top-0 bottom-0 w-60 bg-white shadow-xl flex flex-col">
               {brand}
               {navList}

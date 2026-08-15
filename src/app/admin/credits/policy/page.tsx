@@ -83,7 +83,7 @@ export default function AdminCreditPolicyPage() {
       </div>
 
       {form && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setForm(null)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(23,23,27,0.45)] px-4" onClick={() => setForm(null)}>
           <div className="bg-white rounded-2xl w-full max-w-[400px] p-5" onClick={(e) => e.stopPropagation()}>
             <p className="font-bold text-gray-900 mb-3">{CREDIT_POLICY.find((p) => p.key === form.key)?.label} 변경 예고</p>
             <label className="text-xs font-semibold text-gray-500">새 금액</label>

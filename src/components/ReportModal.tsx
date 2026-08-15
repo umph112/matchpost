@@ -47,7 +47,7 @@ export default function ReportModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(23,23,27,0.42)] px-4" onClick={onClose}>
       <div
         className="bg-white rounded-2xl w-full max-w-[440px] overflow-hidden shadow-xl"
         onClick={(e) => e.stopPropagation()}

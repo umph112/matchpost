@@ -788,7 +788,7 @@ export default function NewCampaignPage() {
                 <button
                   type="button"
                   onClick={() => removeImage(url)}
-                  className="absolute top-1 right-1 bg-black/50 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                  className="absolute top-1 right-1 bg-[rgba(0,0,0,0.5)] text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
                 >
                   ✕
                 </button>
@@ -1300,7 +1300,7 @@ export default function NewCampaignPage() {
       </div>{/* /left column */}
 
       {/* RIGHT: sticky 사이드바 (PC only) */}
-      <div className="hidden [.adv-pc_&]:flex [.adv-pc_&]:flex-col [.adv-pc_&]:gap-4 [.adv-pc_&]:sticky [.adv-pc_&]:top-[84px]">
+      <div className="hidden [.adv-pc_&]:flex [.adv-pc_&]:flex-col [.adv-pc_&]:gap-[14px] [.adv-pc_&]:sticky [.adv-pc_&]:top-[84px]">
         {/* 예산·결제 미리보기 */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EAEAEE]">
           <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.06em] mb-3">예산 · 결제</p>

@@ -213,7 +213,7 @@ export default async function AdvertiserMyPage() {
   const cardHead = 'h-[52px] flex items-center border-b border-[#F1F1F4] shrink-0'
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 [.adv-pc_&]:gap-[14px]">
       <NotificationsRealtime userId={user.id} />
 
       {/* 페이지 헤더 */}
@@ -253,9 +253,9 @@ export default async function AdvertiserMyPage() {
       </div>
 
       {/* 2단 그리드 */}
-      <div className="flex flex-col gap-5 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-stretch">
+      <div className="flex flex-col gap-[14px] [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-stretch">
         {/* 좌 */}
-        <div className="flex flex-col gap-5 min-w-0">
+        <div className="flex flex-col gap-5 [.adv-pc_&]:gap-[14px] min-w-0">
           {/* 캘린더 */}
           <section className={card}>
             <div className={cardHead + ' gap-3 px-5'}>
@@ -338,7 +338,7 @@ export default async function AdvertiserMyPage() {
         </div>
 
         {/* 우 */}
-        <div className="flex flex-col gap-5 min-w-0">
+        <div className="flex flex-col gap-5 [.adv-pc_&]:gap-[14px] min-w-0">
           {/* 대시·메시지 */}
           <section className={card}>
             <div className={cardHead + ' px-[18px]'}>

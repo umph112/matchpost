@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Building2, MapPin, Clock, User } from 'lucide-react'
+import DashSendButton from '@/components/DashSendButton'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -167,12 +168,15 @@ export default async function DayDetailPage({
                   </div>
                 )}
                 {role === 'advertiser' && (
-                  <Link
-                    href={`/advertiser/proposals/new?scheduleId=${o.id}&influencerId=${o.influencer_id}`}
-                    className="mt-3 block text-center bg-blue-600 text-white py-2 rounded-xl text-sm font-medium hover:bg-blue-700"
+                  <DashSendButton
+                    influencerId={o.influencer_id}
+                    influencerName={nameById[o.influencer_id] ?? '인플루언서'}
+                    scheduleId={o.id}
+                    scheduleDate={date}
+                    className="mt-3 w-full block text-center bg-[#F59E0B] text-white py-2 rounded-xl text-sm font-medium hover:bg-[#D97706] transition"
                   >
-                    대시하기
-                  </Link>
+                    이 날짜로 대시 보내기
+                  </DashSendButton>
                 )}
               </div>
             ))}
