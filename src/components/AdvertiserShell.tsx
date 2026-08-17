@@ -94,7 +94,7 @@ export default function AdvertiserShell({
   )
 
   const navList = (
-    <nav className="flex flex-col gap-0.5 p-3">
+    <nav className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-0.5 p-3">
       {NAV_GROUPS.map((g) => (
         <div key={g.group}>
           <div className="text-[10px] font-bold text-[#B0B0BB] tracking-[0.06em] px-2.5 pt-2.5 pb-1.5">{g.group}</div>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
 import { CircleCheck, BarChart3 } from 'lucide-react'
+import { unregisterConnection } from '@/lib/connections/actions'
 
 const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
 const PLATFORMS = ['인스타그램', '유튜브', '블로그', '틱톡']
@@ -26,8 +27,47 @@ export default function InfluencerProfilePage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  // 나를 친구등록한 광고주 (해제 가능, 해제해도 광고주에게 알리지 않는다)
+  const [advConns, setAdvConns] = useState<{ otherId: string; name: string; source: string | null }[]>([])
+  const [unregBusy, setUnregBusy] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  const loadAdvConns = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data: conns } = await supabase
+      .from('connections')
+      .select('a_id, b_id, a_ok, b_ok, source, created_at')
+      .or(`a_id.eq.${user.id},b_id.eq.${user.id}`)
+      .order('created_at', { ascending: false })
+    const rows = (conns ?? []).filter((c: any) => c.a_ok && c.b_ok)
+    const otherIds = rows.map((c: any) => (c.a_id === user.id ? c.b_id : c.a_id))
+    if (otherIds.length === 0) {
+      setAdvConns([])
+      return
+    }
+    const { data: profs } = await supabase.from('profiles').select('id, name').in('id', otherIds)
+    const nameOf = new Map((profs ?? []).map((p: any) => [p.id, p.name]))
+    setAdvConns(
+      rows.map((c: any) => {
+        const other = c.a_id === user.id ? c.b_id : c.a_id
+        return { otherId: other, name: nameOf.get(other) ?? '광고주', source: c.source }
+      }),
+    )
+  }
+
+  useEffect(() => {
+    loadAdvConns()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const unregister = async (advertiserId: string) => {
+    setUnregBusy(advertiserId)
+    const res = await unregisterConnection(advertiserId)
+    setUnregBusy(null)
+    if (res.ok) loadAdvConns()
+  }
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -259,6 +299,38 @@ export default function InfluencerProfilePage() {
       >
         {loading ? '저장 중...' : '저장하기'}
       </button>
+
+      {/* 나를 친구등록한 광고주 */}
+      {advConns.length > 0 && (
+        <div className="bg-white rounded-2xl p-5 shadow-sm mt-4">
+          <h2 className="font-semibold text-gray-800 mb-1">나를 친구등록한 광고주</h2>
+          <p className="text-xs text-gray-400 mb-4">
+            새 캠페인 소식을 먼저 받아볼 수 있어요. 원치 않으면 해제할 수 있어요.
+          </p>
+          <div className="space-y-2">
+            {advConns.map((c) => (
+              <div key={c.otherId} className="flex items-center justify-between py-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-800 text-sm">{c.name}</span>
+                  {c.source === 'collab' && (
+                    <span className="text-[10px] font-bold rounded px-1.5 py-[1px]" style={{ background: '#DCFCE7', color: '#15803D' }}>협업</span>
+                  )}
+                  {c.source === 'manual' && (
+                    <span className="text-[10px] font-bold rounded px-1.5 py-[1px]" style={{ background: '#F1F1F4', color: '#7C7C88' }}>직접</span>
+                  )}
+                </div>
+                <button
+                  onClick={() => unregister(c.otherId)}
+                  disabled={unregBusy === c.otherId}
+                  className="text-xs text-gray-300 hover:text-red-500 disabled:opacity-50"
+                >
+                  {unregBusy === c.otherId ? '해제 중...' : '해제'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 내 채널 분석 바로가기 */}
       <Link

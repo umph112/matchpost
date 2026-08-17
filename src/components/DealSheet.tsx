@@ -678,7 +678,7 @@ export default function DealSheet({
           const conn = connections[p.influencer_id]
           const active = conn && conn.a_ok && conn.b_ok
           const proposedByMe = conn && !active && ((conn.a_id === userId && conn.a_ok) || (conn.a_id !== userId && conn.b_ok))
-          if (active) return <span className="text-[10px] text-[#15803D]">상호 등록됨 — 대시 없이 바로 대화 가능</span>
+          if (active) return <span className="text-[10px] text-[#15803D]">친구등록됨 — 새 캠페인 소식이 먼저 간다</span>
           if (proposedByMe) return <span className="text-[10px] text-[#9A9AA5]">상호 등록 제안함 — 상대 수락 대기</span>
           return (
             <button

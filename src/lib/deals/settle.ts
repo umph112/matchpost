@@ -26,7 +26,7 @@ export async function settleCampaign(
 
   const { data: proposal } = await auth
     .from('proposals')
-    .select('advertiser_id')
+    .select('advertiser_id, influencer_id')
     .eq('id', proposalId)
     .maybeSingle()
   if (!proposal || proposal.advertiser_id !== user.id) {
@@ -48,6 +48,21 @@ export async function settleCampaign(
     if (error.message.includes('already settled')) return { ok: false, error: '이미 정산 완료된 제안이에요.' }
     if (error.message.includes('not found'))       return { ok: false, error: '제안을 찾을 수 없어요.' }
     return { ok: false, error: error.message }
+  }
+
+  // 협업 완료 → 친구등록(collab). 이미 맺어진 사이면 register_connection 내부에서 그대로 둔다.
+  // ⚠️ best-effort: 등록이 실패해도 정산 결과를 깨뜨리지 않는다. collab 은 상대에게 알리지 않는다.
+  if (proposal.influencer_id) {
+    try {
+      await db.rpc('register_connection', {
+        p_by_id:    proposal.advertiser_id,
+        p_other_id: proposal.influencer_id,
+        p_source:   'collab',
+        p_notify:   false,
+      })
+    } catch {
+      // 무시 — 정산은 이미 성공했다.
+    }
   }
 
   return { ok: true }
