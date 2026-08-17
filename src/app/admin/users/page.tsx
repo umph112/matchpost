@@ -8,6 +8,7 @@ import { Suspense } from 'react'
 import { initial } from '@/lib/initial'
 import { signupCreditAmount } from '@/lib/creditConfig'
 import { listTime } from '@/lib/date'
+import { formatBizNo } from '@/lib/business-number'
 import { Smartphone } from 'lucide-react'
 
 function UsersContent() {
@@ -35,10 +36,18 @@ function UsersContent() {
       .select('user_id, phone, email')
     const privMap = Object.fromEntries((privs ?? []).map((p) => [p.user_id, p]))
 
+    // 광고주 사업자정보 (사업자등록번호·상호) — 관리자 조회용
+    const { data: advs } = await supabase
+      .from('advertiser_profiles')
+      .select('user_id, biz_reg_number, company_name')
+    const advMap = Object.fromEntries((advs ?? []).map((a) => [a.user_id, a]))
+
     const merged = (data ?? []).map((u) => ({
       ...u,
       phone: privMap[u.id]?.phone ?? '',
       email: privMap[u.id]?.email ?? '',
+      bizRegNumber: advMap[u.id]?.biz_reg_number ?? '',
+      companyName: advMap[u.id]?.company_name ?? '',
     }))
 
     setUsers(merged)
@@ -164,6 +173,14 @@ function UsersContent() {
                 <span className="mx-2">·</span>
                 <span>가입일 {listTime(user.created_at)}</span>
               </div>
+
+              {user.role === 'advertiser' && user.bizRegNumber && (
+                <div className="text-xs text-gray-500 mb-3">
+                  <span className="text-gray-400">사업자등록번호</span>{' '}
+                  <span className="font-medium tabular-nums">{formatBizNo(user.bizRegNumber)}</span>
+                  {user.companyName && <span className="text-gray-400"> · {user.companyName}</span>}
+                </div>
+              )}
 
               {user.rejection_reason && (
                 <div className="bg-red-50 text-red-600 text-xs p-2 rounded-lg mb-3">

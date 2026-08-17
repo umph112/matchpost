@@ -17,6 +17,7 @@ type Member = {
   invited_at: string
   joined_at: string | null
   member_id: string | null
+  invite_token: string | null
   name?: string | null
 }
 
@@ -39,13 +40,14 @@ export default function TeamPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
   const supabase = createClient()
 
   const load = async () => {
     setLoading(true)
     const { data } = await supabase
       .from('team_members')
-      .select('id, email, role, status, invited_at, joined_at, member_id')
+      .select('id, email, role, status, invited_at, joined_at, member_id, invite_token')
       .order('created_at', { ascending: false })
 
     const memberIds = [...new Set((data ?? []).filter((m) => m.member_id).map((m) => m.member_id as string))]
@@ -79,11 +81,20 @@ export default function TeamPage() {
     load()
   }
 
-  const resend = async (id: string) => {
-    setBusyId(id)
-    await supabase.from('team_members').update({ invited_at: new Date().toISOString() }).eq('id', id)
+  // 재발송 = 초대 링크(토큰) 재발급. 같은 이메일·역할로 다시 초대하면 새 토큰이 발급된다.
+  const resend = async (m: Member) => {
+    setBusyId(m.id)
+    await inviteTeamMember(m.email, m.role)
     setBusyId(null)
     load()
+  }
+
+  const copyLink = async (m: Member) => {
+    if (!m.invite_token) return
+    const url = `${window.location.origin}/signup?invite=${m.invite_token}`
+    try { await navigator.clipboard.writeText(url) } catch { /* 클립보드 권한 없을 때 무시 */ }
+    setCopiedId(m.id)
+    setTimeout(() => setCopiedId((c) => (c === m.id ? null : c)), 1500)
   }
 
   const toggleActive = async (id: string, current: Status) => {
@@ -144,8 +155,9 @@ export default function TeamPage() {
           </button>
         </div>
         {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
-        <p className="text-[11px] text-gray-400 mt-2">
-          아직 가입하지 않은 이메일이면 "초대 대기"로 남고, 그 이메일로 가입하는 순간 자동 연결돼요.
+        <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
+          초대하면 아래 목록에 "초대 대기"로 뜨고, <span className="text-[#B45309] font-medium">링크 복사</span> 버튼으로 초대 링크를 전달하세요.
+          링크로 가입하면 사업자 정보를 다시 넣지 않아도 돼요. 링크는 7일간 유효합니다.
         </p>
       </div>
 
@@ -178,13 +190,23 @@ export default function TeamPage() {
                 {STATUS_LABEL[m.status]}
               </span>
               {m.status === 'invited' && (
-                <button
-                  onClick={() => resend(m.id)}
-                  disabled={busyId === m.id}
-                  className="shrink-0 text-xs text-[#B45309] hover:underline disabled:opacity-50"
-                >
-                  재발송
-                </button>
+                <>
+                  {m.invite_token && (
+                    <button
+                      onClick={() => copyLink(m)}
+                      className="shrink-0 text-xs text-[#B45309] font-medium hover:underline"
+                    >
+                      {copiedId === m.id ? '복사됨' : '링크 복사'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => resend(m)}
+                    disabled={busyId === m.id}
+                    className="shrink-0 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                  >
+                    재발송
+                  </button>
+                </>
               )}
               {(m.status === 'active' || m.status === 'inactive') && (
                 <button

@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, type ChangeEvent } from 'react'
+import { useState, useEffect, Suspense, type ChangeEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Building2, User } from 'lucide-react'
 import { INFLUENCER_CATEGORIES, CATEGORY_ETC } from '@/lib/categories'
+import { isValidBizNo, formatBizNo, normalizeBizNo } from '@/lib/business-number'
 import { inviteTeamMember } from '@/lib/team/actions'
 import { signupCreditAmount } from '@/lib/creditConfig'
 import Logo from '@/components/Logo'
@@ -25,13 +26,180 @@ function useIsPc() {
 }
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupInner />
+    </Suspense>
+  )
+}
+
+function SignupInner() {
+  const inviteToken = useSearchParams().get('invite')
   const [role, setRole] = useState<'influencer' | 'advertiser' | ''>('')
   const isPc = useIsPc()
+
+  // 팀 초대 링크로 들어온 경우 — 회원 유형 선택 없이 초대 전용 화면으로.
+  if (inviteToken) return <InviteSignup token={inviteToken} />
 
   if (!role) return <RoleSelect onSelect={setRole} />
   if (role === 'advertiser') return <AdvertiserSignup onBack={() => setRole('')} />
   if (isPc) return <InfluencerQrGate onBack={() => setRole('')} />
   return <InfluencerSignup onBack={() => setRole('')} />
+}
+
+// ── 초대 링크 전용 가입 (/signup?invite=TOKEN) ──
+// 초대받은 사람은 사업자 정보를 다시 넣지 않는다. 이메일은 초대에 박제된 값(read-only),
+// 역할도 초대에 지정된 값 그대로. 유효하지 않은/만료된/사용된 링크는 안내 박스로 분기한다.
+function InviteSignup({ token }: { token: string }) {
+  const router = useRouter()
+  const supabase = createClient()
+  const [phase, setPhase] = useState<'loading' | 'invalid' | 'used' | 'expired' | 'ready'>('loading')
+  const [info, setInfo] = useState<{ email: string; role: string; companyName: string } | null>(null)
+  const [loggedIn, setLoggedIn] = useState(false)
+  const [alreadyCompany, setAlreadyCompany] = useState<string | null>(null)
+
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [password, setPassword] = useState('')
+  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    (async () => {
+      const [{ data: { user } }, res] = await Promise.all([
+        supabase.auth.getUser(),
+        fetch(`/api/team/invite-info?token=${encodeURIComponent(token)}`),
+      ])
+      const j = await res.json()
+      if (!j.ok) {
+        setPhase(j.reason === 'used' ? 'used' : j.reason === 'expired' ? 'expired' : 'invalid')
+        return
+      }
+      setInfo({ email: j.email, role: j.role, companyName: j.companyName })
+      setLoggedIn(!!user)
+      setPhase('ready')
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
+
+  // 로그인 상태에서 합류하기
+  const accept = async () => {
+    setLoading(true)
+    setError('')
+    const res = await fetch('/api/team/accept', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    })
+    const j = await res.json()
+    setLoading(false)
+    if (res.status === 409 && j.error === 'already_member') { setAlreadyCompany(j.company ?? '다른 회사'); return }
+    if (!res.ok) { setError(j.error ?? '합류에 실패했어요.'); return }
+    router.push('/advertiser/dashboard')
+  }
+
+  // 신규 가입으로 합류하기
+  const finishInvite = async () => {
+    if (!name || !phone || !password) { setError('필수 항목을 모두 입력해주세요.'); return }
+    if (password.length < 8) { setError('비밀번호는 8자 이상이어야 해요.'); return }
+    if (password !== passwordConfirm) { setError('비밀번호가 일치하지 않아요.'); return }
+    setLoading(true)
+    setError('')
+    const res = await fetch('/api/signup/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, name, phone, password }),
+    })
+    const j = await res.json()
+    if (!res.ok) { setError(j.error ?? '가입에 실패했어요.'); setLoading(false); return }
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email: info!.email, password })
+    if (signInError) { router.push('/login'); return }
+    router.push('/advertiser/dashboard')
+  }
+
+  const NoticeCard = ({ title, desc }: { title: string; desc: string }) => (
+    <div className="bg-white rounded-2xl shadow-sm p-8 max-w-[380px] text-center">
+      <div className="flex justify-center mb-4"><Logo size={20} /></div>
+      <h2 style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.025em' }} className="text-[#17171B]">{title}</h2>
+      <p className="mt-[9px]" style={{ fontSize: 12.5, color: '#5C5C68', lineHeight: 1.7 }}>{desc}</p>
+      <Link href="/login" className="inline-block mt-5 text-sm text-[#B45309] font-medium hover:underline">로그인으로 가기</Link>
+    </div>
+  )
+
+  if (phase === 'loading') return <div className="text-gray-400 text-sm">초대 확인 중...</div>
+  if (phase === 'invalid') return <NoticeCard title="유효하지 않은 초대 링크예요" desc="링크가 잘못됐거나 취소된 초대일 수 있어요. 초대한 분께 링크를 다시 요청해주세요." />
+  if (phase === 'used') return <NoticeCard title="이미 사용된 초대예요" desc="이 초대 링크로는 이미 가입이 완료됐어요. 로그인해서 이용해주세요." />
+  if (phase === 'expired') return <NoticeCard title="초대 링크가 만료됐어요" desc="초대 링크는 7일간만 유효해요. 초대한 분께 재발송을 요청해주세요." />
+
+  const roleLabel = info?.role === '관리자' ? '관리자' : '담당자'
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-[420px]">
+      <div className="text-center mb-6"><Logo size={20} className="mx-auto" /></div>
+
+      {/* 초대 안내 */}
+      <div
+        className="mb-5"
+        style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 12, padding: '14px 15px', fontSize: 12.5, color: '#92400E', lineHeight: 1.7 }}
+      >
+        <p style={{ fontWeight: 700, fontSize: 13.5 }}>{info?.companyName} 팀에 초대됐어요</p>
+        <p className="mt-0.5">{roleLabel}로 합류합니다. 링크로 가입하면 사업자 정보를 다시 넣지 않아도 돼요.</p>
+      </div>
+
+      {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>}
+
+      {loggedIn ? (
+        alreadyCompany ? (
+          <div
+            style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 10, padding: '12px 13px', fontSize: 12, color: '#9F1239', lineHeight: 1.7 }}
+          >
+            <p style={{ fontWeight: 700 }}>이미 {alreadyCompany} 소속이에요</p>
+            <p>한 계정은 한 회사에만 속할 수 있어요. 새 회사로 합류하려면 다른 이메일로 초대를 받아주세요.</p>
+          </div>
+        ) : (
+          <>
+            <p className="text-[12.5px] text-[#5C5C68] mb-4 leading-relaxed">
+              지금 로그인한 계정으로 이 팀에 합류할 수 있어요.
+            </p>
+            <button onClick={accept} disabled={loading} className="w-full bg-[#F59E0B] text-white py-3 rounded-xl font-bold hover:bg-[#D97706] transition disabled:opacity-50">
+              {loading ? '합류 중...' : '합류하기'}
+            </button>
+          </>
+        )
+      ) : (
+        <>
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">이메일</label>
+            <input
+              value={info?.email ?? ''}
+              readOnly
+              className="w-full rounded-[11px] px-[13px] h-[46px] text-[13.5px] bg-[#F1F1F4] text-[#9A9AA5] border border-[#E2E2E8]"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">이름 <span className="text-[#DC2626]">필수</span></label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} placeholder="이름" />
+          </div>
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">핸드폰 <span className="text-[#DC2626]">필수</span></label>
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} placeholder="010-0000-0000" />
+          </div>
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">비밀번호 <span className="text-[#DC2626]">필수</span></label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} placeholder="8자 이상" />
+          </div>
+          <div className="mb-2">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">비밀번호 확인 <span className="text-[#DC2626]">필수</span></label>
+            <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} className={inputCls} placeholder="비밀번호 재입력" />
+          </div>
+          <button onClick={finishInvite} disabled={loading} className="w-full bg-[#F59E0B] text-white py-3 rounded-xl font-bold mt-4 hover:bg-[#D97706] transition disabled:opacity-50">
+            {loading ? '가입 중...' : '가입하고 합류하기'}
+          </button>
+        </>
+      )}
+    </div>
+  )
 }
 
 // ── 0. 역할 선택 ──
@@ -236,6 +404,7 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
 
   const [companyName, setCompanyName] = useState('')
   const [bizRegNumber, setBizRegNumber] = useState('')
+  const [dupEmail, setDupEmail] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [managerPhone, setManagerPhone] = useState('')
   const [companyPhone, setCompanyPhone] = useState('')
@@ -256,6 +425,7 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
       setError('필수 항목을 모두 입력해주세요.')
       return false
     }
+    if (!isValidBizNo(bizRegNumber)) { setError('사업자등록번호를 다시 확인해주세요.'); return false }
     if (!bizDocFile) { setError('사업자등록증 파일을 첨부해주세요.'); return false }
     if (password.length < 8) { setError('비밀번호는 8자 이상이어야 해요.'); return false }
     if (password !== passwordConfirm) { setError('비밀번호가 일치하지 않아요.'); return false }
@@ -288,6 +458,13 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
       }),
     })
     const result = await res.json()
+    if (res.status === 409 && result.error === 'duplicate_biz') {
+      setDupEmail(result.maskedEmail ?? '')
+      setError('')
+      setLoading(false)
+      setStep(1)
+      return
+    }
     if (!res.ok) { setError(result.error ?? '회원가입에 실패했어요.'); setLoading(false); setStep(1); return }
 
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
@@ -325,6 +502,15 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
       <div className="bg-white rounded-2xl shadow-sm p-8">
         <StepHeader n={1} title="어디에서 오셨나요?" desc="브랜드 · 대행사 · 매장 누구나 광고주로 시작할 수 있어요." />
         {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>}
+        {dupEmail !== null && (
+          <div
+            className="mb-4"
+            style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 10, padding: '12px 13px', fontSize: 12, color: '#92400E', lineHeight: 1.7 }}
+          >
+            <p style={{ fontWeight: 700 }}>이 사업자번호는 이미 등록되어 있어요</p>
+            <p>{dupEmail ? `${dupEmail}에게 팀 초대를 요청하세요` : '기존 관리자에게 팀 초대를 요청하세요'}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3.5">
           <div className="col-span-2">
@@ -334,8 +520,16 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
           </div>
           <div className="col-span-2">
             <label className="block text-xs font-semibold text-gray-600 mb-1">사업자등록번호 <span className="text-[#DC2626]">필수</span></label>
-            <input value={bizRegNumber} onChange={(e) => setBizRegNumber(e.target.value)} className={inputCls} placeholder="000-00-00000" />
-            <p className="text-[11px] text-gray-400 mt-1.5">조직 계정은 이 번호로 하나만 만들어집니다.</p>
+            <input
+              value={bizRegNumber}
+              onChange={(e) => { setBizRegNumber(formatBizNo(e.target.value)); setDupEmail(null) }}
+              className={inputCls}
+              placeholder="000-00-00000"
+              inputMode="numeric"
+            />
+            {normalizeBizNo(bizRegNumber).length === 10 && !isValidBizNo(bizRegNumber)
+              ? <p className="text-[11px] text-[#DC2626] mt-1.5">사업자등록번호를 다시 확인해주세요</p>
+              : <p className="text-[11px] text-gray-400 mt-1.5">조직 계정은 이 번호로 하나만 만들어집니다.</p>}
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">담당자 이름 <span className="text-[#DC2626]">필수</span></label>

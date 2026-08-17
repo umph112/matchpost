@@ -1,6 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { signupCreditAmount } from '@/lib/creditConfig'
+import { normalizeBizNo, isValidBizNo } from '@/lib/business-number'
+
+// 이메일 마스킹 — 로컬파트 앞 3글자만 남기고 ***, 도메인은 그대로. 3글자 이하면 첫 1글자 + ***.
+function maskEmail(email: string): string {
+  const [local, domain] = (email ?? '').split('@')
+  if (!local || !domain) return '***'
+  const shown = local.length <= 3 ? local.slice(0, 1) : local.slice(0, 3)
+  return `${shown}***@${domain}`
+}
 
 // 개발 기간: 이메일 인증/RLS 우회를 위해 service_role로 계정+프로필을 즉시 생성.
 // (베타 진입 시 이메일 인증·본인인증 등 보안 절차 추가 예정)
@@ -25,6 +34,31 @@ export async function POST(req: Request) {
   )
 
   const isInfluencer = role === 'influencer'
+
+  // 광고주: 사업자등록번호 서버 재검증 + 중복 차단 (계정 생성 전에 — 실패 시 유령 계정 방지)
+  let normalizedBiz: string | null = null
+  if (role === 'advertiser') {
+    normalizedBiz = normalizeBizNo(bizRegNumber)
+    if (!isValidBizNo(normalizedBiz)) {
+      return NextResponse.json({ error: '사업자등록번호를 다시 확인해주세요.' }, { status: 400 })
+    }
+    const { data: dup } = await admin
+      .from('advertiser_profiles')
+      .select('user_id')
+      .eq('biz_reg_number', normalizedBiz)
+      .maybeSingle()
+    if (dup) {
+      const { data: priv } = await admin
+        .from('user_private')
+        .select('email')
+        .eq('user_id', dup.user_id)
+        .maybeSingle()
+      return NextResponse.json(
+        { error: 'duplicate_biz', maskedEmail: priv?.email ? maskEmail(priv.email) : '' },
+        { status: 409 }
+      )
+    }
+  }
 
   // 1) auth 계정 생성 (이메일 자동 확인)
   const { data: created, error: createErr } = await admin.auth.admin.createUser({
@@ -69,7 +103,7 @@ export async function POST(req: Request) {
     await admin.from('advertiser_profiles').insert({
       user_id: uid,
       company_name: companyName,
-      biz_reg_number: bizRegNumber,
+      biz_reg_number: normalizedBiz,
       address: address || null,
     })
 
