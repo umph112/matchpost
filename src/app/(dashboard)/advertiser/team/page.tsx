@@ -148,7 +148,8 @@ export default function TeamPage() {
     setTimeout(() => setCopiedId((c) => (c === m.id ? null : c)), 1500)
   }
 
-  const toggleActive = async (id: string, current: Status) => {
+  const toggleActive = async (id: string, current: Status, name: string) => {
+    if (current === 'active' && !confirm(`${name}님을 해제할까요? 담당하던 건의 이관은 다음 차수에서 업데이트됩니다.`)) return
     setBusyId(id)
     const next = current === 'active' ? 'inactive' : 'active'
     await supabase.from('team_members').update({ status: next }).eq('id', id)
@@ -162,7 +163,7 @@ export default function TeamPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0 [.adv-pc_&]:py-0">
       <div className="flex items-center mb-6">
-        <Link href="/advertiser/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
+        <Link href="/advertiser/dashboard" className="mr-4 text-gray-400 hover:text-gray-600 [.adv-pc_&]:hidden">← 뒤로</Link>
         <h1 className="text-xl font-bold text-gray-900">팀 멤버</h1>
       </div>
 
@@ -310,6 +311,7 @@ export default function TeamPage() {
         <div className="bg-white border border-[#EAEAEE] rounded-2xl overflow-hidden">
           {members.map((m) => {
             const rc = ROLE_COLOR[m.role] ?? ROLE_COLOR['팀원']
+            const roleLabel = m.role === '대표' ? '대표' : '팀원'
             return (
               <div key={m.id} className="flex items-center gap-3 px-4 py-3 border-b border-[#F5F5F7] last:border-b-0">
                 <div className="w-9 h-9 rounded-full bg-[#FEF3C7] text-[#B45309] text-xs font-extrabold flex items-center justify-center shrink-0">
@@ -320,7 +322,7 @@ export default function TeamPage() {
                   <p className="text-xs text-gray-400 truncate">{m.email}</p>
                 </div>
                 <span className="shrink-0" style={{ background: rc.bg, color: rc.fg, fontSize: 11.5, fontWeight: 800, borderRadius: 5, padding: '3px 8px' }}>
-                  {m.role}
+                  {roleLabel}
                 </span>
                 <span className={`shrink-0 text-[11px] font-bold px-2 py-1 rounded-full ${STATUS_STYLE[m.status]}`}>
                   {STATUS_LABEL[m.status]}
@@ -346,11 +348,11 @@ export default function TeamPage() {
                 )}
                 {(m.status === 'active' || m.status === 'inactive') && (
                   <button
-                    onClick={() => toggleActive(m.id, m.status)}
+                    onClick={() => toggleActive(m.id, m.status, m.name ?? m.email)}
                     disabled={busyId === m.id}
                     className="shrink-0 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
                   >
-                    {m.status === 'active' ? '비활성화' : '다시 활성화'}
+                    {m.status === 'active' ? '해제' : '다시 활성화'}
                   </button>
                 )}
               </div>

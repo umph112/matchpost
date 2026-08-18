@@ -365,7 +365,7 @@ function InfluencerSignup({ onBack }: { onBack: () => void }) {
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
         <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} placeholder="010-0000-0000" />
-        <p className="text-xs text-gray-400 mt-1">추후 본인인증(네이버·카카오·PASS)에 사용될 예정이에요.</p>
+        <p className="text-xs text-gray-400 mt-1">협업이 성사되면 상대에게 공개되는 번호예요.</p>
       </div>
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
@@ -543,9 +543,10 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
             <label className="block text-xs font-semibold text-gray-600 mb-1">회사 대표번호 <span className="text-[#B0B0BB]">선택</span></label>
             <input value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} className={inputCls} placeholder="02-000-0000" />
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">이메일 <span className="text-[#DC2626]">필수</span></label>
+          <div className="col-span-2">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">대표 이메일 <span className="text-[#DC2626]">필수</span></label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} placeholder="example@email.com" />
+            <p style={{ fontSize: 11, color: '#7C7C88', lineHeight: 1.6 }} className="mt-1.5">회사 페이지의 마케팅 문의에 이 주소가 보여요. (공개 여부는 팀 메뉴에서 켜고 꺼요)</p>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">전화번호 <span className="text-[#DC2626]">필수</span></label>

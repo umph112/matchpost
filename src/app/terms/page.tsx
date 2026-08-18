@@ -84,9 +84,9 @@ export default function TermsPage() {
           <li>채널의 팔로워 수 · 조회수 등을 부정한 방법으로 만든 사실이 확인된 경우</li>
         </ol>
 
-        <h3 className="mt-5 text-sm font-extrabold text-[#17171B]">제5조 (팀 계정과 담당자)</h3>
+        <h3 className="mt-5 text-sm font-extrabold text-[#17171B]">제5조 (팀 계정과 담당)</h3>
         <p className="mt-2 text-[13.5px] leading-relaxed text-gray-700">① 광고주 회원은 소속 구성원을 팀원으로 초대할 수 있습니다. 사업자 정보 수정 · 팀 초대 · 결제는 대표만 할 수 있고, 캠페인 등록 · 딜시트 · 정산 기록은 팀원이 할 수 있습니다.</p>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-gray-700">② 각 대화와 협업에는 담당자 한 명이 지정되며, <strong>담당자가 아닌 구성원은 해당 협업에 관여할 수 없습니다.</strong> 다만 대표는 예외로 하되, 이 경우 상대에게 대리 발송 사실이 표시됩니다.</p>
+        <p className="mt-2 text-[13.5px] leading-relaxed text-gray-700">② 각 대화와 협업에는 담당 팀원 한 명이 지정되며, <strong>담당이 아닌 구성원은 해당 협업에 관여할 수 없습니다.</strong> 다만 대표는 예외로 하되, 이 경우 상대에게 대리 발송 사실이 표시됩니다.</p>
         <p className="mt-2 text-[13.5px] leading-relaxed text-gray-700">③ 팀 멤버의 행위는 해당 광고주 회원의 행위로 봅니다.</p>
 
         <h2 className="mt-9 text-sm font-extrabold text-[#17171B] pb-2 border-b border-gray-100">제3장 협업</h2>

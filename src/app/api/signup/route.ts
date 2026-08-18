@@ -105,6 +105,7 @@ export async function POST(req: Request) {
       company_name: companyName,
       biz_reg_number: normalizedBiz,
       address: address || null,
+      marketing_email: email,
     })
 
     // 팀 초대(C2) — 이 이메일로 온 초대(invited)가 있으면 가입과 동시에 연결한다
