@@ -6,13 +6,12 @@ import Link from 'next/link'
 import { initial } from '@/lib/initial'
 import { inviteTeamMember } from '@/lib/team/actions'
 
-type Role = '담당자' | '관리자'
 type Status = 'invited' | 'active' | 'inactive'
 
 type Member = {
   id: string
   email: string
-  role: Role
+  role: string
   status: Status
   invited_at: string
   joined_at: string | null
@@ -31,16 +30,30 @@ const STATUS_LABEL: Record<Status, string> = {
   active: '활동중',
   inactive: '비활성',
 }
+// 역할 배지 색 — 대표/팀원 두 가지. 알 수 없는 값이 오면 팀원으로 폴백(색이 없어 화면이 죽는 걸 막는다).
+const ROLE_COLOR: Record<string, { bg: string; fg: string }> = {
+  '대표': { bg: '#17171B', fg: '#ffffff' },
+  '팀원': { bg: '#F1F1F4', fg: '#5C5C68' },
+}
 
 export default function TeamPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState<Role>('담당자')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  // 공개 프로필 — 마케팅 문의 연락처 공개 설정(대표만). 폴백: 이메일=user_private.email, 전화=profiles.manager_phone
+  const [myId, setMyId] = useState<string | null>(null)
+  const [mktPublic, setMktPublic] = useState(false)
+  const [mktEmail, setMktEmail] = useState('')
+  const [mktPhone, setMktPhone] = useState('')
+  const [fallbackEmail, setFallbackEmail] = useState('')
+  const [fallbackPhone, setFallbackPhone] = useState('')
+  const [showContactInputs, setShowContactInputs] = useState(false)
+
   const supabase = createClient()
 
   const load = async () => {
@@ -60,31 +73,69 @@ export default function TeamPage() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  // 공개 프로필 값 로드 — 내 advertiser_profiles(마케팅 공개설정) + 폴백(user_private.email, profiles.manager_phone)
+  const loadProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    setMyId(user.id)
+    const { data: ap } = await supabase
+      .from('advertiser_profiles')
+      .select('marketing_contact_public, marketing_email, marketing_phone')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (ap) {
+      setMktPublic(!!ap.marketing_contact_public)
+      setMktEmail(ap.marketing_email ?? '')
+      setMktPhone(ap.marketing_phone ?? '')
+    }
+    // 본인 user_private는 RLS(본인·관리자)로 조회 가능
+    const { data: priv } = await supabase
+      .from('user_private')
+      .select('email')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    setFallbackEmail(priv?.email ?? '')
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('manager_phone')
+      .eq('id', user.id)
+      .maybeSingle()
+    setFallbackPhone(prof?.manager_phone ?? '')
+  }
+
+  useEffect(() => { load(); loadProfile() }, [])
+
+  const toggleMktPublic = async () => {
+    if (!myId) return
+    const next = !mktPublic
+    setMktPublic(next)
+    await supabase.from('advertiser_profiles').update({ marketing_contact_public: next }).eq('user_id', myId)
+  }
+
+  // 「다른 연락처로 받기」 입력 — 비우면 저장도 빈 값이라 미리보기가 폴백으로 돌아간다
+  const persistContact = async (patch: { marketing_email?: string | null; marketing_phone?: string | null }) => {
+    if (!myId) return
+    await supabase.from('advertiser_profiles').update(patch).eq('user_id', myId)
+  }
+
+  const previewEmail = mktEmail.trim() || fallbackEmail
+  const previewPhone = mktPhone.trim() || fallbackPhone
 
   const invite = async () => {
     if (!email.trim()) { setError('이메일을 입력해주세요.'); return }
     setSubmitting(true)
     setError('')
-    const res = await inviteTeamMember(email, role)
+    const res = await inviteTeamMember(email)
     setSubmitting(false)
     if (!res.ok) { setError(res.error); return }
     setEmail('')
-    setRole('담당자')
     load()
   }
 
-  const changeRole = async (id: string, newRole: Role) => {
-    setBusyId(id)
-    await supabase.from('team_members').update({ role: newRole }).eq('id', id)
-    setBusyId(null)
-    load()
-  }
-
-  // 재발송 = 초대 링크(토큰) 재발급. 같은 이메일·역할로 다시 초대하면 새 토큰이 발급된다.
+  // 재발송 = 초대 링크(토큰) 재발급. 같은 이메일로 다시 초대하면 새 토큰이 발급된다.
   const resend = async (m: Member) => {
     setBusyId(m.id)
-    await inviteTeamMember(m.email, m.role)
+    await inviteTeamMember(m.email)
     setBusyId(null)
     load()
   }
@@ -138,14 +189,6 @@ export default function TeamPage() {
             placeholder="이메일 주소"
             className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as Role)}
-            className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-          >
-            <option value="담당자">담당자</option>
-            <option value="관리자">관리자</option>
-          </select>
           <button
             onClick={invite}
             disabled={submitting}
@@ -155,10 +198,107 @@ export default function TeamPage() {
           </button>
         </div>
         {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+        <p style={{ fontSize: 11.5, color: '#7C7C88', lineHeight: 1.65 }} className="mt-2">
+          초대받은 분은 <b>팀원</b>이 되어 캠페인 등록 · 딜시트 · 정산 기록을 직접 할 수 있어요.
+          회사의 사업자 정보 수정과 팀 초대는 <b>대표</b>만 할 수 있습니다.
+        </p>
         <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
-          초대하면 아래 목록에 "초대 대기"로 뜨고, <span className="text-[#B45309] font-medium">링크 복사</span> 버튼으로 초대 링크를 전달하세요.
+          초대하면 아래 목록에 &quot;초대 대기&quot;로 뜨고, <span className="text-[#B45309] font-medium">링크 복사</span> 버튼으로 초대 링크를 전달하세요.
           링크로 가입하면 사업자 정보를 다시 넣지 않아도 돼요. 링크는 7일간 유효합니다.
         </p>
+      </div>
+
+      {/* 공개 프로필 — 대표만. 팀원 로그인 배선이 붙는 차수에서 팀원 숨김 처리 예정 */}
+      <div className="bg-white border border-[#EAEAEE] rounded-2xl p-5 mb-6">
+        <div className="flex items-start justify-between gap-3 mb-1">
+          <div>
+            <h2 className="text-sm font-bold text-gray-800">공개 프로필</h2>
+            <p className="text-xs text-[#7C7C88] mt-0.5">인플루언서가 보는 회사 페이지에요.</p>
+          </div>
+          {myId && (
+            <Link
+              href={`/advertiser/${myId}`}
+              target="_blank"
+              className="shrink-0 text-xs font-semibold text-[#B45309] hover:underline whitespace-nowrap"
+            >
+              회사 페이지 보기 →
+            </Link>
+          )}
+        </div>
+
+        {/* 토글 — 마케팅 문의 연락처 공개 */}
+        <div className="flex items-start justify-between gap-3 mt-4">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-800">마케팅 문의 연락처 공개</p>
+            <p style={{ fontSize: 11.5, color: '#7C7C88', lineHeight: 1.6 }} className="mt-0.5">
+              켜면 회사 페이지에 이메일과 전화가 보여요. 대행 문의를 받고 싶을 때 켜세요.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={mktPublic}
+            onClick={toggleMktPublic}
+            className="shrink-0 mt-0.5"
+            style={{
+              width: 44, height: 26, borderRadius: 13, position: 'relative',
+              background: mktPublic ? '#F59E0B' : '#D8D8DE', transition: 'background .15s',
+            }}
+          >
+            <span
+              style={{
+                position: 'absolute', top: 3, left: mktPublic ? 21 : 3, width: 20, height: 20,
+                borderRadius: '50%', background: '#fff', transition: 'left .15s',
+                boxShadow: '0 1px 2px rgba(0,0,0,.2)',
+              }}
+            />
+          </button>
+        </div>
+
+        {mktPublic && (
+          <>
+            {/* 지금 공개되는 값 (미리보기) */}
+            <div style={{ background: '#FBFBFC', border: '1px solid #EFEFF2', borderRadius: 10, padding: '12px 13px' }} className="mt-3">
+              <p style={{ fontSize: 11, color: '#9A9AA5' }}>이메일</p>
+              <p style={{ fontSize: 12.5, color: '#3C3C46' }} className="mb-2 break-all">{previewEmail || '—'}</p>
+              <p style={{ fontSize: 11, color: '#9A9AA5' }}>전화</p>
+              <p style={{ fontSize: 12.5, color: '#3C3C46' }}>{previewPhone || '—'}</p>
+            </div>
+
+            {/* 다른 연락처로 받기 (선택) */}
+            <button
+              type="button"
+              onClick={() => setShowContactInputs((v) => !v)}
+              className="text-xs font-medium text-[#B45309] hover:underline mt-3"
+            >
+              {showContactInputs ? '접기' : '다른 연락처로 받기'}
+            </button>
+
+            {showContactInputs && (
+              <div className="mt-3 space-y-2">
+                <input
+                  type="email"
+                  value={mktEmail}
+                  onChange={(e) => setMktEmail(e.target.value)}
+                  onBlur={() => persistContact({ marketing_email: mktEmail.trim() || null })}
+                  placeholder={fallbackEmail || '마케팅 이메일'}
+                  className="w-full"
+                  style={{ height: 46, borderRadius: 11, padding: '0 13px', fontSize: 13.5, border: '1px solid #E2E2E8' }}
+                />
+                <input
+                  type="tel"
+                  value={mktPhone}
+                  onChange={(e) => setMktPhone(e.target.value)}
+                  onBlur={() => persistContact({ marketing_phone: mktPhone.trim() || null })}
+                  placeholder={fallbackPhone || '마케팅 전화'}
+                  className="w-full"
+                  style={{ height: 46, borderRadius: 11, padding: '0 13px', fontSize: 13.5, border: '1px solid #E2E2E8' }}
+                />
+                <p style={{ fontSize: 11, color: '#7C7C88' }}>비우면 기본값으로 돌아가요.</p>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* 표 */}
@@ -168,57 +308,54 @@ export default function TeamPage() {
         <p className="text-sm text-gray-400 bg-white rounded-2xl p-5 shadow-sm text-center">아직 초대한 팀원이 없어요.</p>
       ) : (
         <div className="bg-white border border-[#EAEAEE] rounded-2xl overflow-hidden">
-          {members.map((m) => (
-            <div key={m.id} className="flex items-center gap-3 px-4 py-3 border-b border-[#F5F5F7] last:border-b-0">
-              <div className="w-9 h-9 rounded-full bg-[#FEF3C7] text-[#B45309] text-xs font-extrabold flex items-center justify-center shrink-0">
-                {initial(m.name ?? m.email)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-gray-800 truncate">{m.name ?? m.email}</p>
-                <p className="text-xs text-gray-400 truncate">{m.email}</p>
-              </div>
-              <select
-                value={m.role}
-                onChange={(e) => changeRole(m.id, e.target.value as Role)}
-                disabled={busyId === m.id}
-                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none disabled:opacity-50"
-              >
-                <option value="담당자">담당자</option>
-                <option value="관리자">관리자</option>
-              </select>
-              <span className={`shrink-0 text-[11px] font-bold px-2 py-1 rounded-full ${STATUS_STYLE[m.status]}`}>
-                {STATUS_LABEL[m.status]}
-              </span>
-              {m.status === 'invited' && (
-                <>
-                  {m.invite_token && (
+          {members.map((m) => {
+            const rc = ROLE_COLOR[m.role] ?? ROLE_COLOR['팀원']
+            return (
+              <div key={m.id} className="flex items-center gap-3 px-4 py-3 border-b border-[#F5F5F7] last:border-b-0">
+                <div className="w-9 h-9 rounded-full bg-[#FEF3C7] text-[#B45309] text-xs font-extrabold flex items-center justify-center shrink-0">
+                  {initial(m.name ?? m.email)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-gray-800 truncate">{m.name ?? m.email}</p>
+                  <p className="text-xs text-gray-400 truncate">{m.email}</p>
+                </div>
+                <span className="shrink-0" style={{ background: rc.bg, color: rc.fg, fontSize: 11.5, fontWeight: 800, borderRadius: 5, padding: '3px 8px' }}>
+                  {m.role}
+                </span>
+                <span className={`shrink-0 text-[11px] font-bold px-2 py-1 rounded-full ${STATUS_STYLE[m.status]}`}>
+                  {STATUS_LABEL[m.status]}
+                </span>
+                {m.status === 'invited' && (
+                  <>
+                    {m.invite_token && (
+                      <button
+                        onClick={() => copyLink(m)}
+                        className="shrink-0 text-xs text-[#B45309] font-medium hover:underline"
+                      >
+                        {copiedId === m.id ? '복사됨' : '링크 복사'}
+                      </button>
+                    )}
                     <button
-                      onClick={() => copyLink(m)}
-                      className="shrink-0 text-xs text-[#B45309] font-medium hover:underline"
+                      onClick={() => resend(m)}
+                      disabled={busyId === m.id}
+                      className="shrink-0 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
                     >
-                      {copiedId === m.id ? '복사됨' : '링크 복사'}
+                      재발송
                     </button>
-                  )}
+                  </>
+                )}
+                {(m.status === 'active' || m.status === 'inactive') && (
                   <button
-                    onClick={() => resend(m)}
+                    onClick={() => toggleActive(m.id, m.status)}
                     disabled={busyId === m.id}
                     className="shrink-0 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
                   >
-                    재발송
+                    {m.status === 'active' ? '비활성화' : '다시 활성화'}
                   </button>
-                </>
-              )}
-              {(m.status === 'active' || m.status === 'inactive') && (
-                <button
-                  onClick={() => toggleActive(m.id, m.status)}
-                  disabled={busyId === m.id}
-                  className="shrink-0 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                >
-                  {m.status === 'active' ? '비활성화' : '다시 활성화'}
-                </button>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

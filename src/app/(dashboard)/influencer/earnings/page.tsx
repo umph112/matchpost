@@ -16,6 +16,8 @@ type OverdueRow = {
   settlementDate: string
   budget: number | null
   reminderCount: number
+  companyName: string | null
+  managerName: string | null
 }
 
 const STATUS_FILTERS = ['전체', '예정', '진행중', '완료', '결제완료']
@@ -101,8 +103,26 @@ export default function EarningsPage() {
         .in('id', campIds)
         .lt('settlement_date', today)
       const campById = Object.fromEntries((camps ?? []).map((c) => [c.id, c]))
-      const overdueRows: OverdueRow[] = (myProps ?? [])
-        .filter((p) => p.campaign_id && campById[p.campaign_id])
+      const baseRows = (myProps ?? []).filter((p) => p.campaign_id && campById[p.campaign_id])
+
+      // 미수 카드 표기용 — 광고주 회사명(advertiser_profiles) · 담당자명(profiles) 배치 조회
+      const advIds = [...new Set(baseRows.map((p) => p.advertiser_id))]
+      const companyByAdv: Record<string, string | null> = {}
+      const nameByAdv: Record<string, string | null> = {}
+      if (advIds.length > 0) {
+        const { data: aps } = await supabase
+          .from('advertiser_profiles')
+          .select('user_id, company_name')
+          .in('user_id', advIds)
+        ;(aps ?? []).forEach((a) => { companyByAdv[a.user_id] = a.company_name })
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, name')
+          .in('id', advIds)
+        ;(profs ?? []).forEach((p) => { nameByAdv[p.id] = p.name })
+      }
+
+      const overdueRows: OverdueRow[] = baseRows
         .map((p) => ({
           campaignId: p.campaign_id as string,
           title: campById[p.campaign_id as string].title,
@@ -111,6 +131,8 @@ export default function EarningsPage() {
           settlementDate: campById[p.campaign_id as string].settlement_date,
           budget: p.budget,
           reminderCount: campById[p.campaign_id as string].overdue_reminder_count ?? 0,
+          companyName: companyByAdv[p.advertiser_id] ?? null,
+          managerName: nameByAdv[p.advertiser_id] ?? null,
         }))
       setOverdue(overdueRows)
     }
@@ -237,6 +259,12 @@ export default function EarningsPage() {
                 <p className="text-xs font-semibold text-[#DC2626] flex items-center gap-1.5">
                   미수 · {r.title}
                   <span className="bg-[#DC2626] text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold">{dDayLabel(r.settlementDate)}</span>
+                </p>
+                <p className="text-[11px] text-[#B91C1C] mt-0.5">
+                  <Link href={`/advertiser/${r.advertiserId}`} className="font-semibold hover:underline">
+                    {r.companyName ?? '광고주'}
+                  </Link>
+                  {r.managerName && <span> / {r.managerName}</span>}
                 </p>
                 <p className="text-[11px] text-[#B91C1C] mt-0.5">
                   정산 예정일 {listDateLabel(r.settlementDate + 'T00:00:00')}

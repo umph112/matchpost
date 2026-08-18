@@ -30,7 +30,34 @@ export default function InfluencerProposalsPage() {
       .eq('influencer_id', user.id)
       .order('created_at', { ascending: false })
 
-    setProposals(data ?? [])
+    const rows = data ?? []
+
+    // 브랜드명(캠페인) + 회사 상호(광고주) 배치 조회
+    // 고르는 화면 계열이라 브랜드가 있으면 그대로 노출 — 비면 회사 상호, 그것도 없으면 개인명
+    // (구현 schedule 기반 옛 제안은 campaign_id 가 없어 null 이 정상값 → 폴백이 처리한다)
+    const campIds = [...new Set(rows.map((r) => r.campaign_id).filter(Boolean))]
+    const brandByCamp: Record<string, string | null> = {}
+    if (campIds.length > 0) {
+      const { data: camps } = await supabase
+        .from('campaigns')
+        .select('id, brand_name')
+        .in('id', campIds)
+      ;(camps ?? []).forEach((c) => { brandByCamp[c.id] = c.brand_name })
+    }
+    const advIds = [...new Set(rows.map((r) => r.advertiser_id).filter(Boolean))]
+    const companyByAdv: Record<string, string | null> = {}
+    if (advIds.length > 0) {
+      const { data: aps } = await supabase
+        .from('advertiser_profiles')
+        .select('user_id, company_name')
+        .in('user_id', advIds)
+      ;(aps ?? []).forEach((a) => { companyByAdv[a.user_id] = a.company_name })
+    }
+    rows.forEach((r) => {
+      r.displayName = brandByCamp[r.campaign_id] ?? companyByAdv[r.advertiser_id] ?? r.profiles?.name ?? '광고주'
+    })
+
+    setProposals(rows)
     setLoading(false)
   }
 
@@ -98,7 +125,9 @@ export default function InfluencerProposalsPage() {
             {/* 상단 */}
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="font-semibold text-gray-800">{proposal.profiles?.name}</p>
+                <p className="font-semibold text-gray-800">
+                  <Link href={`/advertiser/${proposal.advertiser_id}`} className="hover:underline">{proposal.displayName}</Link>
+                </p>
                 <p className="text-xs text-gray-400 mt-0.5">{proposal.collaboration_type}</p>
               </div>
               <span className={`text-xs px-2 py-1 rounded-full font-medium ${color}`}>

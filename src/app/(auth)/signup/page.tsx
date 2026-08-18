@@ -132,7 +132,7 @@ function InviteSignup({ token }: { token: string }) {
   if (phase === 'used') return <NoticeCard title="이미 사용된 초대예요" desc="이 초대 링크로는 이미 가입이 완료됐어요. 로그인해서 이용해주세요." />
   if (phase === 'expired') return <NoticeCard title="초대 링크가 만료됐어요" desc="초대 링크는 7일간만 유효해요. 초대한 분께 재발송을 요청해주세요." />
 
-  const roleLabel = info?.role === '관리자' ? '관리자' : '담당자'
+  const roleLabel = '팀원'
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-[420px]">
@@ -476,7 +476,7 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
       await fetch('/api/signup/biz-doc', { method: 'POST', body: fd }).catch(() => {})
     }
     for (const inviteEmail of inviteEmails) {
-      await inviteTeamMember(inviteEmail, '담당자').catch(() => {})
+      await inviteTeamMember(inviteEmail).catch(() => {})
     }
 
     setLoading(false)
@@ -508,7 +508,7 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
             style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 10, padding: '12px 13px', fontSize: 12, color: '#92400E', lineHeight: 1.7 }}
           >
             <p style={{ fontWeight: 700 }}>이 사업자번호는 이미 등록되어 있어요</p>
-            <p>{dupEmail ? `${dupEmail}에게 팀 초대를 요청하세요` : '기존 관리자에게 팀 초대를 요청하세요'}</p>
+            <p>{dupEmail ? `${dupEmail}에게 팀 초대를 요청하세요` : '기존 대표에게 팀 초대를 요청하세요'}</p>
           </div>
         )}
 
@@ -532,11 +532,11 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
               : <p className="text-[11px] text-gray-400 mt-1.5">조직 계정은 이 번호로 하나만 만들어집니다.</p>}
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">담당자 이름 <span className="text-[#DC2626]">필수</span></label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">대표의 이름 <span className="text-[#DC2626]">필수</span></label>
             <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} placeholder="이름" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">담당자 휴대폰 <span className="text-[#DC2626]">필수</span></label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">대표의 휴대폰 <span className="text-[#DC2626]">필수</span></label>
             <input value={managerPhone} onChange={(e) => setManagerPhone(e.target.value)} className={inputCls} placeholder="010-0000-0000" />
           </div>
           <div>
@@ -581,7 +581,7 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
   if (step === 2) {
     return (
       <div className="bg-white rounded-2xl shadow-sm p-8">
-        <StepHeader n={2} title="함께 쓸 분이 있으신가요?" desc="캠페인과 크레딧은 회사 계정에 쌓입니다. 담당자가 바뀌어도 기록은 그대로 남아요." />
+        <StepHeader n={2} title="함께 쓸 분이 있으신가요?" desc="캠페인과 크레딧은 회사 계정에 쌓입니다. 팀원이 바뀌어도 기록은 그대로 남아요." />
         {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>}
 
         <div className="flex flex-col gap-2 mb-3">
@@ -592,7 +592,7 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-[12.5px] font-bold truncate">{em}</p>
-                <p className="text-[11px] text-[#9A9AA5]">담당자</p>
+                <p className="text-[11px] text-[#9A9AA5]">팀원</p>
               </div>
               <button onClick={() => setInviteEmails((prev) => prev.filter((x) => x !== em))} className="text-gray-300 hover:text-red-500 text-xs">✕</button>
             </div>

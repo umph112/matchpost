@@ -76,6 +76,8 @@ export default function NewCampaignPage() {
   const [clipCost, setClipCost] = useState('')
 
   const [title, setTitle] = useState('')
+  // 노출용 브랜드명 (선택). 비면 회사 상호를 인플루언서 화면에서 대신 씀.
+  const [brand, setBrand] = useState('')
 
   // 날짜 (최대 30일) + 기본 시간
   const [dateInput, setDateInput] = useState('')   // 진행일정 시작일(또는 단일일)
@@ -260,6 +262,7 @@ export default function NewCampaignPage() {
     setMissions(c.missions || {})
     setSelectedCategories(c.predefined_categories || [])
     setTitle(c.title || '')
+    setBrand(c.brand_name || '')
     setBudgetManwon(c.budget_total ? String(Math.round(c.budget_total / 10000)) : '')
     setDetails(c.details || '')
     setGuideUrl(c.guide_url || '')
@@ -495,6 +498,8 @@ export default function NewCampaignPage() {
     const { error: insertError } = await supabase.from('campaigns').insert({
       advertiser_id: user.id,
       title,
+      // 노출용 브랜드명 (비면 인플루언서 화면에서 회사 상호로 대체)
+      brand_name: brand.trim() || null,
       channels,
       // 선택한 채널에 대해서만 수량 저장 (미입력 시 기본 1)
       content_counts: Object.fromEntries(channels.map((c) => [c, contentCounts[c] ?? 1])),
@@ -811,6 +816,21 @@ export default function NewCampaignPage() {
             />
           </label>
         )}
+      </div>
+
+      {/* 브랜드 (선택) — 인플루언서에게 이 이름으로 노출. 비면 회사 상호를 씀 */}
+      <div className={card}>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          브랜드 <span className="text-gray-400 font-normal">(선택)</span>
+        </label>
+        <input
+          type="text"
+          value={brand}
+          onChange={(e) => setBrand(e.target.value)}
+          className={input}
+          placeholder="회사 상호"
+        />
+        <p className="text-xs text-gray-400 mt-1">인플루언서에게 이 이름으로 보여요. 대행 건이면 클라이언트 브랜드를 적어주세요.</p>
       </div>
 
       {/* ⑤ 제목 */}

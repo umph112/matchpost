@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '필수 항목이 누락됐어요.' }, { status: 400 })
   }
   if (role === 'advertiser' && !managerPhone) {
-    return NextResponse.json({ error: '담당자 휴대폰이 필요해요.' }, { status: 400 })
+    return NextResponse.json({ error: '대표의 휴대폰이 필요해요.' }, { status: 400 })
   }
   if (role === 'advertiser' && (!companyName || !bizRegNumber)) {
     return NextResponse.json({ error: '상호와 사업자등록번호를 입력해주세요.' }, { status: 400 })

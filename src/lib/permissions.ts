@@ -25,7 +25,7 @@ export function checkConversationPermission(params: {
   // 담당자로 지정된다(호출 쪽에서 처리).
   const noManagerYet = managerId == null
   const canSend = isManager || isOwner || noManagerYet
-  // 소유자가 "담당자 아닌 대화"에 보내는 경우만 대리 발송
+  // 대표가 "담당자 아닌 대화"에 보내는 경우만 대리 발송
   const actingAsProxy = isOwner && !isManager && !noManagerYet
   return { canSend, isOwner, isManager, actingAsProxy }
 }

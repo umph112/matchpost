@@ -31,7 +31,7 @@ export default function InfluencerSearchPage() {
     let query = supabase
       .from('campaigns')
       .select(
-        'id, title, date, location_city, location_district, start_time, end_time, predefined_categories, free_tags, details, advertiser_id'
+        'id, title, brand_name, date, location_city, location_district, start_time, end_time, predefined_categories, free_tags, details, advertiser_id'
       )
       .eq('is_public', true)
       .eq('status', 'open')
@@ -63,7 +63,8 @@ export default function InfluencerSearchPage() {
           .maybeSingle()
         return {
           ...campaign,
-          advertiserName: ap?.company_name ?? profile?.name ?? '광고주',
+          // 인플루언서에게는 브랜드명을 그대로 노출 — 비면 회사 상호로 대체
+          advertiserName: campaign.brand_name ?? ap?.company_name ?? profile?.name ?? '광고주',
           onTimeRate: score?.on_time_rate ?? null,
         }
       })
@@ -143,7 +144,7 @@ export default function InfluencerSearchPage() {
             <div key={c.id} className="bg-white rounded-2xl p-5 shadow-sm mb-3 border-l-4 border-amber-400">
               <p className="font-semibold text-gray-900">{c.title}</p>
               <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
-                <Building2 size={16} strokeWidth={1.75} /> {c.advertiserName}
+                <Building2 size={16} strokeWidth={1.75} /> <Link href={`/advertiser/${c.advertiser_id}`} className="hover:underline">{c.advertiserName}</Link>
                 {c.onTimeRate != null && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium">
                     <span className={`w-1.5 h-1.5 rounded-full ${c.onTimeRate >= 90 ? 'bg-emerald-500' : 'bg-amber-500'}`} />

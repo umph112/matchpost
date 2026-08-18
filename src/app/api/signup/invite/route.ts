@@ -58,7 +58,7 @@ export async function POST(req: Request) {
   // 2-1) 민감정보 분리 저장
   await admin.from('user_private').insert({ user_id: uid, real_name: name, phone, email })
 
-  // 3) 소속 브랜드 표시용 advertiser_profiles — 사업자정보는 없이 소유자 회사명만 복사.
+  // 3) 소속 브랜드 표시용 advertiser_profiles — 사업자정보는 없이 대표 회사명만 복사.
   //    (조직 구조를 바꾸지 않으면서 멤버 콘솔에 올바른 회사명이 뜨게 하려는 최소 처리.
   //     biz_reg_number는 null이라 사업자번호 유니크 인덱스와 충돌하지 않는다.)
   const { data: ownerAdv } = await admin

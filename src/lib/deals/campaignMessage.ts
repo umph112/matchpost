@@ -6,7 +6,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 export type SendResult = { ok: true } | { ok: false; error: string }
 
 // D6 A3/A4 — 캠페인 대화 발송. onlyInfluencerId가 있으면 그 사람에게만(개별 발송),
-// 없으면 참여자 전원에게 브로드캐스트한다. 소유자가 담당자 아닌 대화에 보내면 대리 발송으로 남는다.
+// 없으면 참여자 전원에게 브로드캐스트한다. 대표가 담당자 아닌 대화에 보내면 대리 발송으로 남는다.
 export async function sendCampaignMessage(input: {
   campaignId: string
   content: string
