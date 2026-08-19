@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { resolveCompany } from '@/lib/team/company'
 import SettlementsView from '@/components/SettlementsView'
 
 export const dynamic = 'force-dynamic'
@@ -11,11 +12,14 @@ export default async function SettlementsPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: campaigns } = await supabase
+  // D14 6절 관찰1 — 회사 단위로 조회. 대표는 회사 전체, 팀원은 회사 것 중 자기 담당(manager_id)만 기본 노출.
+  const company = await resolveCompany(supabase, user.id)
+  let campaignsQuery = supabase
     .from('campaigns')
     .select('id, title, campaign_type, settlement_date, tax_doc_requested_at, status, overdue_reminder_count')
-    .eq('advertiser_id', user.id)
-    .order('settlement_date', { ascending: true })
+    .eq('advertiser_id', company.advertiserId)
+  if (company.isMember) campaignsQuery = campaignsQuery.eq('manager_id', user.id)
+  const { data: campaigns } = await campaignsQuery.order('settlement_date', { ascending: true })
 
   const campIds = (campaigns ?? []).map((c) => c.id)
   const { data: proposals } = campIds.length

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { resolveCompany } from '@/lib/team/company'
 import DealSheet from '@/components/DealSheet'
 
 export const dynamic = 'force-dynamic'
@@ -18,7 +19,10 @@ export default async function CampaignDetailPage({
 
   const { data: campaign } = await supabase.from('campaigns').select('*').eq('id', id).single()
   if (!campaign) redirect('/advertiser/dashboard')
-  if (campaign.advertiser_id !== user.id) redirect('/advertiser/dashboard')
+  // D14 6절 관찰1 — 게이트를 '회사 소유 여부'로. 대표·활동중 팀원 모두 회사 캠페인을 열 수 있다.
+  // (무관한 계정은 resolveCompany().advertiserId 가 본인 id 라 회사 것과 불일치 → 접근 불가.)
+  const company = await resolveCompany(supabase, user.id)
+  if (campaign.advertiser_id !== company.advertiserId) redirect('/advertiser/dashboard')
 
   const { data: proposals } = await supabase
     .from('proposals')
