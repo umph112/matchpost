@@ -3,17 +3,16 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Megaphone, Users, UserCheck, MessageSquare, Bell, Wallet, CreditCard, UserPlus, CalendarDays, Menu } from 'lucide-react'
+import { LayoutDashboard, Megaphone, Users, UserCheck, MessageSquare, Bell, Wallet, CreditCard, UserPlus, CalendarDays, UserMinus, Menu } from 'lucide-react'
 import LogoutButton from './LogoutButton'
 import Logo from './Logo'
 import { initial } from '@/lib/initial'
 
 // 광고주 셸 — PC(사이드바) / 모바일(앱형)을 화면폭·UA로 자동 감지(사용자 토글 없음, D7 4-8).
 // PC 모드 비주얼은 design/mypage-pc/README.md 스펙 기준.
-const NAV_GROUPS: {
-  group: string
-  items: { href: string; label: string; Icon: typeof LayoutDashboard; badge?: 'msg' | 'notif' }[]
-}[] = [
+type NavItem = { href: string; label: string; Icon: typeof LayoutDashboard; badge?: 'msg' | 'notif'; count?: number }
+type NavGroup = { group: string; items: NavItem[] }
+const NAV_GROUPS: NavGroup[] = [
   {
     group: '캠페인 열기',
     items: [
@@ -59,6 +58,7 @@ export default function AdvertiserShell({
   canToggle = false,
   isMember = false,
   initialView = 'me',
+  handovers = [],
   children,
 }: {
   name: string
@@ -69,6 +69,7 @@ export default function AdvertiserShell({
   canToggle?: boolean // 대표 + 활동중 팀원 1명 이상일 때만 모드 토글 노출
   isMember?: boolean // 팀원 계정 (팀·크레딧 메뉴 숨김)
   initialView?: 'me' | 'all'
+  handovers?: { leaverId: string; label: string; badge: number }[] // 퇴사 예정자별 이관 화면(D14 5절)
   children: React.ReactNode
 }) {
   const pathname = usePathname()
@@ -99,6 +100,22 @@ export default function AdvertiserShell({
   const visibleGroups = NAV_GROUPS
     .map((g) => ({ ...g, items: g.items.filter((n) => (COMPANY_HREFS.includes(n.href) ? showCompanyMenu : true)) }))
     .filter((g) => g.items.length > 0)
+
+  // 「이관」 그룹 — 퇴사 예정자별 이관 화면 링크(남은 담당 건수 배지).
+  // 대표뿐 아니라 퇴사자 본인·받는 사람도 봐야 하므로 회사 메뉴 게이트 밖에 별도 그룹으로 붙인다.
+  const handoverGroup: NavGroup[] =
+    handovers.length > 0
+      ? [{
+          group: '이관',
+          items: handovers.map((h) => ({
+            href: `/advertiser/team/handover/${h.leaverId}`,
+            label: h.label,
+            Icon: UserMinus,
+            count: h.badge,
+          })),
+        }]
+      : []
+  const allGroups: NavGroup[] = [...visibleGroups, ...handoverGroup]
 
   // 모드 전환 칩 (스펙 값 그대로)
   const viewToggle = canToggle ? (
@@ -151,11 +168,11 @@ export default function AdvertiserShell({
 
   const navList = (
     <nav className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-0.5 p-3">
-      {visibleGroups.map((g) => (
+      {allGroups.map((g) => (
         <div key={g.group}>
           <div className="text-[10px] font-bold text-[#B0B0BB] tracking-[0.06em] px-2.5 pt-2.5 pb-1.5">{g.group}</div>
           {g.items.map((n) => {
-            const b = badgeVal(n.badge)
+            const b = n.count ?? badgeVal(n.badge)
             const active = isActive(n.href)
             return (
               <Link

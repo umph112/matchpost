@@ -59,6 +59,49 @@ export default async function AdvertiserLayout({ children }: { children: React.R
   const cookieStore = await cookies()
   const initialView = cookieStore.get('adv_view')?.value === 'all' ? 'all' : 'me'
 
+  // 이관 nav — 회사의 퇴사 예정(leaving) 팀원별 남은 담당 건수(D14 5절).
+  // resolveCompany 는 leaving 멤버를 본인 회사로 오인하므로, 내가 퇴사 예정이면 그 소속(owner_id)을 우선한다.
+  const { data: meLeaving } = await supabase
+    .from('team_members')
+    .select('owner_id')
+    .eq('member_id', user.id)
+    .eq('status', 'leaving')
+    .maybeSingle()
+  const ownerScope = meLeaving?.owner_id ?? company.advertiserId
+  const { data: leavingRows } = await supabase
+    .from('team_members')
+    .select('member_id, leave_on')
+    .eq('owner_id', ownerScope)
+    .eq('status', 'leaving')
+  const leaving = (leavingRows ?? []).filter((r) => r.member_id)
+  let handovers: { leaverId: string; label: string; badge: number }[] = []
+  if (leaving.length) {
+    const ids = leaving.map((r) => r.member_id as string)
+    const { data: pf } = await supabase.from('profiles').select('id, name').in('id', ids)
+    const nameById = Object.fromEntries((pf ?? []).map((p) => [p.id, p.name as string | null]))
+    handovers = await Promise.all(
+      leaving.map(async (r) => {
+        const lid = r.member_id as string
+        const { count: cc } = await supabase
+          .from('campaigns')
+          .select('id', { count: 'exact', head: true })
+          .eq('advertiser_id', ownerScope)
+          .eq('manager_id', lid)
+        const { count: vc } = await supabase
+          .from('conversations')
+          .select('id', { count: 'exact', head: true })
+          .eq('advertiser_id', ownerScope)
+          .eq('kind', 'personal')
+          .eq('manager_id', lid)
+        return {
+          leaverId: lid,
+          label: `${nameById[lid] || '이름 미설정'}님 이관`,
+          badge: (cc ?? 0) + (vc ?? 0),
+        }
+      }),
+    )
+  }
+
   return (
     <AdvertiserShell
       name={name}
@@ -69,6 +112,7 @@ export default async function AdvertiserLayout({ children }: { children: React.R
       canToggle={canToggle}
       isMember={company.isMember}
       initialView={initialView}
+      handovers={handovers}
     >
       {children}
     </AdvertiserShell>

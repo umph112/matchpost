@@ -5,8 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { initial } from '@/lib/initial'
 import { inviteTeamMember } from '@/lib/team/actions'
+import { setLeaving, cancelLeaving } from '@/lib/team/transfers'
 
-type Status = 'invited' | 'active' | 'inactive'
+type Status = 'invited' | 'active' | 'inactive' | 'leaving'
 
 type Member = {
   id: string
@@ -17,6 +18,7 @@ type Member = {
   joined_at: string | null
   member_id: string | null
   invite_token: string | null
+  leave_on: string | null
   name?: string | null
 }
 
@@ -24,11 +26,13 @@ const STATUS_STYLE: Record<Status, string> = {
   invited: 'bg-[#FEF3C7] text-[#B45309]',
   active: 'bg-[#DCFCE7] text-[#15803D]',
   inactive: 'bg-[#F1F1F4] text-[#7C7C88]',
+  leaving: 'bg-[#FEF3C7] text-[#B45309]',
 }
 const STATUS_LABEL: Record<Status, string> = {
   invited: '초대 대기',
   active: '활동중',
   inactive: '비활성',
+  leaving: '퇴사 예정',
 }
 // 역할 배지 색 — 대표/팀원 두 가지. 알 수 없는 값이 오면 팀원으로 폴백(색이 없어 화면이 죽는 걸 막는다).
 const ROLE_COLOR: Record<string, { bg: string; fg: string }> = {
@@ -44,6 +48,11 @@ export default function TeamPage() {
   const [error, setError] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  // 퇴사 예정 전환 — active 행에서 퇴사 예정일을 입력하는 인라인 상태
+  const [leavingId, setLeavingId] = useState<string | null>(null)
+  const [leaveDate, setLeaveDate] = useState('')
+  const [rowError, setRowError] = useState('')
+  const today = new Date().toISOString().slice(0, 10)
 
   // 공개 프로필 — 마케팅 문의 연락처 공개 설정(대표만). 폴백: 이메일=user_private.email, 전화=profiles.manager_phone
   const [myId, setMyId] = useState<string | null>(null)
@@ -60,7 +69,7 @@ export default function TeamPage() {
     setLoading(true)
     const { data } = await supabase
       .from('team_members')
-      .select('id, email, role, status, invited_at, joined_at, member_id, invite_token')
+      .select('id, email, role, status, invited_at, joined_at, member_id, invite_token, leave_on')
       .order('created_at', { ascending: false })
 
     const memberIds = [...new Set((data ?? []).filter((m) => m.member_id).map((m) => m.member_id as string))]
@@ -148,11 +157,34 @@ export default function TeamPage() {
     setTimeout(() => setCopiedId((c) => (c === m.id ? null : c)), 1500)
   }
 
-  const toggleActive = async (id: string, current: Status, name: string) => {
-    if (current === 'active' && !confirm(`${name}님을 해제할까요? 담당하던 건의 이관은 다음 차수에서 업데이트됩니다.`)) return
-    setBusyId(id)
-    const next = current === 'active' ? 'inactive' : 'active'
-    await supabase.from('team_members').update({ status: next }).eq('id', id)
+  // 「해제」 대신 「퇴사 예정으로 전환」 — 합의한 퇴사일(leave_on)을 적고, 담당 건은 이관 화면에서 넘긴다.
+  const submitLeaving = async (m: Member) => {
+    if (!leaveDate) { setRowError('퇴사 예정일을 골라주세요.'); return }
+    setRowError('')
+    setBusyId(m.id)
+    const res = await setLeaving(m.id, leaveDate)
+    setBusyId(null)
+    if (!res.ok) { setRowError(res.error); return }
+    setLeavingId(null)
+    setLeaveDate('')
+    load()
+  }
+
+  // 퇴사 예정 전환 취소 → 활동중으로 되돌린다.
+  const undoLeaving = async (m: Member) => {
+    setRowError('')
+    setBusyId(m.id)
+    const res = await cancelLeaving(m.id)
+    setBusyId(null)
+    if (!res.ok) { setRowError(res.error); return }
+    load()
+  }
+
+  // 비활성 팀원 다시 활성화(기존 동작 유지).
+  const reactivate = async (m: Member) => {
+    setRowError('')
+    setBusyId(m.id)
+    await supabase.from('team_members').update({ status: 'active' }).eq('id', m.id)
     setBusyId(null)
     load()
   }
@@ -303,6 +335,7 @@ export default function TeamPage() {
       </div>
 
       {/* 표 */}
+      {rowError && <p className="text-xs text-red-500 mb-2">{rowError}</p>}
       {loading ? (
         <p className="text-center text-gray-400 py-12">불러오는 중...</p>
       ) : members.length === 0 ? (
@@ -327,6 +360,9 @@ export default function TeamPage() {
                 <span className={`shrink-0 text-[11px] font-bold px-2 py-1 rounded-full ${STATUS_STYLE[m.status]}`}>
                   {STATUS_LABEL[m.status]}
                 </span>
+                {m.status === 'leaving' && m.leave_on && (
+                  <span className="shrink-0 text-[11px] text-[#B45309] font-medium">~{m.leave_on}</span>
+                )}
                 {m.status === 'invited' && (
                   <>
                     {m.invite_token && (
@@ -346,13 +382,68 @@ export default function TeamPage() {
                     </button>
                   </>
                 )}
-                {(m.status === 'active' || m.status === 'inactive') && (
+                {/* 활동중 → 「퇴사 예정으로 전환」: 클릭하면 퇴사일 입력이 열린다 */}
+                {m.status === 'active' && (
+                  leavingId === m.id ? (
+                    <div className="shrink-0 flex items-center gap-1.5">
+                      <input
+                        type="date"
+                        value={leaveDate}
+                        min={today}
+                        onChange={(e) => setLeaveDate(e.target.value)}
+                        className="border border-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                      <button
+                        onClick={() => submitLeaving(m)}
+                        disabled={busyId === m.id}
+                        className="text-xs font-bold text-[#B45309] hover:underline disabled:opacity-50"
+                      >
+                        확인
+                      </button>
+                      <button
+                        onClick={() => { setLeavingId(null); setLeaveDate(''); setRowError('') }}
+                        className="text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setRowError(''); setLeaveDate(''); setLeavingId(m.id) }}
+                      disabled={busyId === m.id}
+                      className="shrink-0 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                    >
+                      퇴사 예정으로 전환
+                    </button>
+                  )
+                )}
+                {/* 퇴사 예정 → 이관 화면으로 넘어가 담당을 옮긴다 · 전환 취소 */}
+                {m.status === 'leaving' && (
+                  <>
+                    {m.member_id && (
+                      <Link
+                        href={`/advertiser/team/handover/${m.member_id}`}
+                        className="shrink-0 text-xs text-[#B45309] font-medium hover:underline"
+                      >
+                        이관 화면
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => undoLeaving(m)}
+                      disabled={busyId === m.id}
+                      className="shrink-0 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                    >
+                      전환 취소
+                    </button>
+                  </>
+                )}
+                {m.status === 'inactive' && (
                   <button
-                    onClick={() => toggleActive(m.id, m.status, m.name ?? m.email)}
+                    onClick={() => reactivate(m)}
                     disabled={busyId === m.id}
                     className="shrink-0 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
                   >
-                    {m.status === 'active' ? '해제' : '다시 활성화'}
+                    다시 활성화
                   </button>
                 )}
               </div>
