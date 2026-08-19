@@ -141,10 +141,12 @@ export default function DealSheet({
   campaign,
   proposals,
   userId,
+  recorderName,
 }: {
   campaign: Campaign
   proposals: Proposal[]
   userId: string
+  recorderName?: string // D14 6절 — 로그인한 기록자 이름. 정산 기록 모달 배지·확인문구에 노출.
 }) {
   const supabase = createClient()
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -742,6 +744,7 @@ export default function DealSheet({
         <SettleConfirmModal
           proposals={settleTargets}
           campaign={campaign}
+          recorderName={recorderName}
           onClose={() => setSettleModal(false)}
           onDone={(settledIds) => {
             setProposals((prev) =>

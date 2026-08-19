@@ -39,6 +39,9 @@ export default async function CampaignDetailPage({
   const profileById = Object.fromEntries((profiles ?? []).map((p) => [p.id, p]))
   const infProfById = Object.fromEntries((infProfs ?? []).map((i) => [i.user_id, i]))
 
+  // D14 6절 — 정산을 기록하는 사람 이름(대표/팀원)
+  const { data: me } = await supabase.from('profiles').select('name').eq('id', user.id).maybeSingle()
+
   const enrichedProposals = (proposals ?? []).map((p) => ({
     ...p,
     profile: profileById[p.influencer_id] ?? null,
@@ -50,6 +53,7 @@ export default async function CampaignDetailPage({
       campaign={campaign}
       proposals={enrichedProposals}
       userId={user.id}
+      recorderName={me?.name ?? undefined}
     />
   )
 }

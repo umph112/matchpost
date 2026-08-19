@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { resolveCompany } from '@/lib/team/company'
 
 export type SettleResult = { ok: true } | { ok: false; error: string }
 
@@ -29,7 +30,10 @@ export async function settleCampaign(
     .select('advertiser_id, influencer_id')
     .eq('id', proposalId)
     .maybeSingle()
-  if (!proposal || proposal.advertiser_id !== user.id) {
+  // 회사 일원(대표 또는 활동중 팀원)이면 정산을 기록할 수 있다 — D14 6절.
+  // 팀원의 resolveCompany().advertiserId 는 회사(대표) id 이므로 제안의 회사 소속만 확인하면 된다.
+  const company = await resolveCompany(auth, user.id)
+  if (!proposal || proposal.advertiser_id !== company.advertiserId) {
     return { ok: false, error: '정산 권한이 없어요.' }
   }
 
@@ -42,6 +46,7 @@ export async function settleCampaign(
     p_amount_gross:     opts?.withholding?.gross ?? null,
     p_amount_withheld:  opts?.withholding?.withheld ?? null,
     p_amount_net:       opts?.withholding?.net ?? null,
+    p_settled_by:       user.id, // D14 6절 — 기록자(대표 또는 팀원). 오기록 시 책임 소재.
   })
 
   if (error) {

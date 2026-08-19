@@ -31,6 +31,9 @@ export default async function SettlementsPage() {
     : { data: [] }
   const nameById = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.name]))
 
+  // D14 6절 — 정산을 기록하는 사람 이름(대표/팀원)
+  const { data: me } = await supabase.from('profiles').select('name').eq('id', user.id).maybeSingle()
+
   const enrichedProposals = (proposals ?? []).map((p) => ({
     ...p,
     profile: { name: nameById[p.influencer_id] ?? null },
@@ -40,6 +43,7 @@ export default async function SettlementsPage() {
     <SettlementsView
       campaigns={campaigns ?? []}
       proposals={enrichedProposals}
+      recorderName={me?.name ?? undefined}
     />
   )
 }

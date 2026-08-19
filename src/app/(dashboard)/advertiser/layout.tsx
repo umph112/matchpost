@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import AdvertiserShell from '@/components/AdvertiserShell'
+import { resolveCompany } from '@/lib/team/company'
 
 // 광고주 전용 데스크탑 셸 레이아웃 (모든 /advertiser/* 페이지를 감쌈)
 // 사이드바/상단바에 쓸 요약값(집행 예정액·미확인 카운트)을 계산해 셸에 전달.
@@ -42,8 +44,32 @@ export default async function AdvertiserLayout({ children }: { children: React.R
   const now = new Date()
   const sub = `광고주 콘솔 · ${now.getFullYear()}년 ${now.getMonth() + 1}월`
 
+  // 모드 전환(내 업무/회사 관리) — D14 2절.
+  // 대표이면서 활동중 팀원이 1명 이상일 때만 토글을 보여준다. 팀원 계정엔 토글 없음.
+  const company = await resolveCompany(supabase, user.id)
+  let canToggle = false
+  if (company.isOwner) {
+    const { count: teamCount } = await supabase
+      .from('team_members')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_id', user.id)
+      .eq('status', 'active')
+    canToggle = (teamCount ?? 0) > 0
+  }
+  const cookieStore = await cookies()
+  const initialView = cookieStore.get('adv_view')?.value === 'all' ? 'all' : 'me'
+
   return (
-    <AdvertiserShell name={name} sub={sub} spend={spend} msgCount={msgCount} notifCount={notifCount ?? 0}>
+    <AdvertiserShell
+      name={name}
+      sub={sub}
+      spend={spend}
+      msgCount={msgCount}
+      notifCount={notifCount ?? 0}
+      canToggle={canToggle}
+      isMember={company.isMember}
+      initialView={initialView}
+    >
       {children}
     </AdvertiserShell>
   )

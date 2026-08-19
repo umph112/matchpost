@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { LayoutDashboard, Megaphone, Users, UserCheck, MessageSquare, Bell, Wallet, CreditCard, UserPlus, Menu } from 'lucide-react'
 import LogoutButton from './LogoutButton'
@@ -43,6 +43,7 @@ const NAV_GROUPS: {
     group: '계정',
     items: [
       { href: '/advertiser/team', label: '팀 멤버', Icon: UserPlus },
+      { href: '/advertiser/team/workload', label: '팀원 현황', Icon: Users },
       { href: '/advertiser/notifications', label: '알림', Icon: Bell, badge: 'notif' },
     ],
   },
@@ -54,6 +55,9 @@ export default function AdvertiserShell({
   spend = 0,
   msgCount = 0,
   notifCount = 0,
+  canToggle = false,
+  isMember = false,
+  initialView = 'me',
   children,
 }: {
   name: string
@@ -61,16 +65,67 @@ export default function AdvertiserShell({
   spend?: number
   msgCount?: number
   notifCount?: number
+  canToggle?: boolean // 대표 + 활동중 팀원 1명 이상일 때만 모드 토글 노출
+  isMember?: boolean // 팀원 계정 (팀·크레딧 메뉴 숨김)
+  initialView?: 'me' | 'all'
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const fullBleed = pathname.startsWith('/advertiser/messages')
   const [mode, setMode] = useState<'pc' | 'mobile'>('pc')
   const [open, setOpen] = useState(false)
   const [creditBalance, setCreditBalance] = useState<number | null>(null)
+  const [view, setView] = useState<'me' | 'all'>(initialView) // 내 업무 / 회사 관리
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
   const badgeVal = (key?: 'msg' | 'notif') => (key === 'msg' ? msgCount : key === 'notif' ? notifCount : 0)
   const [subLine1, subLine2] = sub.split(' · ')
+
+  // 모드 전환 — 쿠키(adv_view)에 저장하고 서버 컴포넌트를 새로고침해 데이터 범위를 다시 계산한다.
+  const changeView = (v: 'me' | 'all') => {
+    if (v === view) return
+    setView(v)
+    document.cookie = `adv_view=${v}; path=/; max-age=${60 * 60 * 24 * 365}`
+    router.refresh()
+  }
+
+  // 팀·크레딧 메뉴 노출 규칙:
+  //  - 팀원: 숨김 (팀 관리 권한 없음)
+  //  - 대표 + 토글 가능(팀 있음): 「회사 관리」 모드일 때만
+  //  - 대표 + 토글 불가(솔로): 항상 (첫 팀원 초대·크레딧 구매 경로 유지)
+  const showCompanyMenu = isMember ? false : canToggle ? view === 'all' : true
+  const COMPANY_HREFS = ['/advertiser/team', '/advertiser/team/workload', '/credits']
+  const visibleGroups = NAV_GROUPS
+    .map((g) => ({ ...g, items: g.items.filter((n) => (COMPANY_HREFS.includes(n.href) ? showCompanyMenu : true)) }))
+    .filter((g) => g.items.length > 0)
+
+  // 모드 전환 칩 (스펙 값 그대로)
+  const viewToggle = canToggle ? (
+    <div style={{ display: 'inline-flex', gap: 2, background: '#F1F1F4', borderRadius: 9, padding: 3 }}>
+      {([['me', '내 업무'], ['all', '회사 관리']] as const).map(([v, label]) => {
+        const on = view === v
+        return (
+          <button
+            key={v}
+            type="button"
+            onClick={() => changeView(v)}
+            style={{
+              padding: '5px 12px',
+              borderRadius: 7,
+              fontSize: 12.5,
+              fontWeight: on ? 700 : 600,
+              color: on ? '#17171B' : '#7C7C88',
+              background: on ? '#fff' : 'transparent',
+              boxShadow: on ? '0 1px 2px rgba(0,0,0,.08)' : 'none',
+              transition: 'all .12s',
+            }}
+          >
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  ) : null
 
   useEffect(() => {
     const detectMobile = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
@@ -95,7 +150,7 @@ export default function AdvertiserShell({
 
   const navList = (
     <nav className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-0.5 p-3">
-      {NAV_GROUPS.map((g) => (
+      {visibleGroups.map((g) => (
         <div key={g.group}>
           <div className="text-[10px] font-bold text-[#B0B0BB] tracking-[0.06em] px-2.5 pt-2.5 pb-1.5">{g.group}</div>
           {g.items.map((n) => {
@@ -135,6 +190,7 @@ export default function AdvertiserShell({
           </button>
           <span className="text-sm font-semibold text-[#17171B] truncate">{name}</span>
           <div className="ml-auto flex items-center gap-3">
+            {viewToggle}
             <LogoutButton />
           </div>
         </header>
@@ -145,6 +201,14 @@ export default function AdvertiserShell({
               {brand}
               {navList}
             </aside>
+          </div>
+        )}
+        {/* 광고주 콘솔은 PC 우선(D14 7절). 앱/모바일에선 정밀 관리를 PC로 안내한다. */}
+        {!fullBleed && (
+          <div className="max-w-lg mx-auto px-4 pt-3">
+            <div className="text-[11.5px] text-[#7C7C88] bg-[#FEF3C7] border border-[#FDE68A] rounded-lg px-3 py-2 leading-relaxed">
+              광고주 콘솔은 <b className="text-[#B45309]">PC에서 확인</b>하면 딜시트·정산·팀 관리를 더 정확하게 다룰 수 있어요.
+            </div>
           </div>
         )}
         <main className={fullBleed ? 'adv-mobile h-[calc(100vh-56px)] flex flex-col' : 'adv-mobile max-w-lg mx-auto p-4'}>{children}</main>
@@ -187,6 +251,7 @@ export default function AdvertiserShell({
             <span className="text-sm font-bold tracking-[-0.01em]">{subLine1}</span>
             {subLine2 && <span className="text-[11px] text-[#9A9AA5] mt-px">{subLine2}</span>}
           </div>
+          {viewToggle}
           <div className="ml-auto flex items-center gap-2.5">
             <Link
               href="/advertiser/notifications"

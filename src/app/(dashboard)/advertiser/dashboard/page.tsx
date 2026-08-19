@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import CampaignCalendar from '@/components/CampaignCalendar'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
 import { initial } from '@/lib/initial'
+import { resolveCompany } from '@/lib/team/company'
 import {
   Search, Bell, FileText, Megaphone, Pencil, CheckCircle2, Ban, CalendarPlus,
   Handshake, MessageSquare, Wallet, Hourglass, CheckSquare, type LucideIcon,
@@ -44,12 +46,27 @@ export default async function AdvertiserMyPage() {
   const end = `${year}-${pad(month)}-${new Date(year, month, 0).getDate()}`
   const todayStr = `${year}-${pad(month)}-${pad(now.getDate())}`
 
-  // 내 캠페인
-  const { data: campaigns } = await supabase
-    .from('campaigns')
-    .select('*')
-    .eq('advertiser_id', user.id)
-    .order('created_at', { ascending: false })
+  // 회사(대표) 해석 — 팀원이면 소속 회사(owner_id)의 데이터를 본다. 대표면 본인=회사(무변경).
+  const company = await resolveCompany(supabase, user.id)
+
+  // 모드(내 업무/회사 관리) — 대표만 전환 가능. 팀원은 항상 「내 담당」.
+  const cookieStore = await cookies()
+  const view = cookieStore.get('adv_view')?.value === 'all' ? 'all' : 'me'
+  // 「내 담당」이면 manager_id=본인으로 좁힌다. 솔로 대표는 모든 캠페인이 본인 담당이라 무변경.
+  const scopeToMe = company.isMember || view === 'me'
+
+  const { data: campaigns } = scopeToMe
+    ? await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('advertiser_id', company.advertiserId)
+        .eq('manager_id', user.id)
+        .order('created_at', { ascending: false })
+    : await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('advertiser_id', company.advertiserId)
+        .order('created_at', { ascending: false })
   const campIds = (campaigns ?? []).map((c) => c.id)
 
   // 캠페인별 참여 인플루언서(제안) 집계

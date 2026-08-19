@@ -41,9 +41,11 @@ const TAX_CHIP = (type: string | null, received: boolean | null) => {
 export default function SettlementsView({
   campaigns,
   proposals,
+  recorderName,
 }: {
   campaigns: Campaign[]
   proposals: Proposal[]
+  recorderName?: string // D14 6절 — 로그인한 기록자 이름. 정산 기록 모달 배지·확인문구에 노출.
 }) {
   const [tab, setTab] = useState<Tab>('예정')
   const [openId, setOpenId] = useState<string | null>(null)
@@ -400,6 +402,7 @@ export default function SettlementsView({
         <SettleConfirmModal
           proposals={rows.find((r) => r.campaign.id === settleModalFor.id)?.targets ?? []}
           campaign={settleModalFor}
+          recorderName={recorderName}
           onClose={() => setSettleModalFor(null)}
           onDone={handleSettled}
         />

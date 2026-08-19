@@ -22,11 +22,13 @@ export default function SettleConfirmModal({
   campaign,
   onClose,
   onDone,
+  recorderName,
 }: {
   proposals: Proposal[]
   campaign: Campaign
   onClose: () => void
   onDone: (settledIds: string[]) => void
+  recorderName?: string // D14 6절 — 기록자(대표/팀원) 이름. 넘기면 배지·확인문구에 노출.
 }) {
   // 전원 세무자료 수령이어야 정산 완료 기록 가능 — 미수령이 남으면 "제외하고 기록"이 아니라
   // 잠그고 그 자리에서 일괄 요청으로 이어준다(B1/B2)
@@ -93,7 +95,17 @@ export default function SettleConfirmModal({
       >
         {/* 헤더 */}
         <div className="px-6 pt-6 pb-4 border-b border-[#F1F1F4]">
-          <p className="text-[11px] text-[#9A9AA5] mb-0.5">정산 기록</p>
+          <div className="flex items-center gap-2 mb-0.5">
+            <p className="text-[11px] text-[#9A9AA5]">정산 기록</p>
+            {recorderName && (
+              <span
+                className="text-[10px] font-bold rounded-[5px] px-[6px] py-[2px]"
+                style={{ background: '#F1F1F4', color: '#7C7C88' }}
+              >
+                기록자 {recorderName}
+              </span>
+            )}
+          </div>
           <p className="text-[15px] font-bold text-[#17171B]">
             {campaign.title}
           </p>
@@ -154,6 +166,13 @@ export default function SettleConfirmModal({
               <li>· 5일 뒤 양쪽 연락처가 차단됩니다</li>
             </ul>
           </div>
+
+          {recorderName && allReceived && (
+            <p className="text-[11.5px] text-[#7C7C88] leading-relaxed">
+              기록 시각과 기록한 사람(<b className="text-[#17171B]">{recorderName}</b>)이 남고 수정할 수 없어요 — 결제를
+              마친 뒤에 눌러주세요.
+            </p>
+          )}
 
           {error && <p className="text-[12px] text-red-500">{error}</p>}
 

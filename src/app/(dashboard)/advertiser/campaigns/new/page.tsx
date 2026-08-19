@@ -8,6 +8,7 @@ import TimeSelect from '@/components/TimeSelect'
 import { computeEnabledStages, stageHintLine } from '@/lib/campaign-stages'
 import { PartyPopper, ClipboardList, Search, Paperclip } from 'lucide-react'
 import { dateWithDow } from '@/lib/date'
+import { resolveCompany } from '@/lib/team/company'
 
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
 // 채널별 콘텐츠 단위 (수량 입력 라벨)
@@ -483,6 +484,10 @@ export default function NewCampaignPage() {
       return
     }
 
+    // 회사(대표) 해석 — 팀원이 만들면 회사(owner_id) 소유로, 담당자(manager_id)는 본인.
+    // 대표가 만들면 둘 다 대표 id (무변경).
+    const company = await resolveCompany(supabase, user.id)
+
     const options: { type: string; cost: number | null }[] = []
     if (reviewOpt) options.push({ type: '구매평', cost: reviewCost ? parseInt(reviewCost) : null })
     if (clipOpt) options.push({ type: '네이버클립', cost: clipCost ? parseInt(clipCost) : null })
@@ -496,7 +501,9 @@ export default function NewCampaignPage() {
       : []
 
     const { error: insertError } = await supabase.from('campaigns').insert({
-      advertiser_id: user.id,
+      advertiser_id: company.advertiserId,
+      // 이 캠페인의 담당 팀원 (대표가 만들면 대표 id). 이관·대행·업무현황의 단위.
+      manager_id: company.myId,
       title,
       // 노출용 브랜드명 (비면 인플루언서 화면에서 회사 상호로 대체)
       brand_name: brand.trim() || null,
