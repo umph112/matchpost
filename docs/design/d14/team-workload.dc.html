@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  body { margin:0; background:#F6F6F7; font-family:'Pretendard Variable', Pretendard, -apple-system, sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#B45309; text-decoration:none; }
+  a:hover { color:#92400E; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px;max-width:1180px">
+
+  <div style="display:flex;align-items:flex-end;gap:16px">
+    <div>
+      <div style="display:flex;align-items:center;gap:9px">
+        <h1 style="margin:0;font-size:23px;font-weight:800;letter-spacing:-0.03em">팀원 업무 현황</h1>
+        <span style="font-size:10px;font-weight:800;background:#17171B;color:#fff;border-radius:5px;padding:3px 7px">대표만 보임</span>
+      </div>
+      <p style="margin:5px 0 0;font-size:13px;color:#7C7C88">누가 얼마나 들고 있고 어디가 막혀 있는지 봅니다. 점수를 매기지 않아요 — 숫자를 나란히 놓을 뿐입니다.</p>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:5px">
+      <sc-for list="{{ ranges }}" as="r" hint-placeholder-count="3">
+        <div style="{{ r.style }}" onClick="{{ r.onClick }}">{{ r.label }}</div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;background:#FBFBFC;border:1px solid #EFEFF2;border-radius:11px;padding:12px 14px">
+    <span style="font-size:11px;color:#7C7C88;line-height:1.65;text-wrap:pretty">담당 건수를 항상 함께 보세요. 처리 건수만 보면 적게 맡은 사람이 유리하고, 담당 건수만 보면 쌓아둔 사람이 유리합니다. 지연은 건수가 아니라 <strong style="font-weight:700;color:#3C3C46">비율</strong>입니다.</span>
+  </div>
+
+  <sc-for list="{{ members }}" as="m" hint-placeholder-count="3">
+    <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+
+      <div style="display:flex;align-items:center;gap:11px;padding:15px 20px;border-bottom:1px solid #F1F1F4">
+        <div style="{{ m.avStyle }}">{{ m.initial }}</div>
+        <div style="min-width:0">
+          <div style="display:flex;align-items:center;gap:7px">
+            <span style="font-size:14.5px;font-weight:700;letter-spacing:-0.015em">{{ m.name }}</span>
+            <span style="{{ m.roleStyle }}">{{ m.role }}</span>
+            <sc-if value="{{ m.onLeave }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:10px;font-weight:700;background:#DBEAFE;color:#1D4ED8;border-radius:4px;padding:2px 6px">{{ m.leaveLabel }}</span>
+            </sc-if>
+          </div>
+          <div style="font-size:11.5px;color:#9A9AA5;margin-top:3px">{{ m.memo }}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:9px;flex-shrink:0">
+          <span style="{{ m.loadStyle }}">{{ m.loadLabel }}</span>
+          <span style="font-size:11.5px;font-weight:700;color:#B45309;cursor:pointer" style-hover="color:#92400E">화면 보기 →</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr))">
+        <sc-for list="{{ m.blocks }}" as="b" hint-placeholder-count="4">
+          <div style="{{ b.boxStyle }}">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="{{ b.dotStyle }}"></span>
+              <span style="font-size:11px;font-weight:800;color:#9A9AA5;letter-spacing:0.02em">{{ b.title }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:11px">
+              <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="3">
+                <div style="display:flex;align-items:baseline;gap:7px">
+                  <span style="font-size:11.5px;color:#7C7C88;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.k }}</span>
+                  <span style="{{ r.vStyle }}">{{ r.v }}</span>
+                  <sc-if value="{{ r.hasSub }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10.5px;color:#B0B0BB;flex-shrink:0;font-variant-numeric:tabular-nums">{{ r.sub }}</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+
+  <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:16px 20px">
+    <div style="font-size:12px;font-weight:800;color:#3C3C46;letter-spacing:0.01em">이 화면을 읽는 법</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:11px">
+      <sc-for list="{{ howto }}" as="h" hint-placeholder-count="4">
+        <div style="display:flex;gap:9px;align-items:flex-start">
+          <span style="width:5px;height:5px;border-radius:50%;background:#F59E0B;margin-top:6px;flex-shrink:0;display:block"></span>
+          <span style="font-size:11.5px;color:#5C5C68;line-height:1.65;min-width:0">{{ h }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:900}}">
+const initialOf = (n) => (n.trim().split(/\s+/).pop() ?? n)[0];
+
+// ⚠️ 점수를 매기지 않는다. 숫자를 나란히 놓을 뿐이다 — 맥락은 대표가 안다.
+// ⚠️ 지연은 **비율**이다. 건수로 보면 많이 맡은 사람이 불리해진다.
+const DATA = [
+  { name:'정원일', role:'대표', memo:'회사 대표 · 직접 담당하는 건',
+    camps:2, infl:11, convos:5, done:1, settled:1, created:2,
+    lateN:0, respHours:6, idle:0, unpaid:0, stars:4.9, reviews:7 },
+  { name:'김서연', role:'팀원', memo:'마케팅 팀장',
+    camps:6, infl:22, convos:9, done:4, settled:3, created:5,
+    lateN:1, respHours:4, idle:1, unpaid:1, stars:4.7, reviews:14 },
+  { name:'박도현', role:'팀원', memo:'성수점 담당', onLeave:'8/19 – 8/23 휴무',
+    camps:2, infl:6, convos:3, done:0, settled:0, created:1,
+    lateN:2, respHours:19, idle:3, unpaid:2, stars:4.1, reviews:5 },
+];
+
+const RANGES = ['이번 달', '지난 달', '분기'];
+
+class Component extends DCLogic {
+  state = { range: '이번 달' };
+
+  renderVals() {
+    const range = this.state.range ?? '이번 달';
+
+    const ranges = RANGES.map(label => ({
+      label,
+      onClick: () => this.setState({ range: label }),
+      style: 'height:34px;padding:0 14px;border-radius:9px;font-size:12px;cursor:pointer;display:flex;align-items:center;white-space:nowrap;font-weight:'
+        + (range === label ? '700;background:#17171B;color:#fff' : '600;color:#5C5C68;background:#fff;border:1px solid #E2E2E8'),
+    }));
+
+    // 담당 건수를 기준으로 부담을 상대 비교한다 — 절대 숫자만으로는 많은지 적은지 모른다
+    const maxCamps = Math.max(...DATA.map(d => d.camps));
+
+    const members = DATA.map(d => {
+      const lateRate = d.camps ? Math.round((d.lateN / d.camps) * 100) : 0;
+      const heavy = d.camps >= maxCamps;
+      const stuck = d.idle >= 2 || lateRate >= 50 || d.respHours >= 12;
+
+      const val = (v, kind) => ({
+        v,
+        vStyle: 'font-size:13.5px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;flex-shrink:0;color:'
+          + (kind === 'bad' ? '#DC2626' : kind === 'good' ? '#15803D' : '#17171B'),
+      });
+
+      return {
+        name: d.name,
+        role: d.role,
+        memo: d.memo,
+        initial: initialOf(d.name),
+        onLeave: !!d.onLeave,
+        leaveLabel: d.onLeave ?? '',
+        avStyle: 'width:38px;height:38px;border-radius:50%;font-size:13.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;'
+          + (d.role === '대표' ? 'background:#17171B;color:#fff' : 'background:#FEF3C7;color:#B45309'),
+        roleStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:2px 7px;flex-shrink:0;'
+          + (d.role === '대표' ? 'background:#17171B;color:#fff' : 'background:#F1F1F4;color:#5C5C68'),
+        // 한 줄 요약 — 「많이 들고 있다」와 「막혀 있다」만 말한다. 잘한다·못한다를 말하지 않는다.
+        loadLabel: stuck ? '막힌 건 있음' : heavy ? '가장 많이 맡음' : '여유 있음',
+        loadStyle: 'font-size:11px;font-weight:700;border-radius:5px;padding:4px 9px;flex-shrink:0;'
+          + (stuck ? 'background:#FEE2E2;color:#DC2626'
+             : heavy ? 'background:#FEF3C7;color:#B45309' : 'background:#F1F1F4;color:#7C7C88'),
+
+        blocks: [
+          { title:'지금 들고 있는 것', dot:'#F59E0B',
+            rows:[
+              { k:'담당 캠페인', ...val(d.camps + '건') },
+              { k:'담당 인플루언서', ...val(d.infl + '명') },
+              { k:'진행 중 대화', ...val(d.convos + '건') },
+            ] },
+          { title:range + ' 처리한 것', dot:'#22C55E',
+            rows:[
+              { k:'완료', ...val(d.done + '건', d.done > 0 ? 'good' : null) },
+              { k:'정산 기록', ...val(d.settled + '건') },
+              { k:'신규 등록', ...val(d.created + '건') },
+            ] },
+          { title:'막혀 있는 것', dot:'#EF4444',
+            rows:[
+              // 비율 + 원자료를 함께 — 「50% (1/2)」 처럼 보여야 규모를 안다
+              { k:'지연율', ...val(lateRate + '%', lateRate >= 50 ? 'bad' : null),
+                hasSub:true, sub:'(' + d.lateN + '/' + d.camps + ')' },
+              { k:'미응답 2일+', ...val(d.idle + '건', d.idle >= 2 ? 'bad' : null) },
+              { k:'미수', ...val(d.unpaid + '건', d.unpaid > 0 ? 'bad' : null) },
+            ] },
+          { title:'상대가 본 것', dot:'#3B82F6',
+            rows:[
+              // 평균만 보면 1건에 5.0 이 12건에 4.6 을 이긴다 — 건수를 반드시 함께
+              { k:'인플루언서 평가', ...val(d.stars.toFixed(1), d.stars >= 4.5 ? 'good' : d.stars < 4.2 ? 'bad' : null),
+                hasSub:true, sub:'(' + d.reviews + '건)' },
+              { k:'평균 응답', ...val(d.respHours + '시간', d.respHours >= 12 ? 'bad' : d.respHours <= 6 ? 'good' : null) },
+            ] },
+        ].map((b, i) => ({
+          ...b,
+          dotStyle: 'width:6px;height:6px;border-radius:2px;display:block;background:' + b.dot,
+          boxStyle: 'padding:15px 18px 17px' + (i < 3 ? ';border-right:1px solid #F1F1F4' : ''),
+        })),
+      };
+    });
+
+    return {
+      ranges, members,
+      howto: [
+        '담당 건수와 처리 건수를 함께 보세요. 한쪽만 보면 적게 맡은 사람이나 쌓아둔 사람이 유리해집니다.',
+        '지연율은 담당 건수로 나눈 값입니다. 「2건 중 2건 지연(100%)」과 「10건 중 2건 지연(20%)」은 다른 이야기입니다.',
+        '평가는 평균과 건수를 함께 봅니다. 1건에 5.0 은 아직 판단할 근거가 아닙니다.',
+        '이 화면은 대표만 봅니다. 팀원 화면에는 나타나지 않아요 — 평가받는 곳이 되면 기록을 정확히 남기지 않게 됩니다.',
+        '숫자가 나쁜 사람이 일을 못 하는 것이 아닐 수 있습니다. 어려운 건을 맡았는지, 휴무였는지는 대표가 압니다.',
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

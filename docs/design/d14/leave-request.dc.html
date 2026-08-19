@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  body { margin:0; background:#F6F6F7; font-family:'Pretendard Variable', Pretendard, -apple-system, sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#B45309; text-decoration:none; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px;max-width:1180px">
+
+  <div style="display:flex;align-items:flex-end;gap:16px">
+    <div>
+      <div style="display:flex;align-items:center;gap:9px">
+        <h1 style="margin:0;font-size:23px;font-weight:800;letter-spacing:-0.03em">{{ h1 }}</h1>
+        <span style="{{ whoStyle }}">{{ whoLabel }}</span>
+      </div>
+      <p style="margin:5px 0 0;font-size:13px;color:#7C7C88">{{ sub }}</p>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:3px;padding:3px;background:#F1F1F4;border-radius:9px">
+      <sc-for list="{{ roles }}" as="r" hint-placeholder-count="2">
+        <div style="{{ r.style }}" onClick="{{ r.onClick }}">{{ r.label }}</div>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ rejectOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(23,23,27,0.45);display:flex;align-items:center;justify-content:center;padding:40px;z-index:60" onClick="{{ closeReject }}">
+      <div onClick="{{ stopClick }}" style="width:480px;max-width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.22)">
+        <div style="display:flex;align-items:center;gap:9px;padding:17px 20px;border-bottom:1px solid #F1F1F4">
+          <h2 style="margin:0;font-size:15.5px;font-weight:800;letter-spacing:-0.025em">무엇이 걸리는지 알려주세요</h2>
+          <span style="margin-left:auto;font-size:17px;color:#B0B0BB;cursor:pointer" onClick="{{ closeReject }}">✕</span>
+        </div>
+        <div style="padding:16px 20px 18px;display:flex;flex-direction:column;gap:13px">
+          <div style="background:#FBFBFC;border:1px solid #EFEFF2;border-radius:10px;padding:12px 13px;font-size:11.5px;color:#5C5C68;line-height:1.65;text-wrap:pretty">반려는 거절이 아니라 <strong style="font-weight:700;color:#3C3C46">질문</strong>이에요. 박도현님이 답하면 다시 판단할 수 있습니다. 메모는 그대로 전달됩니다.</div>
+          <textarea value="{{ memo }}" onChange="{{ onMemo }}" placeholder="예: 8/20 게재 마감 2건이 그 기간에 있어요. 그건 어떻게 할 계획인지 알려주세요." style="width:100%;box-sizing:border-box;min-height:96px;border:1px solid #E2E2E8;border-radius:10px;padding:11px 12px;font-size:12.5px;font-family:inherit;color:#17171B;line-height:1.65;resize:none;outline:none"></textarea>
+          <div style="display:flex;gap:8px">
+            <div style="min-width:92px;min-height:44px;border-radius:11px;border:1px solid #E2E2E8;color:#5C5C68;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:#F6F6F7" onClick="{{ closeReject }}">취소</div>
+            <div style="{{ memoBtnStyle }}" onClick="{{ sendReject }}">보내기</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start">
+
+    <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+      <div style="height:52px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid #F1F1F4">
+        <h2 style="margin:0;font-size:14.5px;font-weight:700;letter-spacing:-0.01em">2026년 8월</h2>
+        <span style="margin-left:auto;font-size:11.5px;color:#9A9AA5">{{ calHint }}</span>
+      </div>
+      <div style="padding:16px 20px 20px">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px">
+          <sc-for list="{{ dows }}" as="d" hint-placeholder-count="7">
+            <span style="text-align:center;font-size:10.5px;font-weight:700;color:#B0B0BB;padding:3px 0">{{ d }}</span>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+          <sc-for list="{{ cells }}" as="c" hint-placeholder-count="35">
+            <div style="{{ c.style }}" onClick="{{ c.onClick }}">
+              <span style="{{ c.numStyle }}">{{ c.num }}</span>
+              <sc-if value="{{ c.hasMark }}" hint-placeholder-val="{{ false }}">
+                <span style="{{ c.markStyle }}">{{ c.mark }}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:13px;border-top:1px solid #F1F1F4">
+          <sc-for list="{{ legend }}" as="l" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="{{ l.chipStyle }}"></span>
+              <span style="font-size:11px;color:#7C7C88">{{ l.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+
+      <sc-if value="{{ isMember }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="height:46px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:13.5px;font-weight:700;letter-spacing:-0.01em">휴무 신청</h2>
+          </div>
+          <div style="padding:15px 18px 18px;display:flex;flex-direction:column;gap:14px">
+
+            <div>
+              <div style="font-size:11.5px;font-weight:700;color:#3C3C46">고른 날짜</div>
+              <div style="{{ pickedStyle }}">{{ pickedLabel }}</div>
+            </div>
+
+            <div>
+              <div style="font-size:11.5px;font-weight:700;color:#3C3C46;margin-bottom:7px">종류</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="4">
+                  <div style="{{ k.style }}" onClick="{{ k.onClick }}">{{ k.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:11.5px;font-weight:700;color:#3C3C46">한 줄 사유 <span style="font-weight:600;color:#B0B0BB">선택</span></div>
+              <input value="{{ reason }}" onChange="{{ onReason }}" placeholder="예: 가족 여행" style="width:100%;box-sizing:border-box;height:44px;border:1px solid #E2E2E8;border-radius:10px;padding:0 12px;margin-top:7px;font-size:12.5px;font-family:inherit;color:#17171B;outline:none" />
+            </div>
+
+            <sc-if value="{{ hasClash }}" hint-placeholder-val="{{ true }}">
+              <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 13px">
+                <div style="font-size:11px;font-weight:800;color:#B45309">이 기간에 걸린 일</div>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+                  <sc-for list="{{ clashes }}" as="c" hint-placeholder-count="3">
+                    <div style="display:flex;gap:7px;align-items:baseline">
+                      <span style="font-size:10.5px;font-weight:700;color:#B45309;width:38px;flex-shrink:0;font-variant-numeric:tabular-nums">{{ c.at }}</span>
+                      <span style="font-size:11.5px;color:#92400E;line-height:1.55;min-width:0">{{ c.what }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-size:11px;color:#B45309;line-height:1.6;margin-top:9px">대표가 수락하면 대행자가 지정됩니다. 휴무 중에도 원하면 본인이 직접 처리할 수 있습니다.</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ hasThread }}" hint-placeholder-val="{{ false }}">
+              <div style="border-top:1px solid #F1F1F4;padding-top:14px">
+                <div style="font-size:11.5px;font-weight:700;color:#3C3C46">대표 메모</div>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+                  <sc-for list="{{ thread }}" as="t" hint-placeholder-count="2">
+                    <div style="{{ t.boxStyle }}">
+                      <div style="display:flex;align-items:baseline;gap:7px">
+                        <span style="{{ t.whoStyle }}">{{ t.who }}</span>
+                        <span style="font-size:10.5px;color:#B0B0BB;margin-left:auto;font-variant-numeric:tabular-nums">{{ t.at }}</span>
+                      </div>
+                      <div style="font-size:11.5px;color:#3C3C46;line-height:1.6;margin-top:5px">{{ t.text }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ isRejected }}" hint-placeholder-val="{{ true }}">
+                  <input value="{{ reply }}" onChange="{{ onReply }}" placeholder="어떻게 할 계획인지 적어주세요" style="width:100%;box-sizing:border-box;height:44px;border:1px solid #E2E2E8;border-radius:10px;padding:0 12px;margin-top:10px;font-size:12.5px;font-family:inherit;color:#17171B;outline:none" />
+                  <div style="{{ replyBtnStyle }}" onClick="{{ sendReply }}">답하고 다시 올리기</div>
+                </sc-if>
+                <sc-if value="{{ isReplied }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:11px;color:#9A9AA5;line-height:1.6;margin-top:9px">답을 보냈어요. 대표가 다시 판단합니다.</div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isPending }}" hint-placeholder-val="{{ true }}">
+              <div style="{{ submitStyle }}" onClick="{{ submit }}">{{ submitLabel }}</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #FDE68A;border-radius:14px;overflow:hidden">
+          <div style="height:46px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #FDE68A;background:#FFFBEB">
+            <h2 style="margin:0;font-size:13.5px;font-weight:700;letter-spacing:-0.01em;color:#92400E">{{ pendTitle }}</h2>
+          </div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ pending }}" as="p" hint-placeholder-count="1">
+              <div style="padding:15px 18px;border-bottom:1px solid #F5F5F7">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <div style="width:32px;height:32px;border-radius:50%;background:#FEF3C7;color:#B45309;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ p.initial }}</div>
+                  <div style="min-width:0">
+                    <div style="font-size:13px;font-weight:700">{{ p.name }}</div>
+                    <div style="font-size:11px;color:#9A9AA5;margin-top:2px">{{ p.when }}</div>
+                  </div>
+                  <span style="margin-left:auto;font-size:10.5px;font-weight:700;background:#F1F1F4;color:#5C5C68;border-radius:4px;padding:2px 7px;flex-shrink:0">{{ p.kind }}</span>
+                </div>
+                <div style="font-size:11.5px;color:#7C7C88;line-height:1.6;margin-top:8px">{{ p.reason }}</div>
+
+                <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:9px;padding:10px 12px;margin-top:10px">
+                  <div style="font-size:10.5px;font-weight:800;color:#B45309">이 기간에 걸린 일 {{ p.clashN }}건</div>
+                  <div style="font-size:11px;color:#92400E;line-height:1.6;margin-top:5px">{{ p.clashText }}</div>
+                </div>
+
+                <sc-if value="{{ hasThread }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:8px;margin-top:11px">
+                    <sc-for list="{{ thread }}" as="t" hint-placeholder-count="2">
+                      <div style="{{ t.boxStyle }}">
+                        <div style="display:flex;align-items:baseline;gap:7px">
+                          <span style="{{ t.whoStyle }}">{{ t.who }}</span>
+                          <span style="font-size:10.5px;color:#B0B0BB;margin-left:auto;font-variant-numeric:tabular-nums">{{ t.at }}</span>
+                        </div>
+                        <div style="font-size:11.5px;color:#3C3C46;line-height:1.6;margin-top:5px">{{ t.text }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ isRejected }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:11px;color:#9A9AA5;line-height:1.6;margin-top:9px">박도현님의 답을 기다리는 중이에요. 답이 오면 다시 판단할 수 있습니다.</div>
+                  </sc-if>
+                </sc-if>
+
+                <div style="margin-top:12px">
+                  <div style="font-size:11.5px;font-weight:700;color:#3C3C46;margin-bottom:7px">대행자 지정 <span style="color:#DC2626">필수</span></div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ subs }}" as="s" hint-placeholder-count="2">
+                      <div style="{{ s.style }}" onClick="{{ s.onClick }}">
+                        <span style="font-size:12.5px;font-weight:700;color:#17171B">{{ s.name }}</span>
+                        <span style="{{ s.loadStyle }}">{{ s.load }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="font-size:11px;color:#9A9AA5;line-height:1.6;margin-top:8px">대행은 이관이 아니에요. 휴무 기간에만 그 대화에 들어가고 끝나면 자동으로 빠집니다.</div>
+                </div>
+
+                <div style="display:flex;gap:7px;margin-top:13px">
+                  <div style="min-width:96px;height:42px;border-radius:10px;border:1px solid #E2E2E8;color:#5C5C68;font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" style-hover="background:#FAFAFB" onClick="{{ openReject }}">{{ rejectLabel }}</div>
+                  <div style="{{ okStyle }}" onClick="{{ approve }}">{{ okLabel }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+        <div style="height:46px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #F1F1F4">
+          <h2 style="margin:0;font-size:13.5px;font-weight:700;letter-spacing:-0.01em">{{ listTitle }}</h2>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ approved }}" as="a" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid #F5F5F7">
+              <span style="{{ a.dotStyle }}"></span>
+              <div style="min-width:0;flex:1">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</span>
+                  <span style="{{ a.stStyle }}">{{ a.st }}</span>
+                </div>
+                <div style="font-size:11px;color:#9A9AA5;margin-top:3px">{{ a.when }}</div>
+                <sc-if value="{{ a.hasSub }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size:11px;color:#B45309;margin-top:3px">{{ a.subText }}</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding:11px 18px;font-size:11px;color:#9A9AA5;line-height:1.65;border-top:1px solid #F1F1F4">{{ listNote }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:880}}">
+const initialOf = (n) => (n.trim().split(/\s+/).pop() ?? n)[0];
+
+// 2026년 8월 — 1일 토요일이라 앞 빈 칸 6개. 오늘 8/18.
+const LEAD = 6, TODAY = 18, DAYS = 31;
+
+// 이미 수락된 휴무 — 회사 캘린더에 함께 표시된다
+const APPROVED = [
+  { name:'박도현', from:19, to:23, kind:'연차', sub:'김서연', st:'수락됨' },
+  { name:'이하늘', from:27, to:27, kind:'반차', sub:null, st:'수락됨' },
+];
+
+// 신청 기간에 걸린 일 — 모르고 신청하면 나중에 문제가 된다
+const CLASH = [
+  { at:'8/20', what:'성수 델리카페 게재 마감 2건' },
+  { at:'8/21', what:'뷰티하는 지연 · 무응답 3일' },
+  { at:'8/22', what:'여름 콜드브루 정산 예정일' },
+];
+
+const KINDS = ['연차', '반차', '병가', '기타'];
+
+class Component extends DCLogic {
+  // stage — 반려는 끝이 아니라 되돌아오는 흐름이다.
+  //   pending  신청 · 수락 대기
+  //   rejected 대표가 반려 + 메모
+  //   replied  신청자가 답하고 다시 올림
+  state = { role: 'owner', stage: 'pending', a: 21, b: 22, kind: '연차', reason: '', sub: null, done: false,
+            rejectOpen: false, memo: '', reply: '' };
+
+  renderVals() {
+    const { role, kind, done } = this.state;
+    const stage = this.state.stage ?? 'pending';
+    const isOwner = role === 'owner';
+    const isMember = !isOwner;
+    const a = this.state.a, b = this.state.b;
+    const lo = Math.min(a, b), hi = Math.max(a, b);
+
+    const roles = [['member', '팀원(신청)'], ['owner', '대표(수락)']].map(([k, label]) => ({
+      label,
+      onClick: () => this.setState({ role: k }),
+      style: 'font-size:11.5px;padding:6px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;font-weight:'
+        + (role === k ? '700;background:#17171B;color:#fff' : '600;color:#7C7C88'),
+    }));
+
+    // 달력 — 내가 고른 범위(점선) + 이미 수락된 휴무(실선 파랑) + 오늘
+    const cells = [];
+    for (let i = 0; i < LEAD; i++) cells.push({ num:'', empty:true });
+    for (let d = 1; d <= DAYS; d++) {
+      const inPick = isMember && d >= lo && d <= hi;
+      const appr = APPROVED.find(x => d >= x.from && d <= x.to);
+      cells.push({ num:String(d), d, inPick, appr, isToday: d === TODAY });
+    }
+    while (cells.length % 7) cells.push({ num:'', empty:true });
+
+    const calCells = cells.map(c => {
+      if (c.empty) return { num:'', style:'aspect-ratio:1', numStyle:'display:none', hasMark:false, onClick:undefined };
+      const bg = c.inPick ? '#FFFBEB' : c.appr ? '#EFF6FF' : c.isToday ? '#F1F1F4' : 'transparent';
+      const bd = c.inPick ? '1.5px dashed #F59E0B' : c.appr ? '1.5px solid #93C5FD' : '1px solid transparent';
+      return {
+        num: c.num,
+        // 점선 = 내가 신청하려는 것, 실선 = 이미 수락된 것 — 선으로 구분한다(색이 아니라)
+        style: 'aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;background:' + bg + ';border:' + bd,
+        numStyle: 'font-size:12px;font-variant-numeric:tabular-nums;font-weight:'
+          + (c.inPick || c.appr ? '700;color:' + (c.inPick ? '#B45309' : '#1D4ED8') : c.isToday ? '700;color:#17171B' : '500;color:#9A9AA5'),
+        hasMark: !!c.appr,
+        mark: c.appr ? initialOf(c.appr.name) : '',
+        markStyle: 'font-size:9px;font-weight:800;color:#1D4ED8;line-height:1',
+        onClick: isMember
+          ? () => this.setState(s => (s.a === s.b && s.a !== c.d ? { b: c.d } : { a: c.d, b: c.d }))
+          : undefined,
+      };
+    });
+
+    const kinds = KINDS.map(k => ({
+      label: k,
+      onClick: () => this.setState({ kind: k }),
+      style: 'height:32px;padding:0 13px;border-radius:8px;font-size:12px;display:flex;align-items:center;cursor:pointer;font-weight:'
+        + (kind === k ? '700;background:#17171B;color:#fff' : '600;background:#F6F6F7;color:#5C5C68'),
+    }));
+
+    // 대행자 후보 — 부담을 함께 보여준다. 과부하인 사람에게 얹으면 그 건이 막힌다.
+    const CANDS = [
+      { name:'김서연', camps:6, load:'담당 6건 · 가장 많이 맡음', heavy:true },
+      { name:'정원일 (대표)', camps:2, load:'담당 2건 · 여유 있음', heavy:false },
+    ];
+    const subs = CANDS.map(c => ({
+      name: c.name,
+      load: c.load,
+      onClick: () => this.setState({ sub: c.name }),
+      style: 'display:flex;align-items:center;gap:9px;height:46px;padding:0 13px;border-radius:10px;cursor:pointer;border:1px solid '
+        + (this.state.sub === c.name ? '#F59E0B;background:#FFFBEB' : '#E2E2E8;background:#fff'),
+      loadStyle: 'margin-left:auto;font-size:10.5px;font-weight:700;border-radius:4px;padding:2px 7px;flex-shrink:0;'
+        + (c.heavy ? 'background:#FEF3C7;color:#B45309' : 'background:#F1F1F4;color:#7C7C88'),
+    }));
+
+    const canOk = !!this.state.sub;
+
+    return {
+      roles, isOwner, isMember, cells: calCells, kinds, subs,
+      dows: ['일','월','화','수','목','금','토'],
+
+      h1: isOwner ? '휴무 관리' : '내 휴무',
+      whoLabel: isOwner ? '대표만 보임' : '박도현',
+      whoStyle: 'font-size:10px;font-weight:800;border-radius:5px;padding:3px 7px;'
+        + (isOwner ? 'background:#17171B;color:#fff' : 'background:#F1F1F4;color:#5C5C68'),
+      sub: isOwner
+        ? '수락하면서 대행자를 지정해요. 대행은 이관이 아니라 휴무 기간 동안만 돕는 것입니다.'
+        : '날짜를 눌러 고르고 신청하세요. 휴무 중에도 원하면 본인이 직접 처리할 수 있습니다.',
+      calHint: isOwner ? '팀 전체 휴무가 함께 보여요' : '두 번 눌러 기간을 고르세요',
+
+      legend: [
+        { label:'신청하려는 날', bg:'#FFFBEB', bd:'1.5px dashed #F59E0B' },
+        { label:'수락된 휴무', bg:'#EFF6FF', bd:'1.5px solid #93C5FD' },
+        { label:'오늘', bg:'#F1F1F4', bd:'1px solid #EAEAEE' },
+      ].map(l => ({ label:l.label, chipStyle:'width:14px;height:14px;border-radius:4px;display:block;flex-shrink:0;background:' + l.bg + ';border:' + l.bd })),
+
+      pickedLabel: lo === hi ? '8월 ' + lo + '일 (하루)' : '8월 ' + lo + '일 – ' + hi + '일 (' + (hi - lo + 1) + '일)',
+      pickedStyle: 'font-size:15px;font-weight:800;letter-spacing:-0.025em;margin-top:6px;color:#17171B;font-variant-numeric:tabular-nums',
+
+      reason: this.state.reason,
+      onReason: (e) => this.setState({ reason: e.target.value }),
+
+      hasClash: true,
+      clashes: CLASH,
+
+      submitLabel: done ? '신청했어요 · 수락 대기' : '휴무 신청',
+      submitStyle: 'min-height:46px;border-radius:11px;font-size:13.5px;font-weight:800;display:flex;align-items:center;justify-content:center;'
+        + (done ? 'background:#F1F1F4;color:#7C7C88' : 'background:#F59E0B;color:#17171B;cursor:pointer'),
+      submit: done ? undefined : () => this.setState({ done: true }),
+
+      // ⚠️ 반려는 거절이 아니라 **질문**이다. 메모를 남기고 신청자가 답하면 다시 판단한다.
+      //    한 번 반려로 끝내면 「왜 안 되는지」를 밖에서 다시 물어야 한다.
+      stage,
+      isPending: stage === 'pending',
+      isRejected: stage === 'rejected',
+      isReplied: stage === 'replied',
+      pendN: stage === 'rejected' ? 0 : 1,
+      pendTitle: stage === 'rejected' ? '답변 대기 1건'
+        : stage === 'replied' ? '다시 판단 1건' : '수락 대기 1건',
+      pending: [{
+        name:'박도현', initial:'현', when:'8월 21일 – 22일 (2일)', kind:'연차',
+        reason:'가족 여행으로 신청했어요.',
+        clashN: CLASH.length,
+        clashText: CLASH.map(c => c.at + ' ' + c.what).join(' · '),
+      }],
+
+      // 반려 모달 — 메모 없이 반려할 수 없다
+      rejectOpen: !!this.state.rejectOpen,
+      openReject: () => this.setState({ rejectOpen: true, memo: '' }),
+      closeReject: () => this.setState({ rejectOpen: false }),
+      memo: this.state.memo ?? '',
+      onMemo: (e) => this.setState({ memo: e.target.value }),
+      memoReady: !!(this.state.memo ?? '').trim(),
+      memoBtnStyle: 'flex:1.3;min-height:44px;border-radius:11px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;'
+        + ((this.state.memo ?? '').trim() ? 'background:#DC2626;color:#fff;cursor:pointer' : 'background:#EAEAEE;color:#B0B0BB'),
+      sendReject: (this.state.memo ?? '').trim()
+        ? () => this.setState({ rejectOpen: false, stage: 'rejected', sentMemo: this.state.memo })
+        : undefined,
+
+      // 오간 메모 — 대표의 반려 사유와 신청자의 답이 한 자리에 쌓인다
+      thread: stage === 'pending' ? [] : [
+        { who:'정원일 (대표)', at:'8/18 14:20', text: this.state.sentMemo || '8/20 게재 마감 2건이 그 기간에 있어요. 그건 어떻게 할 계획인지 알려주시면 다시 볼게요.', mine:true },
+        ...(stage === 'replied' ? [{ who:'박도현', at:'8/18 15:05', text: this.state.reply || '8/19에 미리 컨펌 넘기고, 남은 건은 김서연님이 봐주시면 됩니다. 게재 확인은 제가 밖에서 할 수 있어요.', mine:false }] : []),
+      ].map(m => ({
+        ...m,
+        boxStyle: 'border-radius:10px;padding:11px 13px;' + (m.mine ? 'background:#F6F6F7' : 'background:#FFFBEB;border:1px solid #FDE68A'),
+        whoStyle: 'font-size:11px;font-weight:700;color:' + (m.mine ? '#5C5C68' : '#B45309'),
+      })),
+      hasThread: stage !== 'pending',
+
+      // 반려된 뒤 신청자 화면 — 답을 적어 다시 올린다
+      reply: this.state.reply ?? '',
+      onReply: (e) => this.setState({ reply: e.target.value }),
+      replyReady: !!(this.state.reply ?? '').trim(),
+      replyBtnStyle: 'min-height:44px;border-radius:11px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:10px;'
+        + ((this.state.reply ?? '').trim() ? 'background:#17171B;color:#fff;cursor:pointer' : 'background:#EAEAEE;color:#B0B0BB'),
+      sendReply: (this.state.reply ?? '').trim() ? () => this.setState({ stage: 'replied' }) : undefined,
+      stopClick: (e) => e.stopPropagation(),
+      rejectLabel: stage === 'pending' ? '반려하고 묻기' : '다시 묻기',
+      okLabel: canOk ? '수락하고 대행 시작' : '대행자를 골라주세요',
+      okStyle: 'flex:1;height:42px;border-radius:10px;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;'
+        + (canOk ? 'background:#17171B;color:#fff;cursor:pointer' : 'background:#EAEAEE;color:#B0B0BB'),
+      approve: canOk ? () => this.setState({ sub: null }) : undefined,
+
+      listTitle: isOwner ? '수락된 휴무' : '팀 휴무 일정',
+      approved: APPROVED.map(x => ({
+        name: x.name,
+        st: x.st,
+        when: '8월 ' + x.from + (x.from === x.to ? '일' : '일 – ' + x.to + '일') + ' · ' + x.kind,
+        hasSub: !!x.sub,
+        subText: x.sub ? '대행 ' + x.sub + ' — 기간이 끝나면 자동으로 빠져요' : '',
+        dotStyle: 'width:6px;height:6px;border-radius:50%;background:#3B82F6;flex-shrink:0;display:block',
+        stStyle: 'font-size:10px;font-weight:700;background:#DCFCE7;color:#15803D;border-radius:4px;padding:2px 6px;flex-shrink:0',
+      })),
+      listNote: isOwner
+        ? '휴무는 회사 캘린더와 대시보드에도 표시돼요. 일정을 잡을 때 누가 없는지 보입니다.'
+        : '팀원 휴무도 함께 보여요. 겹치지 않게 고르면 대행자를 찾기 쉬워집니다.',
+    };
+  }
+}
+
+</script>
+</body>
+</html>

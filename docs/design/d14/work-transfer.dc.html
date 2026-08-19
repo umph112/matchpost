@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  body { margin:0; background:#F6F6F7; font-family:'Pretendard Variable', Pretendard, -apple-system, sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#B45309; text-decoration:none; }
+  a:hover { color:#92400E; }
+  .noscroll::-webkit-scrollbar { width:0; height:0; }
+</style>
+</helmet>
+
+<div style="display:flex;min-height:100vh;min-width:1360px">
+
+  <aside style="width:236px;flex-shrink:0;background:#fff;border-right:1px solid #EAEAEE;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden">
+    <div style="height:64px;display:flex;align-items:center;gap:10px;padding:0 20px;border-bottom:1px solid #F1F1F4;flex-shrink:0">
+      <svg viewBox="0 0 64 64" width="24" height="24" style="flex-shrink:0"><rect width="64" height="64" rx="16.6" fill="#17171B"></rect><rect y="37.1" width="64" height="1.9" fill="#fff" opacity="0.2"></rect><rect x="24.3" width="1.9" height="64" fill="#fff" opacity="0.2"></rect><circle cx="25.3" cy="38.1" r="8.3" fill="#F59E0B"></circle></svg>
+      <div style="display:flex;align-items:center;gap:1px;line-height:1">
+        <span style="font-size:19px;font-weight:900;letter-spacing:0.05em;color:#17171B">MATCH</span>
+        <span style="width:5px;height:5px;border-radius:50%;background:#F59E0B;margin:0 4px;flex-shrink:0;display:block"></span>
+        <span style="font-size:19px;font-weight:900;letter-spacing:0.05em;color:#17171B">POST</span>
+      </div>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow-y:auto;padding:12px 12px" class="noscroll">
+      <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="5">
+        <div style="margin-bottom:14px">
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:0.06em;color:#B0B0BB;padding:0 10px 6px">{{ g.label }}</div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ g.items }}" as="n" hint-placeholder-count="2">
+              <div style="{{ n.style }}">
+                <span>{{ n.label }}</span>
+                <sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}">
+                  <span style="{{ n.badgeStyle }}">{{ n.badge }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex-shrink:0;margin-top:auto;border-top:1px solid #F1F1F4;padding:12px 14px">
+      <div style="background:#17171B;border-radius:11px;padding:13px 14px">
+        <div style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,0.6)">회사 크레딧</div>
+        <div style="display:flex;align-items:baseline;gap:4px;margin-top:5px">
+          <span style="font-size:18px;font-weight:800;letter-spacing:-0.03em;color:#fff;font-variant-numeric:tabular-nums">142,000</span>
+          <span style="font-size:11px;font-weight:700;color:#F59E0B">C</span>
+        </div>
+        <div style="font-size:10.5px;color:rgba(255,255,255,0.42);margin-top:3px">팀 전체가 함께 씁니다</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px 10px;padding:12px 2px 2px">
+        <span style="font-size:10.5px;color:#B0B0BB;cursor:pointer">이용약관</span>
+        <span style="font-size:10.5px;font-weight:700;color:#9A9AA5;cursor:pointer">개인정보처리방침</span>
+      </div>
+    </div>
+  </aside>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="height:64px;flex-shrink:0;background:#fff;border-bottom:1px solid #EAEAEE;display:flex;align-items:center;padding:0 28px;position:sticky;top:0;z-index:10">
+      <div style="display:flex;flex-direction:column">
+        <span style="font-size:14px;font-weight:700;letter-spacing:-0.01em">광고주 콘솔</span>
+        <span style="font-size:11px;color:#9A9AA5;margin-top:1px">2026년 8월</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:3px;margin-left:18px;padding:3px;background:#F1F1F4;border-radius:9px">
+        <sc-for list="{{ roles }}" as="r" hint-placeholder-count="3">
+          <div style="{{ r.style }}" onClick="{{ r.onClick }}">{{ r.label }}</div>
+        </sc-for>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+        <span style="font-size:11.5px;color:#7C7C88">주식회사 델리카페</span>
+        <span style="width:1px;height:18px;background:#EAEAEE;display:block"></span>
+        <div style="display:flex;align-items:center;gap:9px;cursor:pointer">
+          <div style="display:flex;flex-direction:column;align-items:flex-end">
+            <span style="font-size:12.5px;font-weight:700;letter-spacing:-0.01em">김서연</span>
+            <span style="font-size:10.5px;color:#9A9AA5">팀원</span>
+          </div>
+          <div style="width:32px;height:32px;border-radius:50%;background:#FEF3C7;color:#B45309;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">서</div>
+        </div>
+      </div>
+    </header>
+
+    <main style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:14px">
+
+      <div style="display:flex;align-items:flex-end;gap:16px">
+        <div>
+          <div style="display:flex;align-items:center;gap:9px">
+            <h1 style="margin:0;font-size:23px;font-weight:800;letter-spacing:-0.03em">{{ h1 }}</h1>
+            <sc-if value="{{ isLeaver }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px;font-weight:800;letter-spacing:0.01em;background:#FEF3C7;color:#B45309;border-radius:5px;padding:3px 8px">{{ leaveBadge }}</span>
+            </sc-if>
+          </div>
+          <p style="margin:5px 0 0;font-size:13px;color:#7C7C88">{{ sub }}</p>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <sc-if value="{{ isLeaver }}" hint-placeholder-val="{{ false }}">
+            <div style="height:52px;padding:0 18px;border-radius:12px;border:1px solid #D4D4DC;background:#fff;font-size:13.5px;font-weight:700;color:#3C3C46;display:flex;align-items:center;cursor:pointer" style-hover="background:#FAFAFB" onClick="{{ goMine }}">← 내 페이지로</div>
+            <div style="{{ allBtnStyle }}" onClick="{{ takeAll }}">{{ allBtnLabel }}</div>
+          </sc-if>
+          <sc-if value="{{ isMine }}" hint-placeholder-val="{{ true }}">
+            <div style="height:52px;padding:0 18px;border-radius:12px;border:1px solid #D4D4DC;background:#fff;font-size:13.5px;font-weight:700;color:#3C3C46;display:flex;align-items:center;cursor:pointer" style-hover="background:#FAFAFB">인플루언서 찾기</div>
+            <div style="height:52px;padding:0 20px;border-radius:12px;background:#F59E0B;color:#17171B;font-size:13.5px;font-weight:800;display:flex;align-items:center;cursor:pointer" style-hover="background:#D97706">＋ 캠페인 등록</div>
+          </sc-if>
+        </div>
+      </div>
+
+      <sc-if value="{{ showBanner }}" hint-placeholder-val="{{ true }}">
+        <div style="{{ bannerStyle }}">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="{{ bnChipStyle }}">{{ bn.chip }}</span>
+            <div style="min-width:0;flex:1">
+              <div style="{{ bnTitleStyle }}">{{ bn.title }}</div>
+              <div style="{{ bnDescStyle }}">{{ bn.desc }}</div>
+            </div>
+            <sc-if value="{{ bn.hasCta }}" hint-placeholder-val="{{ true }}">
+              <div style="flex-shrink:0;height:40px;padding:0 16px;border-radius:10px;background:#17171B;color:#fff;font-size:12.5px;font-weight:700;letter-spacing:-0.01em;display:flex;align-items:center;cursor:pointer" style-hover="background:#2A2A33" onClick="{{ bn.onCta }}">{{ bn.cta }}</div>
+            </sc-if>
+            <span style="flex-shrink:0;font-size:11.5px;font-weight:700;color:#B45309;cursor:pointer;border-bottom:1px solid rgba(180,83,9,0.28);padding-bottom:1px" style-hover="color:#92400E" onClick="{{ toggleLog }}">{{ logLabel }}</span>
+          </div>
+
+          <sc-if value="{{ logOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #FDE68A;border-radius:10px;padding:13px 15px;margin-top:12px">
+              <div style="font-size:11px;font-weight:800;color:#B45309;letter-spacing:0.02em">이관 기록 — 회사 대표도 같은 기록을 봅니다</div>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:10px">
+                <sc-for list="{{ log }}" as="l" hint-placeholder-count="3">
+                  <div style="display:flex;gap:11px;align-items:baseline">
+                    <span style="font-size:11px;color:#B0B0BB;width:76px;flex-shrink:0;font-variant-numeric:tabular-nums">{{ l.at }}</span>
+                    <span style="font-size:12px;color:#3C3C46;line-height:1.6;min-width:0">{{ l.what }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:11px;color:#9A9AA5;line-height:1.65;margin-top:11px;padding-top:11px;border-top:1px solid #F1F1F4">딜시트와 대화에 남은 발신자 이름은 바뀌지 않아요. 홍길동님이 보낸 대화는 그대로 남습니다 — 무슨 일이 있었는지가 기록이에요.</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMine }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #EAEAEE;border-radius:12px;padding:16px 18px">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="{{ k.dotStyle }}"></span>
+                <span style="font-size:12px;font-weight:600;color:#7C7C88">{{ k.label }}</span>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:4px;margin-top:7px">
+                <span style="{{ k.valStyle }}">{{ k.value }}</span>
+                <span style="font-size:12px;font-weight:600;color:#7C7C88">{{ k.unit }}</span>
+              </div>
+              <div style="font-size:11.5px;color:#9A9AA5;margin-top:7px">{{ k.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;align-items:stretch">
+
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+          <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="height:52px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid #F1F1F4;flex-shrink:0">
+              <h2 style="margin:0;font-size:14.5px;font-weight:700;letter-spacing:-0.01em">{{ campTitle }}</h2>
+              <sc-if value="{{ isMine }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:11px;color:#9A9AA5;margin-left:9px;flex-shrink:0">{{ mineHint }}</span>
+              </sc-if>
+              <sc-if value="{{ isMine }}" hint-placeholder-val="{{ true }}">
+                <div style="margin-left:auto;display:flex;gap:5px">
+                  <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+                    <div style="{{ t.style }}" onClick="{{ t.onClick }}">
+                      <span>{{ t.label }}</span>
+                      <span style="{{ t.countStyle }}">{{ t.count }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ isLeaver }}" hint-placeholder-val="{{ false }}">
+                <span style="margin-left:auto;font-size:11.5px;color:#9A9AA5">한 건씩 살펴보고 옮기거나, 위에서 한 번에 옮기세요</span>
+              </sc-if>
+            </div>
+
+            <div style="{{ headStyle }}">
+              <sc-for list="{{ cols }}" as="c" hint-placeholder-count="6">
+                <span style="font-size:11px;font-weight:700;color:#9A9AA5">{{ c }}</span>
+              </sc-for>
+            </div>
+
+            <div style="flex:1;min-height:0;overflow-y:auto" class="noscroll">
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+                <div style="{{ r.rowStyle }}" style-hover="background:#FAFAFB">
+                  <div style="min-width:0;padding-right:14px">
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <span style="font-size:12.5px;font-weight:700;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.camp }}</span>
+                      <sc-if value="{{ r.isTransferred }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:9.5px;font-weight:800;background:#FEF3C7;color:#B45309;border-radius:4px;padding:2px 5px;flex-shrink:0">이관</span>
+                      </sc-if>
+                    </div>
+                    <div style="font-size:11px;color:#9A9AA5;margin-top:3px">{{ r.meta }}</div>
+                    <sc-if value="{{ r.isTransferred }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:10.5px;color:#B45309;margin-top:3px">{{ r.from }}</div>
+                    </sc-if>
+                    <sc-if value="{{ r.hasMemo }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;gap:7px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:9px 11px;margin-top:8px">
+                        <span style="font-size:10px;font-weight:800;color:#B45309;flex-shrink:0;padding-top:1px">인수인계</span>
+                        <span style="font-size:11px;color:#92400E;line-height:1.6;min-width:0">{{ r.memo }}</span>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ r.hasHandover }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;gap:7px;background:#FBFBFC;border:1px solid #EFEFF2;border-radius:8px;padding:9px 11px;margin-top:8px">
+                        <span style="font-size:10px;font-weight:800;color:#9A9AA5;flex-shrink:0;padding-top:1px">어디까지</span>
+                        <span style="font-size:11px;color:#5C5C68;line-height:1.6;min-width:0">{{ r.handover }}</span>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <span style="{{ r.stStyle }}">{{ r.st }}</span>
+                  <span style="font-size:12px;color:#3C3C46;font-variant-numeric:tabular-nums">{{ r.people }}</span>
+                  <span style="font-size:12px;color:#5C5C68">{{ r.period }}</span>
+                  <span style="font-size:12px;color:#3C3C46;font-variant-numeric:tabular-nums">{{ r.pay }}</span>
+                  <sc-if value="{{ r.showTake }}" hint-placeholder-val="{{ false }}">
+                    <div style="{{ r.takeStyle }}" onClick="{{ r.take }}">{{ r.takeLabel }}</div>
+                  </sc-if>
+                  <sc-if value="{{ r.showSettle }}" hint-placeholder-val="{{ true }}">
+                    <span style="{{ r.settleStyle }}">{{ r.settle }}</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+          <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="height:46px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #F1F1F4;flex-shrink:0">
+              <h2 style="margin:0;font-size:13.5px;font-weight:700;letter-spacing:-0.01em">{{ convTitle }}</h2>
+              <span style="{{ convBadgeStyle }}">{{ convBadge }}</span>
+            </div>
+            <div style="flex:1;min-height:0;overflow-y:auto" class="noscroll">
+              <sc-for list="{{ convos }}" as="c" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid #F5F5F7">
+                  <div style="width:34px;height:34px;border-radius:50%;background:#FEF3C7;color:#B45309;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ c.initial }}</div>
+                  <div style="min-width:0;flex:1">
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <span style="font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                      <sc-if value="{{ c.isTransferred }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:9.5px;font-weight:800;background:#FEF3C7;color:#B45309;border-radius:4px;padding:2px 5px;flex-shrink:0">이관</span>
+                      </sc-if>
+                      <span style="font-size:10.5px;color:#B0B0BB;margin-left:auto;flex-shrink:0">{{ c.when }}</span>
+                    </div>
+                    <div style="font-size:11px;color:#7C7C88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px">{{ c.last }}</div>
+                    <div style="display:flex;align-items:center;gap:5px;margin-top:6px">
+                      <span style="{{ c.stStyle }}">{{ c.st }}</span>
+                      <sc-if value="{{ c.hasWarn }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:10px;font-weight:700;background:#FEE2E2;color:#DC2626;border-radius:4px;padding:2px 6px">{{ c.warn }}</span>
+                      </sc-if>
+                      <sc-if value="{{ c.showTake }}" hint-placeholder-val="{{ false }}">
+                        <div style="{{ c.takeStyle }}" onClick="{{ c.take }}">{{ c.takeLabel }}</div>
+                      </sc-if>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:11px 18px;font-size:11px;color:#9A9AA5;line-height:1.65;flex-shrink:0;border-top:1px solid #F1F1F4">{{ convNote }}</div>
+          </div>
+
+          <sc-if value="{{ isMine }}" hint-placeholder-val="{{ true }}">
+            <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+              <div style="height:46px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #F1F1F4">
+                <h2 style="margin:0;font-size:13.5px;font-weight:700;letter-spacing:-0.01em">이관 꼬리표 규칙</h2>
+              </div>
+              <div style="padding:14px 18px;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ tagRules }}" as="t" hint-placeholder-count="3">
+                  <div style="display:flex;gap:9px;align-items:flex-start">
+                    <span style="font-size:9.5px;font-weight:800;background:#FEF3C7;color:#B45309;border-radius:4px;padding:2px 5px;flex-shrink:0;margin-top:1px">이관</span>
+                    <span style="font-size:11.5px;color:#5C5C68;line-height:1.6;min-width:0">{{ t }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1000}}">
+const LEAVER = '홍길동';
+const AT = '8/14';
+const TAKER = '김서연';
+// 대표가 기재하는 값은 **퇴사 예정일** 하나. 남은 기간은 여기서 파생된다 —
+// 실무에서 합의하는 것은 「언제까지 일한다」이지 「며칠간 인수인계한다」가 아니다.
+const LEAVE_ON = '8월 29일';
+const DUE = 'D-7';
+
+// ⚠️ 퇴사는 세 상태를 지난다 — 활동중 / 인수인계 중(퇴사 예정, 기본) / 비활성(인수인계 없이 떠남).
+//    이관 기계는 하나이고 「누가 누르는가」와 「메모가 있는가」만 다르다.
+//    handover  = 퇴사자 본인이 이관 (계정 살아 있음, 메모를 남긴다)
+//    orphan    = 대표가 대신 이관 (계정 닫힘, 시스템 요약뿐)
+//    taker     = 받는 사람이 이관받은 것을 확인
+const MEMO = {
+  '여름 콜드브루 제품 협찬 (블로그)': '광고주 박도현 과장이 결제 담당인데 8월 말까지 휴가예요. 대표번호로 걸면 안 받으니 담당자 휴대폰으로 연락하세요.',
+  '가둘기정원 키즈풀빌라 방문 리뷰': '뷰티하는 지연님은 전화를 안 받고 카톡으로만 연락됩니다. 원고 독촉은 오후에 하는 게 답이 빨라요.',
+  '성수 델리카페 신메뉴 방문 리뷰': '컨펌 기준이 까다로운 광고주예요. 원고에 매장 외관 사진이 반드시 들어가야 통과됩니다.',
+};
+
+// 떠난 사람이 갖고 있던 것. 이관은 여기서 내 쪽으로 하나씩(또는 전부) 옮긴다.
+// ⚠️ 옮긴 뒤에도 `from` 이 남는다 — 「이관」 꼬리표만으로는 누구에게서 언제 왔는지 모른다.
+const LEFT_CAMPS = [
+  { camp:'여름 콜드브루 제품 협찬 (블로그)', meta:'제품 · 블로그 5', st:'진행중', people:'5 / 5', period:'7/10 – 8/10', pay:'900,000', settle:'미수',
+    handover:'게재 5건 완료 · 세무자료 4명 수령 · 1명 미수령. 지급 기록이 없어 미수예요. 지연 알림이 광고주에게 13회 발송됐습니다.' },
+  { camp:'지역맘카페 여름 협찬', meta:'오픈 · 블로그 1', st:'완료', people:'1 / 1', period:'7/18 – 7/31', pay:'150,000', settle:'미수',
+    handover:'게재 7월 24일 완료 · 세무자료 수령. 지급 기록이 없어요. 인플루언서가 대시로 두 번 문의했습니다.' },
+  { camp:'가둘기정원 키즈풀빌라 방문 리뷰', meta:'지역 · 블로그 3', st:'진행중', people:'3 / 3', period:'8/02 – 8/16', pay:'950,000', settle:'예정',
+    handover:'가이드 전달 완료 · 방문 3명 완료 · 원고 1건 수신 · 2건 대기. 대화에서 재촉한 기록이 없어요.' },
+  { camp:'성수 델리카페 신메뉴 방문 리뷰', meta:'지역 · 블로그 5', st:'진행중', people:'5 / 5', period:'8/08 – 8/20', pay:'1,150,000', settle:'예정',
+    handover:'방문 5명 완료 · 원고 5건 수신 · 3건 컨펌 완료 · 2건 대기 중.' },
+  { camp:'봄 신메뉴 인스타 릴스', meta:'지역 · 인스타 4', st:'완료', people:'4 / 4', period:'5/02 – 5/24', pay:'1,120,000', settle:'완료',
+    handover:'5월 24일 정산까지 끝난 건이에요. 평가 4.8 · 인플루언서 4명 모두 친구등록됨.' },
+  { camp:'홈카페 디저트 제품 협찬', meta:'제품 · 블로그 3', st:'완료', people:'3 / 3', period:'4/10 – 4/28', pay:'540,000', settle:'완료',
+    handover:'4월 28일 정산 완료 · 평가 4.6. 이 브랜드와 세 번째 협업이었어요.' },
+  { camp:'성수 팝업 방문 리뷰', meta:'지역 · 블로그 2', st:'완료', people:'2 / 2', period:'3/14 – 3/30', pay:'380,000', settle:'완료',
+    handover:'3월 30일 정산 완료 · 평가 5.0.' },
+  { camp:'겨울 시즌 기자단', meta:'기자단 · 블로그 5', st:'완료', people:'5 / 5', period:'1/08 – 1/30', pay:'650,000', settle:'완료',
+    handover:'1월 30일 정산 완료 · 평가 4.4. 원고 수정이 두 번 있었던 건이에요.' },
+];
+
+// ⚠️ 이관은 **내 페이지 위에 얹히는 것**이다. 원래 하던 일이 그대로 보여야 하고,
+//    이관 배너는 그 위에 한 줄 더해지는 것뿐이다. 내 일이 가려지면 안 된다.
+const MY_CAMPS = [
+  { camp:'루프탑 오픈 인스타 릴스', meta:'지역 · 인스타 4', st:'모집중', people:'2 / 4', period:'8/22 – 9/05', pay:'800,000', settle:'—' },
+  { camp:'디저트 신제품 기자단 배포', meta:'기자단 · 블로그 6', st:'진행중', people:'6 / 6', period:'8/05 – 8/25', pay:'720,000', settle:'예정' },
+  { camp:'성수 델리카페 봄 신메뉴 리뷰', meta:'지역 · 블로그 4', st:'진행중', people:'4 / 4', period:'7/28 – 8/18', pay:'880,000', settle:'예정' },
+  { camp:'키즈카페 여름방학 기자단', meta:'기자단 · 블로그 5', st:'진행중', people:'5 / 5', period:'8/01 – 8/22', pay:'750,000', settle:'예정' },
+  { camp:'베이커리 신제품 협찬', meta:'제품 · 블로그 3', st:'완료', people:'3 / 3', period:'6/10 – 6/28', pay:'450,000', settle:'완료' },
+  { camp:'루프탑 바 여름 프로모션', meta:'지역 · 인스타 3', st:'완료', people:'3 / 3', period:'6/01 – 6/20', pay:'620,000', settle:'완료' },
+];
+
+const LEFT_CONVOS = [
+  { name:'뷰티하는 지연', when:'8/09', last:'원고 초안 보내드렸어요. 확인 부탁드립니다.', st:'양쪽 확정', warn:'무응답 5일' },
+  { name:'맛집탐험 도윤', when:'8/11', last:'방문 잘 다녀왔습니다! 원고는 이번 주에 드릴게요.', st:'양쪽 확정', warn:'무응답 3일' },
+  { name:'홈카페 소소', when:'8/13', last:'[자동] 결제 예정일이 지났어요 — 광고주에게 알림을 보냈습니다.', st:'정산 지연', warn:null },
+  { name:'여행자 민준', when:'7/28', last:'다음에 또 기회 있으면 좋겠어요. 감사했습니다.', st:'완료', warn:null },
+];
+
+const MY_CONVOS = [
+  { name:'스타일리스트 예린', when:'오후 2:40', last:'조건 확인했어요. 8월 25일로 진행할게요.', st:'양쪽 확정', warn:null },
+  { name:'카페러버 세아', when:'어제', last:'가이드 파일 받았습니다!', st:'양쪽 확정', warn:null },
+  { name:'육아맘 수현', when:'어제', last:'기자단 신청했습니다. 검토 부탁드려요!', st:'한쪽 확정', warn:'무응답 2일' },
+  { name:'주말미식가 태오', when:'8/12', last:'게재 링크 보내드렸어요. 확인해주세요.', st:'양쪽 확정', warn:null },
+  { name:'리빙로그 아영', when:'8/07', last:'정산 확인했습니다. 감사합니다!', st:'완료', warn:null },
+];
+
+const initialOf = (n) => (n.trim().split(/\s+/).pop() ?? n)[0];
+const num = (s) => Number(String(s).replace(/[^0-9]/g, '')) || 0;
+const headOf = (p) => num(String(p).split('/')[0]);
+const tailOf = (p) => num(String(p).split('/')[1]);
+
+const ST_C = { 진행중:['#FEF3C7','#B45309'], 모집중:['#DBEAFE','#1D4ED8'], 완료:['#DCFCE7','#15803D'] };
+const ST_V = { '양쪽 확정':['#DCFCE7','#15803D'], '한쪽 확정':['#FEF3C7','#B45309'], '정산 지연':['#FEE2E2','#DC2626'], '완료':['#F1F1F4','#7C7C88'] };
+const SETTLE = { 예정:['#F1F1F4','#5C5C68'], 미수:['#FEE2E2','#DC2626'], 완료:['#DCFCE7','#15803D'], '—':['transparent','#C4C4CE'] };
+
+const GRID = 'display:grid;grid-template-columns:minmax(0,1fr) 96px 92px 128px 108px 116px;';
+
+class Component extends DCLogic {
+  // takenC / takenV — 내가 이관받아 옮긴 것. 옮긴 뒤에도 「이관」 꼬리표와 출처가 남는다.
+  // role — 지금 보고 있는 사람. handover(퇴사자 본인) / taker(받는 사람) / owner(대표)
+  state = { role: 'handover', view: 'mine', tab: '진행중', logOpen: false, takenC: {}, takenV: {} };
+
+  renderVals() {
+    const { view, tab, logOpen } = this.state;
+    const role = this.state.role ?? 'handover';
+    const isHandover = role === 'handover';   // 퇴사자 본인 화면
+    const isOwnerView = role === 'owner';     // 대표 감독 화면
+    const takenC = this.state.takenC ?? {};
+    const takenV = this.state.takenV ?? {};
+    const isLeaver = view === 'leaver';
+    const isMine = !isLeaver;
+
+    const leftC = LEFT_CAMPS.filter(r => !takenC[r.camp]);
+    const leftV = LEFT_CONVOS.filter(c => !takenV[c.name]);
+    const restN = leftC.length + leftV.length;
+    const tookN = Object.keys(takenC).length + Object.keys(takenV).length;
+    const totalN = LEFT_CAMPS.length + LEFT_CONVOS.length;
+
+    const navGroups = [
+      { label:'캠페인 열기', items:[['대시보드', isMine], ['캠페인', false]] },
+      { label:'사람 찾기', items:[['인플루언서 찾기', false], ['내 인플루언서', false]] },
+      { label:'이야기하기', items:[['대시', false, '2']] },
+      { label:'진행하기', items:[['딜시트', false]] },
+      { label:'정산하기', items:[['정산', false, '2'], ['크레딧', false]] },
+      { label:'이관', items:[[LEAVER + '님 페이지', isLeaver, restN ? String(restN) : null]] },
+    ].map(g => ({
+      label: g.label,
+      items: g.items.map(([label, on, badge]) => ({
+        label,
+        hasBadge: !!badge,
+        badge: badge ?? '',
+        badgeStyle: 'margin-left:auto;font-size:10px;font-weight:800;border-radius:20px;padding:1px 6px;'
+          + (on ? 'background:rgba(255,255,255,0.2);color:#fff' : 'background:#FEE2E2;color:#DC2626'),
+        style: 'display:flex;align-items:center;height:36px;padding:0 10px;border-radius:8px;font-size:13px;cursor:pointer;'
+          + (on ? 'background:#17171B;color:#fff;font-weight:700' : 'color:#3C3C46;font-weight:500'),
+      })),
+    }));
+
+    // ── 배너 ────────────────────────────────────────────────
+    // 내 페이지: 남은 건이 있으면 「인계」 안내 + 그 사람 페이지로 가는 길
+    // 떠난 사람 페이지: 여기가 무엇인지 + 전체 이관
+    const bn = isLeaver
+      ? (isHandover
+          ? { chip:'퇴사 예정 · ' + LEAVE_ON + ' (' + DUE + ')', title: '내가 담당한 ' + restN + '건을 넘겨야 해요',
+              desc: LEAVE_ON + '까지는 평소와 똑같이 일하면 돼요. 그날 전에 마무리할 건은 끝내고, 넘길 건만 이관해주세요. 건마다 받는 분을 따로 고를 수 있고, 남긴 메모는 그분에게 그대로 전달됩니다.',
+              hasCta:false, cta:'', onCta:undefined }
+          : { chip:'이관', title: LEAVER + '님이 담당했던 것 ' + restN + '건',
+              desc: isOwnerView
+                ? '퇴사 예정일이 지났습니다. 대표가 대신 이관할 수 있어요. 사람이 쓴 메모가 없는 건은 시스템 요약만 남아 있습니다.'
+                : '딜시트와 대화를 열어 확인한 뒤 옮겨주세요. 옮긴 건에는 「이관」 꼬리표가 남습니다. 전부 옮기면 이 페이지는 닫힙니다.',
+              hasCta:false, cta:'', onCta:undefined })
+      : { chip:'이관', title: restN > 0 ? LEAVER + '님 담당 ' + restN + '건이 아직 남아 있어요' : LEAVER + '님 이관이 끝났어요',
+          desc: restN > 0
+            ? LEAVER + '님이 ' + LEAVE_ON + ' 퇴사 예정이에요. ' + totalN + '건 중 ' + tookN + '건이 넘어왔고, 나머지는 ' + LEAVER + '님이 메모와 함께 보내줍니다. 기다리지 않고 직접 가져올 수도 있어요.'
+            : '옮긴 ' + tookN + '건은 아래 목록에 「이관」 꼬리표를 달고 들어가 있어요. ' + LEAVER + '님 페이지는 닫혔습니다.',
+          hasCta: restN > 0, cta: '이관내역 보기 →', onCta: () => this.setState({ view:'leaver' }) };
+
+    const log = [
+      { at:'8/14 10:22', what:'정원일 대표가 ' + LEAVER + '님 담당 ' + totalN + '건(캠페인 ' + LEFT_CAMPS.length + ' · 대화 ' + LEFT_CONVOS.length + ')을 김서연에게 이관' },
+      { at:'8/14 10:22', what:'인플루언서 9명에게 「담당자가 김서연으로 바뀌었어요」 알림 발송' },
+      ...(tookN > 0 ? [{ at:AT + ' 방금', what:'김서연이 ' + tookN + '건을 내 담당으로 옮김 — 각 건에 「이관」 꼬리표 부착' }] : []),
+      ...(restN === 0 ? [{ at:AT + ' 방금', what:LEAVER + '님 페이지 닫힘 · 계정 비활성 — 지난 기록의 발신자 이름은 그대로 유지' }] : []),
+    ];
+
+    // ── 캠페인 목록 ─────────────────────────────────────────
+    const mineRows = [
+      ...MY_CAMPS.map(r => ({ ...r, tr:false })),
+      ...LEFT_CAMPS.filter(r => takenC[r.camp]).map(r => ({ ...r, tr:true })),
+    ];
+
+    const counts = {
+      '진행중': mineRows.filter(r => r.st === '진행중' || r.st === '모집중').length,
+      '완료': mineRows.filter(r => r.st === '완료').length,
+      '이관받은 것': mineRows.filter(r => r.tr).length,
+      '전체': mineRows.length,
+    };
+
+    const tabs = ['진행중', '완료', '이관받은 것', '전체'].map(label => ({
+      label,
+      count: String(counts[label]),
+      onClick: () => this.setState({ tab: label }),
+      style: 'display:flex;align-items:center;gap:5px;height:30px;padding:0 11px;border-radius:8px;font-size:11.5px;cursor:pointer;white-space:nowrap;font-weight:'
+        + (tab === label ? '700;background:#17171B;color:#fff' : '600;color:#5C5C68;background:#F1F1F4'),
+      countStyle: 'font-size:10.5px;font-variant-numeric:tabular-nums;color:'
+        + (tab === label ? 'rgba(255,255,255,0.62)' : '#B0B0BB'),
+    }));
+
+    const src = isLeaver ? leftC : mineRows.filter(r =>
+      tab === '전체'
+      || (tab === '이관받은 것' && r.tr)
+      || (tab === '진행중' && (r.st === '진행중' || r.st === '모집중'))
+      || (tab === '완료' && r.st === '완료'));
+
+    const rows = src.map(r => ({
+      ...r,
+      // ⚠️ 꼬리표는 옮긴 뒤에도 남는다. 출처(누구에게서 언제)까지 함께 — 그게 없으면
+      //    「이관」만 보이고 누구 일이었는지 모른다.
+      isTransferred: isLeaver ? false : !!r.tr,
+      from: LEAVER + '님에게서 ' + AT + ' 이관',
+      hasHandover: isLeaver,
+      rowStyle: GRID + 'padding:14px 20px;border-bottom:1px solid #F5F5F7;align-items:center;'
+        + (isLeaver ? '' : 'cursor:pointer'),
+      stStyle: 'font-size:11px;font-weight:700;border-radius:5px;padding:3px 8px;justify-self:start;background:'
+        + (ST_C[r.st] ?? ST_C['완료'])[0] + ';color:' + (ST_C[r.st] ?? ST_C['완료'])[1],
+      showSettle: !isLeaver,
+      settleStyle: 'font-size:11px;font-weight:700;border-radius:5px;padding:3px 8px;justify-self:start;background:'
+        + (SETTLE[r.settle] ?? SETTLE['—'])[0] + ';color:' + (SETTLE[r.settle] ?? SETTLE['—'])[1],
+      // 사람이 쓴 메모 — 시스템 요약보다 위에, 진한 톤으로. 시스템이 못 쓰는 것이 여기 담긴다.
+      hasMemo: !!MEMO[r.camp],
+      memo: MEMO[r.camp] ?? '',
+      // ⚠️ 퇴사자 페이지는 그 사람이 보던 화면과 **같다.** 차이는 이 버튼 하나뿐이다.
+      //    누르는 사람에 따라 라벨이 바뀐다 — 퇴사자는 「○○에게 이관」, 받는 사람은 「나에게 이관」.
+      showTake: isLeaver,
+      // ⚠️ 받는 사람은 **건마다 다를 수 있다** — 분야·거래처별로 갈리는 것이 실무다.
+      //    그래서 대표가 미리 한 명을 못박지 않고, 누르는 순간 고른다.
+      takeLabel: isHandover ? '이관하기' : isOwnerView ? '대신 이관' : '나에게 이관',
+      takeStyle: 'justify-self:start;height:30px;padding:0 11px;border-radius:8px;background:#17171B;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;cursor:pointer;white-space:nowrap',
+      take: () => this.setState({ takenC: { ...takenC, [r.camp]: true } }),
+    }));
+
+    // ── 대화 ────────────────────────────────────────────────
+    const convSrc = isLeaver
+      ? leftV.map(c => ({ ...c, tr:false }))
+      : [...MY_CONVOS.map(c => ({ ...c, tr:false })), ...LEFT_CONVOS.filter(c => takenV[c.name]).map(c => ({ ...c, tr:true }))];
+
+    const convos = convSrc.map(c => ({
+      ...c,
+      initial: initialOf(c.name),
+      isTransferred: !isLeaver && c.tr,
+      hasWarn: !!c.warn,
+      stStyle: 'font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;background:'
+        + (ST_V[c.st] ?? ST_V['완료'])[0] + ';color:' + (ST_V[c.st] ?? ST_V['완료'])[1],
+      // ⚠️ 개인 대화는 **대표에게** 간다. 회사 자산이라 없애기도 애매하고,
+      //    특정 팀원에게 주면 근거가 없다. 대표가 갖고 있다가 필요할 때 넘긴다.
+      //    캠페인에 엮인 대화는 여기 나오지 않는다 — 캠페인과 함께 자동으로 따라간다.
+      showTake: isLeaver,
+      takeLabel: isHandover ? '대표에게 이관' : isOwnerView ? '내가 보관' : '대표에게 이관',
+      takeStyle: 'margin-left:auto;height:26px;padding:0 9px;border-radius:7px;background:#17171B;color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;cursor:pointer;white-space:nowrap;flex-shrink:0',
+      take: () => this.setState({ takenV: { ...takenV, [c.name]: true } }),
+    }));
+
+    const myUnread = convos.filter(c => c.hasWarn).length;
+
+    // ── KPI (내 페이지) — 옮긴 것만 반영된다 ──────────────
+    const won = (n) => n.toLocaleString();
+    const live = mineRows.filter(r => r.st === '진행중' || r.st === '모집중');
+    const liveTr = live.filter(r => r.tr).length;
+    const people = mineRows.filter(r => r.st !== '완료').reduce((a, r) => a + headOf(r.people), 0);
+    const talking = mineRows.filter(r => r.st === '모집중').reduce((a, r) => a + (tailOf(r.people) - headOf(r.people)), 0);
+    const due = mineRows.filter(r => r.settle === '예정' || r.settle === '미수').reduce((a, r) => a + num(r.pay), 0);
+    const unpaid = mineRows.filter(r => r.settle === '미수').length;
+
+    const kpis = [
+      { label:'진행중 캠페인', value:String(live.length), unit:'건',
+        sub: liveTr > 0 ? '내 등록 ' + (live.length - liveTr) + '건 · 이관 ' + liveTr + '건'
+             : restN > 0 ? '이관 대기 ' + restN + '건은 아직 미포함' : '전부 내 등록', dot:'#F59E0B' },
+      { label:'확정 인플루언서', value:String(people), unit:'명', sub:'협의중 ' + talking + '명', dot:'#22C55E' },
+      { label:'정산 대기', value:won(due), unit:'원',
+        sub: unpaid > 0 ? '미수 ' + unpaid + '건 포함' : '미수 없음', dot:'#EF4444' },
+      { label:'응답 대기', value:String(myUnread), unit:'건', sub:'내 대화 기준', dot:'#EF4444' },
+    ].map(k => ({
+      ...k,
+      dotStyle: 'width:6px;height:6px;border-radius:2px;display:block;background:' + k.dot,
+      valStyle: 'font-size:24px;font-weight:800;letter-spacing:-0.035em;line-height:1;font-variant-numeric:tabular-nums;color:'
+        + (k.dot === '#EF4444' ? '#DC2626' : '#17171B'),
+    }));
+
+    return {
+      navGroups, isLeaver, isMine, kpis, tabs, rows, convos, log, bn,
+      logOpen,
+      logLabel: logOpen ? '기록 접기' : '이관 기록',
+      toggleLog: () => this.setState({ logOpen: !logOpen }),
+      showBanner: isLeaver || restN > 0 || tookN > 0,
+      bannerStyle: 'background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:16px 18px;box-shadow:0 1px 2px rgba(180,83,9,0.04)',
+      // 배지 · 제목 · 설명 규격을 한 곳에서 — 두 화면이 같은 값을 쓴다
+      bnChipStyle: 'font-size:10px;font-weight:800;letter-spacing:0.03em;background:#F59E0B;color:#17171B;border-radius:5px;padding:3px 8px;flex-shrink:0',
+      bnTitleStyle: 'font-size:14px;font-weight:800;letter-spacing:-0.02em;color:#92400E',
+      bnDescStyle: 'font-size:12px;color:#B45309;line-height:1.65;margin-top:5px;text-wrap:pretty',
+
+      // 역할 전환 — 같은 화면을 세 사람이 본다
+      roles: [['handover', LEAVER + '님(퇴사 예정)'], ['taker', TAKER + '님(받는 사람)'], ['owner', '대표(감독)']].map(([k, label]) => ({
+        label,
+        onClick: () => this.setState({ role: k, view: k === 'handover' ? 'leaver' : 'mine' }),
+        style: 'font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;font-weight:'
+          + (role === k ? '700;background:#17171B;color:#fff' : '600;color:#8A8A96'),
+      })),
+      leaveBadge: '퇴사 예정 ' + LEAVE_ON,
+      h1: isLeaver ? (isHandover ? '내 담당 인수인계' : LEAVER + '님 페이지') : '마이페이지',
+      sub: isLeaver
+        ? '퇴사로 이관된 담당 건이에요. 확인한 건만 내 담당으로 옮겨집니다.'
+        : (restN > 0 ? '이관 대기 ' + restN + '건 · ' : '') + '미수 ' + unpaid + '건이 있어요.',
+
+      goMine: () => this.setState({ view:'mine' }),
+      allBtnLabel: isHandover ? '남은 ' + restN + '건 한 사람에게' : '남은 ' + restN + '건 전부 이관',
+      allBtnStyle: 'height:52px;padding:0 20px;border-radius:12px;font-size:13.5px;font-weight:800;display:flex;align-items:center;'
+        + (restN > 0 ? 'background:#F59E0B;color:#17171B;cursor:pointer' : 'background:#EAEAEE;color:#B0B0BB'),
+      takeAll: restN > 0
+        ? () => this.setState({
+            takenC: LEFT_CAMPS.reduce((a, r) => ({ ...a, [r.camp]: true }), {}),
+            takenV: LEFT_CONVOS.reduce((a, c) => ({ ...a, [c.name]: true }), {}),
+            view: 'mine',
+          })
+        : undefined,
+
+      campTitle: isLeaver ? LEAVER + '님 담당 캠페인 ' + leftC.length + '건' : '내 담당 캠페인',
+      // 이관 배너는 내 화면 위에 얹히는 한 줄이다 — 내 일이 가려지지 않는지 늘 확인한다
+      mineHint: tookN > 0 ? '「이관」 표시된 ' + tookN + '건이 함께 있어요' : '원래 내가 하던 건이에요',
+      cols: isLeaver
+        ? ['캠페인', '상태', '모집', '기간', '예산', '']
+        : ['캠페인', '상태', '모집', '기간', '예산', '정산'],
+      headStyle: GRID + 'padding:10px 20px;background:#FAFAFB;border-bottom:1px solid #F1F1F4;flex-shrink:0',
+
+      convTitle: isLeaver ? LEAVER + '님 개인 대화 ' + leftV.length + '건' : '내 대화',
+      convBadge: isLeaver ? '대표 보관' : (myUnread ? '미응답 ' + myUnread : '미응답 없음'),
+      convBadgeStyle: 'margin-left:auto;font-size:10.5px;font-weight:800;border-radius:5px;padding:2px 7px;'
+        + (isLeaver ? 'background:#F1F1F4;color:#7C7C88'
+           : myUnread ? 'background:#FEE2E2;color:#DC2626' : 'background:#F1F1F4;color:#7C7C88'),
+      convNote: isLeaver
+        ? '캠페인에 엮인 대화는 여기 없어요 — 캠페인과 함께 따라갑니다. 여기는 캠페인과 무관한 개인 대화이고, 회사 자산이라 대표가 보관합니다.'
+        : '「이관」이 붙은 대화는 ' + LEAVER + '님에게서 넘어온 거예요. 지난 대화의 발신자는 그대로입니다.',
+
+      // 꼬리표가 어디에 어떻게 남는지 — 규칙을 화면에 적어둔다
+      tagRules: [
+        '캠페인 목록 · 딜시트 · 대화 목록에 꼬리표가 붙습니다. 옮긴 뒤에도 사라지지 않아요.',
+        '꼬리표 아래에 「' + LEAVER + '님에게서 ' + AT + ' 이관」처럼 출처가 함께 남습니다.',
+        '「이관받은 것」 탭으로 모아 볼 수 있어요. 회사 대표도 같은 기록을 봅니다.',
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>
