@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Megaphone, Users, UserCheck, MessageSquare, Bell, Wallet, CreditCard, UserPlus, Menu } from 'lucide-react'
+import { LayoutDashboard, Megaphone, Users, UserCheck, MessageSquare, Bell, Wallet, CreditCard, UserPlus, CalendarDays, Menu } from 'lucide-react'
 import LogoutButton from './LogoutButton'
 import Logo from './Logo'
 import { initial } from '@/lib/initial'
@@ -44,6 +44,7 @@ const NAV_GROUPS: {
     items: [
       { href: '/advertiser/team', label: '팀 멤버', Icon: UserPlus },
       { href: '/advertiser/team/workload', label: '팀원 현황', Icon: Users },
+      { href: '/advertiser/team/leaves', label: '휴무', Icon: CalendarDays },
       { href: '/advertiser/notifications', label: '알림', Icon: Bell, badge: 'notif' },
     ],
   },
