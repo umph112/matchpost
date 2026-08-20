@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Download } from 'lucide-react'
+import { Download, Phone } from 'lucide-react'
 import PaidConfirmModal from '@/components/PaidConfirmModal'
+import InfluencerPaidReceivedModal from '@/components/InfluencerPaidReceivedModal'
 import { kstDateString, dDayLabel, listDateLabel } from '@/lib/date'
 
 type OverdueRow = {
@@ -18,6 +19,7 @@ type OverdueRow = {
   reminderCount: number
   companyName: string | null
   managerName: string | null
+  phone: string | null
 }
 
 type EarningStatus = '예정' | '미수' | '확인 대기' | '완료'
@@ -53,6 +55,8 @@ export default function EarningsPage() {
   const [pendingConfirm, setPendingConfirm] = useState<PendingProposal[]>([])
   const [confirmModal, setConfirmModal] = useState(false)
   const [overdue, setOverdue] = useState<OverdueRow[]>([])
+  const [paidModal, setPaidModal] = useState<OverdueRow | null>(null)
+  const [showMovedOnly, setShowMovedOnly] = useState(false)
   const supabase = createClient()
   const router = useRouter()
 
@@ -155,7 +159,7 @@ export default function EarningsPage() {
       const today = kstDateString()
       const { data: camps } = await supabase
         .from('campaigns')
-        .select('id, title, settlement_date, overdue_reminder_count')
+        .select('id, title, settlement_date, overdue_reminder_count, manager_phone, company_phone')
         .in('id', campIds)
         .lt('settlement_date', today)
       const campById = Object.fromEntries((camps ?? []).map((c) => [c.id, c]))
@@ -165,6 +169,8 @@ export default function EarningsPage() {
       const advIds = [...new Set(baseRows.map((p) => p.advertiser_id))]
       const companyByAdv: Record<string, string | null> = {}
       const nameByAdv: Record<string, string | null> = {}
+      const profManagerByAdv: Record<string, string | null> = {}
+      const profCompanyByAdv: Record<string, string | null> = {}
       if (advIds.length > 0) {
         const { data: aps } = await supabase
           .from('advertiser_profiles')
@@ -173,23 +179,37 @@ export default function EarningsPage() {
         ;(aps ?? []).forEach((a) => { companyByAdv[a.user_id] = a.company_name })
         const { data: profs } = await supabase
           .from('profiles')
-          .select('id, name')
+          .select('id, name, manager_phone, company_phone')
           .in('id', advIds)
-        ;(profs ?? []).forEach((p) => { nameByAdv[p.id] = p.name })
+        ;(profs ?? []).forEach((p) => {
+          nameByAdv[p.id] = p.name
+          profManagerByAdv[p.id] = p.manager_phone
+          profCompanyByAdv[p.id] = p.company_phone
+        })
       }
 
+      // 연락처 우선순위 = PaidConfirmModal과 동일: 캠페인 담당자 › 광고주 담당자 › 캠페인 대표 › 광고주 대표
       const overdueRows: OverdueRow[] = baseRows
-        .map((p) => ({
-          campaignId: p.campaign_id as string,
-          title: campById[p.campaign_id as string].title,
-          advertiserId: p.advertiser_id,
-          proposalId: p.id,
-          settlementDate: campById[p.campaign_id as string].settlement_date,
-          budget: p.budget,
-          reminderCount: campById[p.campaign_id as string].overdue_reminder_count ?? 0,
-          companyName: companyByAdv[p.advertiser_id] ?? null,
-          managerName: nameByAdv[p.advertiser_id] ?? null,
-        }))
+        .map((p) => {
+          const camp = campById[p.campaign_id as string]
+          return {
+            campaignId: p.campaign_id as string,
+            title: camp.title,
+            advertiserId: p.advertiser_id,
+            proposalId: p.id,
+            settlementDate: camp.settlement_date,
+            budget: p.budget,
+            reminderCount: camp.overdue_reminder_count ?? 0,
+            companyName: companyByAdv[p.advertiser_id] ?? null,
+            managerName: nameByAdv[p.advertiser_id] ?? null,
+            phone:
+              camp.manager_phone ??
+              profManagerByAdv[p.advertiser_id] ??
+              camp.company_phone ??
+              profCompanyByAdv[p.advertiser_id] ??
+              null,
+          }
+        })
       setOverdue(overdueRows)
     } else {
       setOverdue([])
@@ -223,8 +243,15 @@ export default function EarningsPage() {
     return true
   })
 
+  // PROMPT-5 ④ 예정일이 밀려 다음 달로 넘어간 건 — 자리만 잡아둔다.
+  // 현재 스키마엔 원래 예정일(변경 이력)이 없어 감지 불가 → 항상 0건(정상).
+  // 결제일 변경 경로(원래 예정일 vs 새 예정일 기록)가 생기면 여기서 채운다.
+  const movedOut: EarningRow[] = []
+  const movedOutTotal = movedOut.reduce((s, r) => s + (r.budget ?? 0), 0)
+  const movedOutIds = new Set(movedOut.map((r) => r.id))
+
   const listRows = inPeriod
-    .filter((r) => filter === '전체' || r.status === filter)
+    .filter((r) => (showMovedOnly ? movedOutIds.has(r.id) : filter === '전체' || r.status === filter))
     .sort((a, b) => (b.settlementDate ?? '').localeCompare(a.settlementDate ?? ''))
 
   // 요약 — 총매출·예정·확인대기는 기간 스코프
@@ -276,6 +303,20 @@ export default function EarningsPage() {
         />
       )}
 
+      {paidModal && (
+        <InfluencerPaidReceivedModal
+          proposalId={paidModal.proposalId}
+          campaignTitle={paidModal.title}
+          budget={paidModal.budget}
+          settlementDate={paidModal.settlementDate}
+          onClose={() => setPaidModal(null)}
+          onDone={() => {
+            setPaidModal(null)
+            fetchAll()
+          }}
+        />
+      )}
+
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
@@ -322,20 +363,36 @@ export default function EarningsPage() {
                   <Link href={`/advertiser/${r.advertiserId}`} className="font-semibold hover:underline">
                     {r.companyName ?? '광고주'}
                   </Link>
-                  {r.managerName && <span> / {r.managerName}</span>}
+                  {r.managerName && <span className="text-[#17171B]"> / {r.managerName}</span>}
                 </p>
+                {r.phone && (
+                  <a
+                    href={`tel:${r.phone}`}
+                    className="inline-flex items-center gap-1 min-h-[44px] text-[12px] font-semibold text-[#DC2626] hover:underline"
+                  >
+                    <Phone size={13} strokeWidth={1.75} className="shrink-0" /> {r.phone}
+                  </a>
+                )}
                 <p className="text-[11px] text-[#B91C1C] mt-0.5">
                   정산 예정일 {listDateLabel(r.settlementDate + 'T00:00:00')}
                   {r.budget != null && ` · ${r.budget.toLocaleString()}원`}
                   {r.reminderCount > 0 && ` · 지연 알림 ${r.reminderCount}회 발송 (매일 1회)`}
                 </p>
               </div>
-              <button
-                onClick={() => inquireInChat(r)}
-                className="shrink-0 text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-3 py-1.5 rounded-lg"
-              >
-                대시에서 문의하기
-              </button>
+              <div className="shrink-0 flex flex-col gap-1.5">
+                <button
+                  onClick={() => inquireInChat(r)}
+                  className="text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-3 py-1.5 rounded-lg"
+                >
+                  대시에서 문의하기
+                </button>
+                <button
+                  onClick={() => setPaidModal(r)}
+                  className="text-[11.5px] font-bold text-[#DC2626] bg-white border border-[#FECACA] px-3 py-1.5 rounded-lg hover:bg-[#FEF2F2]"
+                >
+                  입금 받았어요
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -363,10 +420,12 @@ export default function EarningsPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">총 매출</p>
           <p className="text-xl font-bold text-[#B45309]">{totalAmount.toLocaleString()}원</p>
+          <p className="mt-0.5 text-[10.5px] text-[#9A9AA5]">이 기간에 잡힌 전체</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">예정 매출</p>
           <p className="text-xl font-bold text-orange-500">{pendingAmount.toLocaleString()}원</p>
+          <p className="mt-0.5 text-[10.5px] text-[#9A9AA5]">예정일이 아직 안 지난 건</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">미수</p>
@@ -376,6 +435,7 @@ export default function EarningsPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">확인 대기</p>
           <p className="text-xl font-bold text-[#B45309]">{awaitingAmount.toLocaleString()}원</p>
+          <p className="mt-0.5 text-[10.5px] text-[#9A9AA5]">입금 확인을 기다리는 중</p>
         </div>
       </div>
 
@@ -384,12 +444,22 @@ export default function EarningsPage() {
         매출은 합의된 결제 예정일을 기준으로 잡힙니다. 입금이 늦으면 미수로 표시되고, 확인되면 원래 예정일의 매출로 확정됩니다.
       </p>
 
+      {/* PROMPT-5 ④ 예정일이 밀려 다음 달로 넘어간 건 — 0건이면 렌더하지 않음 */}
+      {movedOut.length > 0 && (
+        <button
+          onClick={() => { setFilter('전체'); setShowMovedOnly(true) }}
+          className="mb-4 text-left text-[11.5px] text-[#B45309] hover:underline"
+        >
+          예정일이 밀려 다음 달로 넘어간 건 {movedOut.length}건 · {movedOutTotal.toLocaleString()}원
+        </button>
+      )}
+
       {/* 상태 필터 */}
       <div className="flex gap-2 mb-4 overflow-x-auto">
         {STATUS_FILTERS.map(s => (
           <button
             key={s}
-            onClick={() => setFilter(s)}
+            onClick={() => { setFilter(s); setShowMovedOnly(false) }}
             className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition ${
               filter === s
                 ? 'bg-[#F59E0B] text-white'
@@ -421,6 +491,8 @@ export default function EarningsPage() {
               }`}
             >
               <div className="min-w-0">
+                {/* PROMPT-5 ⑤ 출처 배지 — 지금은 전부 매치포스트 고정. 직접 등록 건이 생기면 「직접 등록」으로 분기 */}
+                <span className="inline-block mb-1 text-[9.5px] font-bold text-[#5C5C68] bg-[#F1F1F4] rounded px-1.5 py-0.5">매치포스트</span>
                 <p className="text-[12.5px] font-bold text-gray-800 truncate">{r.brandName ?? r.companyName ?? '광고주'}</p>
                 {r.campaignTitle && <p className="text-[11px] text-[#9A9AA5] mt-0.5 truncate">{r.campaignTitle}</p>}
                 <p className="text-[11px] text-gray-400 mt-0.5">
