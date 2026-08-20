@@ -206,9 +206,17 @@ export default function AdvertiserShell({
           <button className="text-[#5C5C68]" onClick={() => setOpen(true)} aria-label="메뉴">
             <Menu size={20} strokeWidth={1.75} />
           </button>
-          <span className="text-sm font-semibold text-[#17171B] truncate">{name}</span>
-          <div className="ml-auto flex items-center gap-3">
+          {/* D16 §6 — 왼쪽은 서비스 이름 + 기간(계정명 아님) */}
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-semibold text-[#17171B] truncate leading-tight">{subLine1}</span>
+            {subLine2 && <span className="text-[10.5px] text-[#9A9AA5] truncate leading-tight">{subLine2}</span>}
+          </div>
+          <div className="ml-auto flex items-center gap-2.5">
             {viewToggle}
+            {/* D16 §6 — 계정 이니셜(initial.ts), 계정명은 오른쪽에만 */}
+            <div className="w-8 h-8 rounded-full bg-[#FEF3C7] text-[#B45309] text-[12px] font-extrabold flex items-center justify-center shrink-0" title={name}>
+              {initial(name)}
+            </div>
             <LogoutButton />
           </div>
         </header>
