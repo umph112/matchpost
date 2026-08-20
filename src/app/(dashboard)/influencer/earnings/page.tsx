@@ -269,7 +269,7 @@ export default function EarningsPage() {
                 <p className="text-[11px] text-[#B91C1C] mt-0.5">
                   정산 예정일 {listDateLabel(r.settlementDate + 'T00:00:00')}
                   {r.budget != null && ` · ${r.budget.toLocaleString()}원`}
-                  {r.reminderCount > 0 && ` · 지연 알림 ${r.reminderCount}회 발송`}
+                  {r.reminderCount > 0 && ` · 지연 알림 ${r.reminderCount}회 발송 (매일 1회)`}
                 </p>
               </div>
               <button

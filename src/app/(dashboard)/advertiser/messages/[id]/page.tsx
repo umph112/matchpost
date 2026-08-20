@@ -24,6 +24,7 @@ export default function AdvertiserMessageRoomPage() {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [conv, setConv] = useState<any>(null)
   const [campaignTitle, setCampaignTitle] = useState('')
+  const [campaignBrand, setCampaignBrand] = useState('')
   const [participants, setParticipants] = useState<Participant[]>([])
   const [otherName, setOtherName] = useState('')
   const [otherId, setOtherId] = useState<string | null>(null)
@@ -60,8 +61,11 @@ export default function AdvertiserMessageRoomPage() {
 
     let involvedInfIds: string[] = []
     if (c.kind === 'campaign') {
-      const { data: camp } = await supabase.from('campaigns').select('title').eq('id', c.campaign_id).single()
+      const { data: camp } = await supabase.from('campaigns').select('title, brand_name').eq('id', c.campaign_id).single()
       setCampaignTitle(camp?.title ?? '캠페인')
+      // D17 §3-3 — 캠페인 대화 헤더는 브랜드가 주. 비면 회사 상호로 대체(대행 배지는 안 붙임)
+      const { data: ap } = await supabase.from('advertiser_profiles').select('company_name').eq('user_id', c.advertiser_id).single()
+      setCampaignBrand(camp?.brand_name ?? ap?.company_name ?? '광고주')
 
       const { data: props } = await supabase
         .from('proposals')
@@ -276,11 +280,12 @@ export default function AdvertiserMessageRoomPage() {
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="font-semibold text-gray-800 truncate">{isCampaign ? campaignTitle : otherName}</p>
+            <p className="font-semibold text-gray-800 truncate">{isCampaign ? campaignBrand : otherName}</p>
             <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${isCampaign ? 'bg-[#DBEAFE] text-[#1D4ED8]' : 'bg-[#FEF3C7] text-[#B45309]'}`}>
               {isCampaign ? `1:N 참여 ${participants.length}명` : '1:1'}
             </span>
           </div>
+          {isCampaign && <p className="text-[11px] text-gray-400 truncate">{campaignTitle}</p>}
           {conv.manager_id && <p className="text-[11px] text-gray-400">담당 {managerName}</p>}
         </div>
         {/* D6 E4 — 신고 입구는 대화 헤더 한 곳. 캠페인 대화는 참여자를 먼저 고른다(D7 3-5) */}
