@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  body { margin:0; background:#E8E8EC; color:#1A1A1F; font-family:"Pretendard Variable", -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#B45309; text-decoration:none; }
+  .noscroll::-webkit-scrollbar { display:none; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;justify-content:center;padding:30px 20px 40px">
+  <div style="width:390px;height:844px;background:#F4F4F6;border-radius:44px;box-shadow:0 26px 70px rgba(0,0,0,0.2);overflow:hidden;position:relative;display:flex;flex-direction:column">
+
+    <div style="height:54px;flex-shrink:0;background:#fff;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font-size:13px;font-weight:700;position:relative;z-index:30">
+      <span style="letter-spacing:-0.02em">9:41</span>
+      <div style="position:absolute;left:50%;transform:translateX(-50%);top:11px;width:104px;height:30px;border-radius:16px;background:#17171B"></div>
+      <span style="display:flex;gap:5px;align-items:center;opacity:0.9"><span style="font-size:11px">▮▮▮</span><span style="font-size:12px">◗</span></span>
+    </div>
+
+    <div style="height:50px;flex-shrink:0;background:#fff;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:1px solid #F1F1F4;z-index:20">
+      <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+        <div style="width:36px;height:36px;margin-left:-10px;display:flex;align-items:center;justify-content:center;font-size:21px;cursor:pointer" style-active="background:#F1F1F4;border-radius:11px" onClick="{{ onBack }}">‹</div>
+      </sc-if>
+      <sc-if value="{{ showLogo }}" hint-placeholder-val="{{ true }}">
+        <svg viewBox="0 0 64 64" width="23" height="23" style="flex-shrink:0"><rect width="64" height="64" rx="16.6" fill="#17171B"></rect><rect y="37.1" width="64" height="1.9" fill="#fff" opacity="0.28"></rect><rect x="24.3" width="1.9" height="64" fill="#fff" opacity="0.28"></rect><circle cx="25.3" cy="38.1" r="8.3" fill="#F59E0B"></circle></svg>
+      </sc-if>
+      <span style="font-size:15.5px;font-weight:800;letter-spacing:-0.025em">{{ title }}</span>
+      <div style="margin-left:auto">
+        <div style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative;cursor:pointer" style-active="background:#F1F1F4">🔔<span style="position:absolute;top:5px;right:5px;min-width:16px;height:16px;border-radius:20px;background:#EF4444;color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff;padding:0 3px">3</span></div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow-y:auto;background:#F4F4F6" class="noscroll">
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:13px 13px 20px;display:flex;flex-direction:column;gap:12px">
+
+        <sc-if value="{{ a2hsShow }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#17171B;border-radius:15px;padding:14px 15px 15px;color:#fff">
+            <div style="display:flex;align-items:flex-start;gap:9px">
+              <div style="min-width:0;flex:1">
+                <div style="font-size:13px;font-weight:800;letter-spacing:-0.02em">{{ a2hsTitle }}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;margin-top:4px;text-wrap:pretty">{{ a2hsSub }}</div>
+              </div>
+              <span style="font-size:17px;color:rgba(255,255,255,0.4);cursor:pointer;line-height:1;flex-shrink:0" onClick="{{ closeA2hs }}">×</span>
+            </div>
+            <div style="display:flex;gap:3px;background:rgba(255,255,255,0.09);border-radius:9px;padding:3px;margin-top:11px">
+              <sc-for list="{{ a2hsOSTabs }}" as="t" hint-placeholder-count="2">
+                <div style="{{ t.style }}" onClick="{{ t.onClick }}">{{ t.label }}</div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:11px">
+              <sc-for list="{{ a2hsSteps }}" as="s" hint-placeholder-count="2">
+                <div style="display:flex;gap:8px">
+                  <span style="width:5px;height:5px;border-radius:50%;background:#F59E0B;flex-shrink:0;margin-top:6px"></span>
+                  <span style="font-size:11.5px;color:rgba(255,255,255,0.78);line-height:1.55">{{ s }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+
+        <div style="background:#17171B;border-radius:16px;padding:15px 16px 16px;color:#fff">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="width:38px;height:38px;border-radius:50%;background:#F59E0B;color:#17171B;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">지</span>
+            <div style="min-width:0">
+              <div style="font-size:14.5px;font-weight:800;letter-spacing:-0.025em">뷰티하는 지연</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px">블로그 D-3 · 롱테일형</div>
+            </div>
+            <div style="margin-left:auto;text-align:right">
+              <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+                <span style="width:16px;height:16px;border-radius:50%;background:#F59E0B;color:#17171B;font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">C</span>
+                <span style="font-size:17px;font-weight:800;letter-spacing:-0.035em;font-variant-numeric:tabular-nums">109,200</span>
+              </div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px">보유 크레딧</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:2px 4px 8px">
+            <span style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em">놓치면 안 되는 일</span>
+            <span style="font-size:11px;color:#9A9AA5">7일 이내</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ urgent }}" as="u" hint-placeholder-count="2">
+              <div style="{{ u.cardStyle }}">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <span style="{{ u.ddayStyle }}">{{ u.dday }}</span>
+                  <span style="{{ u.kindStyle }}">{{ u.kind }}</span>
+                </div>
+                <div style="font-size:13.5px;font-weight:700;letter-spacing:-0.015em;margin-top:8px;line-height:1.4">{{ u.title }}</div>
+                <div style="font-size:11.5px;color:#7C7C88;margin-top:4px;line-height:1.5">{{ u.sub }}</div>
+                <sc-if value="{{ u.isTel }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;flex-wrap:wrap">
+                    <a href="{{ u.tel }}" style="{{ u.telStyle }}"><span style="color:#17171B">{{ u.who }}</span>{{ u.ctaText }}</a>
+                    <sc-if value="{{ u.hasAsk }}" hint-placeholder-val="{{ false }}">
+                      <span style="{{ u.askStyle }}" onClick="{{ u.onAsk }}">{{ u.ask }}</span>
+                    </sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ u.notTel }}" hint-placeholder-val="{{ true }}">
+                  <div style="{{ u.ctaStyle }}">{{ u.ctaText }}</div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:6px;height:47px;padding:0 15px;border-bottom:1px solid #F1F1F4">
+            <span style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em">받은 제안</span>
+            <span style="font-size:11px;font-weight:800;background:#FEE2E2;color:#DC2626;border-radius:20px;padding:2px 7px">2</span>
+            <span style="margin-left:auto;font-size:11.5px;color:#B45309;font-weight:600;cursor:pointer" onClick="{{ goDash }}">전체 ›</span>
+          </div>
+          <sc-for list="{{ proposals }}" as="p" hint-placeholder-count="2">
+            <div style="padding:13px 15px;border-bottom:1px solid #F5F5F7;cursor:pointer" style-active="background:#FAFAFB" onClick="{{ goDash }}">
+              <div style="display:flex;align-items:center;gap:9px">
+                <span style="{{ p.avStyle }}">{{ p.ini }}</span>
+                <div style="min-width:0;flex:1">
+                  <div style="font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.brand }}</div>
+                  <div style="font-size:11px;color:#9A9AA5;margin-top:2px">{{ p.when }}</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0">
+                  <div style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em;font-variant-numeric:tabular-nums">{{ p.fee }}</div>
+                  <div style="{{ p.ddayStyle }}">{{ p.dday }}</div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:baseline;gap:6px;padding:2px 4px 9px">
+            <span style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em">나에게 맞는 캠페인</span>
+            <span style="margin-left:auto;font-size:11.5px;color:#B45309;font-weight:600;cursor:pointer" onClick="{{ goFind }}">더 보기 ›</span>
+          </div>
+          <div style="display:flex;gap:9px;overflow-x:auto;padding:1px 4px 3px;margin:0 -4px" class="noscroll">
+            <sc-for list="{{ recs }}" as="r" hint-placeholder-count="3">
+              <div style="width:224px;flex-shrink:0;background:#fff;border:1px solid #FDE68A;border-radius:15px;padding:13px 14px 14px;cursor:pointer" style-active="background:#FFFDF7" onClick="{{ goFind }}">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="{{ r.kindStyle }}">{{ r.kind }}</span>
+                  <span style="{{ r.ddayStyle }}">{{ r.dday }}</span>
+                </div>
+                <div style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em;margin-top:8px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.brand }}</div>
+                <div style="font-size:11px;color:#7C7C88;margin-top:5px">{{ r.meta }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:9px">
+                  <sc-for list="{{ r.why }}" as="w" hint-placeholder-count="2">
+                    <span style="font-size:10px;font-weight:700;background:#FFFBEB;color:#B45309;border:1px solid #FDE68A;border-radius:5px;padding:3px 6px">{{ w }}</span>
+                  </sc-for>
+                </div>
+                <div style="font-size:14.5px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;margin-top:11px">{{ r.feeLabel }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:6px;height:47px;padding:0 15px;border-bottom:1px solid #F1F1F4">
+            <span style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em">진행중 협업</span>
+            <span style="font-size:11px;color:#9A9AA5">3건</span>
+          </div>
+          <sc-for list="{{ works }}" as="w" hint-placeholder-count="3">
+            <div style="padding:13px 15px;border-bottom:1px solid #F5F5F7">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:12.5px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ w.brand }}</span>
+                <span style="{{ w.stepStyle }}">{{ w.step }}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:7px">
+                <span style="font-size:11px;color:#9A9AA5">{{ w.next }}</span>
+                <span style="{{ w.dueStyle }}">{{ w.due }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:13px 13px 20px;display:flex;flex-direction:column;gap:12px">
+
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;padding:14px 15px 11px">
+            <span style="font-size:13.5px;font-weight:800;letter-spacing:-0.02em">언제 가능하세요?</span>
+            <span style="margin-left:auto;font-size:12.5px;font-weight:800">2026. 8</span>
+          </div>
+          <div style="padding:0 11px 11px">
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px">
+              <sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7">
+                <div style="{{ w.style }}">{{ w.d }}</div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">
+              <sc-for list="{{ oCells }}" as="c" hint-placeholder-count="42">
+                <div style="{{ c.style }}" onClick="{{ c.onClick }}">
+                  <span style="{{ c.numStyle }}">{{ c.n }}</span>
+                  <sc-if value="{{ c.hasDot }}" hint-placeholder-val="{{ false }}">
+                    <span style="{{ c.dotStyle }}">●</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;padding:10px 15px;background:#FAFAFB;border-top:1px solid #F1F1F4">
+            <div style="display:flex;align-items:center;gap:5px">
+              <span style="width:12px;height:12px;border-radius:4px;background:#FEF3C7"></span>
+              <span style="font-size:10.5px;color:#7C7C88">이미 오픈한 날</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px">
+              <span style="width:12px;height:12px;border-radius:4px;background:#F1F1F4"></span>
+              <span style="font-size:10.5px;color:#7C7C88">확정된 협업</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:15px;padding:14px 15px 15px">
+          <div style="font-size:12.5px;font-weight:800;color:#3C3C46">어떤 협업이 가능한 날인가요?</div>
+          <div style="display:flex;gap:7px;margin-top:11px">
+            <sc-for list="{{ oKinds }}" as="k" hint-placeholder-count="3">
+              <div style="{{ k.style }}" onClick="{{ k.onClick }}">
+                <div style="{{ k.kStyle }}">{{ k.k }}</div>
+                <div style="{{ k.dStyle }}">{{ k.d }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{ oIsRegion }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border-radius:15px;padding:14px 15px 15px">
+          <div style="display:flex;align-items:baseline;gap:6px">
+            <span style="font-size:12.5px;font-weight:800;color:#3C3C46">갈 수 있는 지역</span>
+            <span style="font-size:11px;font-weight:700;color:#DC2626">필수</span>
+          </div>
+          <div style="min-height:44px;border-radius:11px;background:#FBFBFC;border:1px solid #E2E2E8;display:flex;align-items:center;gap:9px;padding:0 13px;margin-top:9px">
+            <span style="font-size:13px;opacity:0.45">🔍</span>
+            <span style="font-size:12.5px;color:#B0B0BB">구 · 동 이름으로 검색</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px">
+            <span style="font-size:11.5px;font-weight:700;background:#FEF3C7;color:#B45309;border-radius:7px;padding:6px 11px">경기 시흥시 ✕</span>
+            <span style="font-size:11.5px;font-weight:700;background:#FEF3C7;color:#B45309;border-radius:7px;padding:6px 11px">서울 성동구 ✕</span>
+          </div>
+          <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:11px 12px;margin-top:11px;font-size:11px;color:#92400E;line-height:1.65">
+            <strong style="font-weight:800">여행 · 출장 가는 날인가요?</strong> 그 지역을 적어두면 현지 협업이 찾아옵니다. 평소 활동 지역과 달라도 괜찮아요.
+          </div>
+        </div>
+        </sc-if>
+
+        <div style="background:#fff;border-radius:15px;padding:14px 15px 15px">
+          <div style="font-size:12.5px;font-weight:800;color:#3C3C46">희망 페이 <span style="font-size:11px;font-weight:600;color:#9A9AA5">선택</span></div>
+          <div style="min-height:44px;border-radius:11px;background:#FBFBFC;border:1px solid #E2E2E8;display:flex;align-items:center;padding:0 13px;margin-top:9px;font-size:13px;color:#17171B;font-variant-numeric:tabular-nums">250,000원</div>
+          <div style="font-size:11px;color:#7C7C88;line-height:1.6;margin-top:7px">적어두면 조건이 맞는 광고주만 연락해요. 비워두면 협의로 정합니다.</div>
+        </div>
+
+        <div style="background:#17171B;border-radius:15px;padding:15px 16px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11.5px;font-weight:700;color:rgba(255,255,255,0.6)">오픈해둘 날짜</span>
+            <span style="margin-left:auto;font-size:12px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums">{{ oSelCount }}일 · 오픈 1건</span>
+          </div>
+          <div style="font-size:12.5px;color:rgba(255,255,255,0.85);line-height:1.6;margin-top:7px">{{ oSelLabel }}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:13px;padding-top:13px;border-top:1px solid rgba(255,255,255,0.12)">
+            <span style="font-size:11.5px;color:rgba(255,255,255,0.6)">차감 크레딧 <span style="color:rgba(255,255,255,0.38)">· 베타 무료</span></span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:5px">
+              <span style="font-size:16px;font-weight:800;color:#F59E0B;font-variant-numeric:tabular-nums">0</span>
+              <span style="width:17px;height:17px;border-radius:50%;background:#F59E0B;color:#17171B;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center">C</span>
+            </span>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin-top:8px">며칠을 고르든 <strong style="font-weight:700;color:rgba(255,255,255,0.7)">오픈 1건으로 묶여요.</strong> 등록하면 응원 크레딧 500C를 돌려드려요.</div>
+        </div>
+
+        <div style="display:flex;gap:9px">
+          <div style="min-height:50px;padding:0 20px;border-radius:13px;border:1px solid #E2E2E8;background:#fff;color:#7C7C88;font-size:14px;font-weight:600;display:flex;align-items:center;cursor:pointer">초기화</div>
+          <div style="{{ oCtaStyle }}">{{ oCta }}</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isCal }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:13px 13px 20px;display:flex;flex-direction:column;gap:12px">
+
+        <div style="display:flex;background:#EAEAEE;border-radius:11px;padding:3px">
+          <sc-for list="{{ calModes }}" as="m" hint-placeholder-count="2">
+            <div style="{{ m.style }}" onClick="{{ m.onClick }}">{{ m.label }}</div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;height:47px;padding:0 12px;border-bottom:1px solid #F1F1F4">
+            <span style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#9A9AA5;cursor:pointer" style-active="background:#F1F1F4">‹</span>
+            <span style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em">2026. 8</span>
+            <span style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#9A9AA5;cursor:pointer" style-active="background:#F1F1F4">›</span>
+            <span style="margin-left:auto;font-size:11px;color:#9A9AA5">{{ calHint }}</span>
+          </div>
+          <div style="padding:10px 10px 4px;display:grid;grid-template-columns:repeat(7,1fr)">
+            <sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7">
+              <div style="{{ w.style }}">{{ w.d }}</div>
+            </sc-for>
+          </div>
+          <div style="padding:0 10px 12px;display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
+            <sc-for list="{{ cells }}" as="c" hint-placeholder-count="35">
+              <div style="{{ c.style }}" onClick="{{ c.onClick }}">
+                <span style="{{ c.numStyle }}">{{ c.n }}</span>
+                <div style="display:flex;gap:2px;height:5px;align-items:center;justify-content:center">
+                  <sc-for list="{{ c.dots }}" as="d" hint-placeholder-count="0">
+                    <span style="{{ d.style }}"></span>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;padding:10px 14px;background:#FAFAFB;border-top:1px solid #F1F1F4">
+            <sc-for list="{{ legend }}" as="l" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:5px">
+                <span style="{{ l.dotStyle }}"></span>
+                <span style="font-size:10.5px;color:#7C7C88">{{ l.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{ isView }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;height:47px;padding:0 15px;border-bottom:1px solid #F1F1F4">
+            <span style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em">{{ selLabel }}</span>
+            <span style="margin-left:auto;font-size:11px;color:#9A9AA5">{{ selCount }}</span>
+          </div>
+          <sc-for list="{{ selEvents }}" as="e" hint-placeholder-count="2">
+            <div style="padding:13px 15px;border-bottom:1px solid #F5F5F7">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="{{ e.tagStyle }}">{{ e.tag }}</span>
+                <span style="font-size:10.5px;color:#9A9AA5">{{ e.srcLabel }}</span>
+              </div>
+              <div style="font-size:12.5px;font-weight:700;margin-top:7px;line-height:1.45">{{ e.title }}</div>
+              <div style="font-size:11.5px;color:#7C7C88;margin-top:3px">{{ e.sub }}</div>
+              <div style="{{ e.ctaStyle }}">{{ e.cta }}</div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ selEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:24px 20px 20px;text-align:center">
+              <div style="font-size:12.5px;font-weight:700;color:#5C5C68">비어 있는 날이에요</div>
+              <div style="font-size:11.5px;color:#9A9AA5;margin-top:6px;line-height:1.6">밖에서 받은 일도 여기 적어두면<br>매출과 미수금이 함께 정리돼요</div>
+              <div style="display:flex;gap:7px;margin-top:14px">
+                <div style="flex:1;min-height:44px;border-radius:10px;background:#F59E0B;color:#17171B;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer" onClick="{{ toOpenMode }}">이 날 오픈하기</div>
+                <div style="flex:1;min-height:44px;border-radius:10px;border:1px solid #E2E2E8;font-size:12.5px;font-weight:700;color:#3C3C46;display:flex;align-items:center;justify-content:center;cursor:pointer">일정 직접 추가</div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isFind }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="padding:12px 13px 0">
+          <div style="background:#fff;border-radius:15px;overflow:hidden">
+            <div style="display:flex;align-items:center;height:47px;padding:0 12px;border-bottom:1px solid #F1F1F4">
+              <span style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#9A9AA5;cursor:pointer" style-active="background:#F1F1F4">‹</span>
+              <span style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em">2026. 8</span>
+              <span style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#9A9AA5;cursor:pointer" style-active="background:#F1F1F4">›</span>
+              <span style="margin-left:auto;font-size:11px;color:#9A9AA5">날짜를 고르면 그날 참여할 수 있는 캠페인이 보여요</span>
+            </div>
+            <div style="padding:10px 10px 4px;display:grid;grid-template-columns:repeat(7,1fr)">
+              <sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7">
+                <div style="{{ w.style }}">{{ w.d }}</div>
+              </sc-for>
+            </div>
+            <div style="padding:0 10px 12px;display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
+              <sc-for list="{{ fCells }}" as="c" hint-placeholder-count="35">
+                <div style="{{ c.style }}" onClick="{{ c.onClick }}">
+                  <span style="{{ c.numStyle }}">{{ c.n }}</span>
+                  <span style="{{ c.cntStyle }}">{{ c.cnt }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:12px;padding:10px 14px;background:#FAFAFB;border-top:1px solid #F1F1F4">
+              <div style="display:flex;align-items:center;gap:5px">
+                <span style="width:12px;height:12px;border-radius:4px;background:#F1F1F4;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#5C5C68">3</span>
+                <span style="font-size:10.5px;color:#7C7C88">그날 참여할 수 있는 캠페인 수 — 기간 캠페인은 모든 날에 표시돼요</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border-radius:15px;padding:12px 13px 13px;margin-top:12px">
+            <div style="font-size:11px;font-weight:700;color:#9A9AA5;margin:0 0 7px">지역 · 광고주</div>
+            <div style="min-height:40px;border-radius:10px;background:#F6F6F7;display:flex;align-items:center;gap:8px;padding:0 12px">
+              <span style="font-size:13px;opacity:0.45">🔍</span>
+              <input type="text" value="{{ fAddr }}" onChange="{{ onAddr }}" placeholder="지역 · 브랜드 검색 (예: 배곧동, ㅅㅎ, 델리카페)" style="flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:12.5px;font-family:inherit;color:#17171B;min-height:40px" />
+              <sc-if value="{{ hasAddr }}" hint-placeholder-val="{{ false }}">
+                <span onClick="{{ clearAddr }}" style="font-size:15px;color:#B0B0BB;cursor:pointer;padding:0 2px">×</span>
+              </sc-if>
+            </div>
+            <sc-if value="{{ hasSuggest }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:6px;border:1px solid #EAEAEE;border-radius:10px;overflow:hidden;background:#fff">
+                <sc-for list="{{ suggests }}" as="s" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:8px;min-height:40px;padding:0 12px;border-bottom:1px solid #F5F5F7;cursor:pointer" style-hover="background:#FAFAFB" onClick="{{ s.onClick }}">
+                    <span style="font-size:12.5px;color:#2A2A33;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.v }}</span>
+                    <span style="{{ s.kindStyle }}">{{ s.kind }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="font-size:10.5px;color:#B0B0BB;margin-top:6px;line-height:1.5">{{ addrHint }}</div>
+            <div style="font-size:11px;font-weight:700;color:#9A9AA5;margin:12px 0 7px">키워드 · 복수 선택</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              <sc-for list="{{ fKeywords }}" as="s" hint-placeholder-count="8">
+                <div style="{{ s.style }}" onClick="{{ s.onClick }}">{{ s.label }}</div>
+              </sc-for>
+              <div style="{{ kwMoreStyle }}" onClick="{{ kwMore }}">{{ kwMoreLabel }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:12px 13px 20px;display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:baseline;gap:6px;padding:0 3px 1px">
+            <span style="font-size:13px;font-weight:800;letter-spacing:-0.025em">{{ fDayLabel }}</span>
+            <span style="font-size:11.5px;color:#7C7C88">{{ matchNote }}</span>
+          </div>
+          <sc-for list="{{ camps }}" as="c" hint-placeholder-count="4">
+            <div style="{{ c.cardStyle }}">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="{{ c.kindStyle }}">{{ c.kind }}</span>
+                <sc-if value="{{ c.applied }}" hint-placeholder-val="{{ false }}">
+                  <span style="{{ c.appliedStyle }}">{{ c.appliedLabel }}</span>
+                </sc-if>
+                <span style="{{ c.ddayStyle }}">{{ c.dday }}</span>
+              </div>
+              <div style="font-size:14px;font-weight:800;letter-spacing:-0.025em;margin-top:9px;line-height:1.35">{{ c.brand }}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:7px">
+                <span style="font-size:11.5px;color:#7C7C88">{{ c.when }}</span>
+                <span style="font-size:11.5px;color:#7C7C88">{{ c.place }}</span>
+                <span style="font-size:11.5px;color:#7C7C88">{{ c.ch }}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #F5F5F7">
+                <div>
+                  <div style="font-size:15px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">{{ c.feeLabel }}</div>
+                  <div style="font-size:10.5px;color:#9A9AA5;margin-top:2px">모집 {{ c.slots }}</div>
+                </div>
+                <div style="{{ c.ctaStyle }}" onClick="{{ c.onCta }}">{{ c.ctaLabel }}</div>
+              </div>
+              <sc-if value="{{ c.statShow }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ c.statBoxStyle }}">
+                  <div style="{{ c.statHeadStyle }}">{{ c.statHead }}</div>
+                  <div style="font-size:11.5px;color:#7C7C88;line-height:1.6;margin-top:5px">{{ c.statBody }}</div>
+                  <div style="display:flex;flex-direction:column;gap:6px;margin-top:11px;padding-top:11px;border-top:1px solid rgba(0,0,0,0.06)">
+                    <div style="display:flex;gap:9px">
+                      <span style="font-size:11px;color:#9A9AA5;width:52px;flex-shrink:0">모집 기간</span>
+                      <span style="font-size:11.5px;font-weight:600;color:#3C3C46">{{ c.statRecruit }}</span>
+                    </div>
+                    <div style="display:flex;gap:9px">
+                      <span style="font-size:11px;color:#9A9AA5;width:52px;flex-shrink:0">지원 현황</span>
+                      <span style="font-size:11.5px;font-weight:600;color:#3C3C46">{{ c.statCount }}</span>
+                    </div>
+                    <div style="display:flex;gap:9px">
+                      <span style="font-size:11px;color:#9A9AA5;width:52px;flex-shrink:0">지원한 날</span>
+                      <span style="font-size:11.5px;font-weight:600;color:#3C3C46">{{ c.statApplied }}</span>
+                    </div>
+                  </div>
+                  <sc-if value="{{ c.hasPicked }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:12px;padding-top:11px;border-top:1px solid rgba(0,0,0,0.06)">
+                      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+                        <span style="font-size:11.5px;font-weight:800;color:#3C3C46">선정된 분들</span>
+                        <span style="font-size:10.5px;color:#9A9AA5">{{ c.pickedNote }}</span>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:7px">
+                        <sc-for list="{{ c.picked }}" as="p" hint-placeholder-count="3">
+                          <div style="display:flex;align-items:center;gap:9px">
+                            <span style="width:26px;height:26px;border-radius:50%;background:#F1F1F4;color:#5C5C68;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ p.initial }}</span>
+                            <div style="flex:1;min-width:0">
+                              <div style="font-size:12px;font-weight:700;color:#2A2A33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</div>
+                              <div style="font-size:10.5px;color:#9A9AA5;margin-top:1px">{{ p.ch }}</div>
+                            </div>
+                            <span style="font-size:10.5px;font-weight:800;color:#7C7C88;background:#fff;border:1px solid #EAEAEE;border-radius:5px;padding:3px 7px;flex-shrink:0">{{ p.grade }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <div style="font-size:10.5px;color:#B0B0BB;line-height:1.55;margin-top:10px">선정 기준은 광고주가 정합니다. 등급이 전부는 아니에요 — 지역·일정·글 성격이 맞는지가 더 크게 작용합니다.</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isDashList }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="display:flex;gap:5px;padding:11px 13px;background:#fff;border-bottom:1px solid #F1F1F4;overflow-x:auto" class="noscroll">
+          <sc-for list="{{ dFilters }}" as="f" hint-placeholder-count="4">
+            <div style="{{ f.style }}" onClick="{{ f.onClick }}">{{ f.label }}</div>
+          </sc-for>
+        </div>
+        <sc-for list="{{ convos }}" as="c" hint-placeholder-count="4">
+          <div style="{{ c.rowStyle }}" onClick="{{ c.onClick }}">
+            <span style="{{ c.avStyle }}">{{ c.ini }}</span>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:baseline;gap:6px">
+                <span style="{{ c.nameStyle }}">{{ c.brand }}</span>
+                <span style="margin-left:auto;font-size:10.5px;color:#B0B0BB;flex-shrink:0">{{ c.at }}</span>
+              </div>
+              <div style="{{ c.lastStyle }}">{{ c.last }}</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:7px">
+                <span style="{{ c.stageStyle }}">{{ c.stage }}</span>
+                <sc-if value="{{ c.hasUnread }}" hint-placeholder-val="{{ false }}">
+                  <span style="margin-left:auto;min-width:18px;height:18px;border-radius:20px;background:#EF4444;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px">{{ c.unread }}</span>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isDashRoom }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;min-height:100%">
+
+        <div style="{{ barStyle }}">
+          <div style="display:flex;align-items:center;gap:12px">
+            <sc-for list="{{ barSides }}" as="s" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:5px">
+                <span style="{{ s.dotStyle }}"></span>
+                <span style="{{ s.labelStyle }}">{{ s.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="{{ barCtaStyle }}">{{ barCta }}</div>
+          <div style="display:flex;align-items:baseline;gap:9px;margin-top:8px">
+            <span style="font-size:10.5px;color:#7C7C88;line-height:1.5;flex:1;min-width:0">{{ barNote }}</span>
+            <sc-if value="{{ showCancelLink }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:10.5px;font-weight:600;color:#9A9AA5;text-decoration:underline;text-underline-offset:2px;cursor:pointer;flex-shrink:0" onClick="{{ openCancel }}">협업 취소 요청</span>
+            </sc-if>
+          </div>
+        </div>
+
+        <sc-if value="{{ hasPin }}" hint-placeholder-val="{{ true }}">
+          <div style="margin:12px 13px 0;background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:11px 13px">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span style="font-size:11px">📌</span>
+              <span style="font-size:10.5px;font-weight:800;color:#B45309">고정한 메시지</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:700;color:#B45309;cursor:pointer" onClick="{{ unpin }}">해제</span>
+            </div>
+            <div style="font-size:12px;color:#92400E;line-height:1.6;margin-top:7px;text-wrap:pretty">{{ pinText }}</div>
+            <div style="font-size:10px;color:#B45309;opacity:0.7;margin-top:5px">{{ pinFrom }}</div>
+          </div>
+        </sc-if>
+
+        <div style="flex:1;padding:14px 13px 16px;display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="5">
+            <div style="{{ m.wrapStyle }}">
+              <sc-if value="{{ m.isSys }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:10.5px;color:#9A9AA5;background:#EAEAEE;border-radius:20px;padding:5px 11px">{{ m.text }}</span>
+              </sc-if>
+              <sc-if value="{{ m.notSys }}" hint-placeholder-val="{{ true }}">
+                <div style="{{ m.bubbleStyle }}" onClick="{{ m.onPin }}">{{ m.text }}</div>
+              </sc-if>
+              <sc-if value="{{ m.notSys }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:10px;color:#B0B0BB;flex-shrink:0">{{ m.pinMark }}{{ m.at }}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isMore }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0;display:flex;flex-direction:column;gap:12px">
+
+        <div style="background:#fff;border-radius:15px;padding:15px 15px 14px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="width:48px;height:48px;border-radius:50%;background:#FEF3C7;color:#B45309;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">지</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:15px;font-weight:800;letter-spacing:-0.025em">뷰티하는 지연</div>
+              <div style="font-size:11.5px;color:#9A9AA5;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">blog.naver.com/merry9849</div>
+            </div>
+            <span style="font-size:11.5px;font-weight:700;color:#3C3C46;border:1px solid #E2E2E8;border-radius:8px;padding:8px 12px;flex-shrink:0;cursor:pointer">수정</span>
+          </div>
+          <div style="display:flex;gap:7px;margin-top:13px;padding-top:13px;border-top:1px solid #F5F5F7">
+            <div style="flex:1;background:#FAFAFB;border-radius:10px;padding:10px 11px">
+              <div style="font-size:10.5px;color:#9A9AA5">블로그 등급</div>
+              <div style="display:flex;align-items:baseline;gap:5px;margin-top:4px">
+                <span style="font-size:15px;font-weight:800;letter-spacing:-0.02em">D-3</span>
+                <span style="font-size:9.5px;font-weight:800;background:#FEF3C7;color:#B45309;border-radius:4px;padding:2px 5px">베타</span>
+              </div>
+            </div>
+            <div style="flex:1;background:#FAFAFB;border-radius:10px;padding:10px 11px;cursor:pointer" onClick="{{ openRevs }}">
+              <div style="font-size:10.5px;color:#9A9AA5">받은 평가</div>
+              <div style="font-size:15px;font-weight:800;letter-spacing:-0.02em;margin-top:4px">★ 4.8 <span style="font-size:11px;font-weight:600;color:#9A9AA5">(12)</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#17171B;border-radius:15px;padding:15px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11.5px;font-weight:700;color:rgba(255,255,255,0.6)">크레딧 잔액</span>
+            <span style="margin-left:auto;font-size:11.5px;font-weight:700;color:#F59E0B;cursor:pointer" onClick="{{ openCred }}">내역 보기 →</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:9px">
+            <span style="font-size:26px;font-weight:800;letter-spacing:-0.03em;color:#fff;font-variant-numeric:tabular-nums">109,200</span>
+            <span style="width:22px;height:22px;border-radius:50%;background:#F59E0B;color:#17171B;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">C</span>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:7px;line-height:1.6">오픈 등록은 베타 기간 무료 (원래 1,000C) · 협업 성사 시 10,000C 지급</div>
+        </div>
+
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="font-size:11px;font-weight:700;color:#9A9AA5;padding:13px 15px 3px">활동</div>
+          <sc-for list="{{ moreAct }}" as="m" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:11px;min-height:50px;padding:0 15px;border-top:1px solid #F5F5F7;cursor:pointer" style-active="background:#FAFAFB" onClick="{{ m.onClick }}">
+              <span style="font-size:15px;width:20px;text-align:center;flex-shrink:0">{{ m.icon }}</span>
+              <span style="font-size:13px;font-weight:600;color:#2A2A33;flex:1;min-width:0">{{ m.label }}</span>
+              <span style="{{ m.valStyle }}">{{ m.val }}</span>
+              <span style="font-size:14px;color:#D4D4DC;flex-shrink:0">›</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="font-size:11px;font-weight:700;color:#9A9AA5;padding:13px 15px 3px">계정</div>
+          <sc-for list="{{ moreAcc }}" as="m" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:11px;min-height:50px;padding:0 15px;border-top:1px solid #F5F5F7;cursor:pointer" style-active="background:#FAFAFB" onClick="{{ m.onClick }}">
+              <span style="font-size:15px;width:20px;text-align:center;flex-shrink:0">{{ m.icon }}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:600;color:#2A2A33">{{ m.label }}</div>
+                <div style="{{ m.subStyle }}">{{ m.sub }}</div>
+              </div>
+              <span style="{{ m.valStyle }}">{{ m.val }}</span>
+              <span style="font-size:14px;color:#D4D4DC;flex-shrink:0">›</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <sc-for list="{{ moreEtc }}" as="m" hint-placeholder-count="3">
+            <div>
+              <sc-if value="{{ m.isLink }}" hint-placeholder-val="{{ true }}">
+                <a href="{{ m.href }}" target="_blank" style="display:flex;align-items:center;gap:11px;min-height:48px;padding:0 15px;border-bottom:1px solid #F5F5F7;cursor:pointer;text-decoration:none" style-active="background:#FAFAFB">
+                  <span style="{{ m.labelStyle }}">{{ m.label }}</span>
+                  <span style="margin-left:auto;font-size:11.5px;color:#B0B0BB">{{ m.val }}</span>
+                </a>
+              </sc-if>
+              <sc-if value="{{ m.notLink }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:11px;min-height:48px;padding:0 15px;border-bottom:1px solid #F5F5F7;cursor:pointer" style-active="background:#FAFAFB" onClick="{{ m.onClick }}">
+                  <span style="{{ m.labelStyle }}">{{ m.label }}</span>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{ askOut }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:12px 15px 14px;background:#FAFAFB">
+              <div style="font-size:12px;font-weight:700;color:#3C3C46">로그아웃할까요?</div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <div style="flex:1;min-height:40px;border-radius:10px;border:1px solid #E2E2E8;background:#fff;color:#5C5C68;font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer" onClick="{{ cancelOut }}">취소</div>
+                <a href="매치포스트 인트로 모바일.dc.html" style="flex:1;min-height:40px;border-radius:10px;background:#17171B;color:#fff;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none">로그아웃</a>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="text-align:center;font-size:10.5px;color:#C4C4CE;line-height:1.7;padding:2px 0 4px">
+          매치포스트 v0.9.2 · 베타 운영 중<br />문의 help@matchpost.kr
+        </div>
+
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSales }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#fff;border-radius:15px;padding:14px 15px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 8px">
+            <sc-for list="{{ salesKpis }}" as="k" hint-placeholder-count="4">
+              <div style="min-width:0">
+                <div style="font-size:10.5px;color:#9A9AA5">{{ k.k }}</div>
+                <div style="{{ k.vStyle }}">{{ k.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:10.5px;color:#B0B0BB;margin-top:11px;padding-top:11px;border-top:1px solid #F5F5F7;line-height:1.55">결제일 기준으로 집계해요. 입금을 확인해야 매출에 반영됩니다.</div>
+        </div>
+        <sc-for list="{{ salesGroups }}" as="g" hint-placeholder-count="2">
+          <div style="background:#fff;border-radius:15px;overflow:hidden">
+            <div style="display:flex;align-items:baseline;gap:7px;padding:13px 15px 11px;border-bottom:1px solid #F1F1F4">
+              <span style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em">{{ g.m }}</span>
+              <span style="margin-left:auto;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums">{{ g.total }}</span>
+            </div>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid #F5F5F7">
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:12.5px;font-weight:700;color:#2A2A33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</div>
+                  <div style="font-size:11px;color:#9A9AA5;margin-top:3px">{{ r.at }}</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0">
+                  <div style="font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums">{{ r.amtLabel }}</div>
+                  <div style="margin-top:4px"><span style="{{ r.stStyle }}">{{ r.st }}</span></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isApps }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0;display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ appsList }}" as="a" hint-placeholder-count="3">
+          <div style="background:#fff;border-radius:15px;padding:14px 15px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="{{ a.stStyle }}">{{ a.st }}</span>
+              <span style="margin-left:auto;font-size:10.5px;color:#B0B0BB">{{ a.at }}</span>
+            </div>
+            <div style="font-size:13.5px;font-weight:800;letter-spacing:-0.025em;margin-top:9px;line-height:1.35">{{ a.name }}</div>
+            <div style="font-size:11.5px;color:#7C7C88;margin-top:5px">{{ a.sub }}</div>
+          </div>
+        </sc-for>
+        <div style="font-size:10.5px;color:#B0B0BB;line-height:1.6;padding:2px 4px 4px">지원 이력은 광고주에게 공개되지 않아요. 미선정도 다음 캠페인에 영향을 주지 않습니다.</div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;height:46px;padding:0 15px;border-bottom:1px solid #F1F1F4">
+            <span style="font-size:13px;font-weight:800">기본 정보</span>
+            <span style="margin-left:auto;font-size:11.5px;font-weight:700;color:#B45309;cursor:pointer">수정</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:13px;padding:15px;border-bottom:1px solid #F5F5F7">
+            <div style="position:relative;flex-shrink:0">
+              <span style="width:58px;height:58px;border-radius:50%;background:#FEF3C7;color:#B45309;font-size:21px;font-weight:800;display:flex;align-items:center;justify-content:center">지</span>
+              <span style="position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:#17171B;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;cursor:pointer">✎</span>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12.5px;font-weight:700;color:#2A2A33">프로필 사진</div>
+              <div style="font-size:10.5px;color:#9A9AA5;margin-top:4px;line-height:1.6">광고주 검색 결과와 대시에 함께 보여요. 넣지 않으면 별명 첫 글자로 표시됩니다.</div>
+            </div>
+          </div>
+          <sc-for list="{{ profFields }}" as="f" hint-placeholder-count="4">
+            <div style="display:flex;gap:11px;padding:12px 15px;border-bottom:1px solid #F5F5F7">
+              <span style="font-size:11px;color:#9A9AA5;width:56px;flex-shrink:0;padding-top:1px">{{ f.k }}</span>
+              <span style="font-size:12.5px;font-weight:600;color:#2A2A33;flex:1;min-width:0;line-height:1.6">{{ f.v }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:11px 15px;background:#FAFAFB;font-size:10.5px;color:#7C7C88;line-height:1.6">분야와 지역을 채울수록 나에게 맞는 캠페인 추천과 광고주 매칭이 많아져요.</div>
+        </div>
+
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;height:46px;padding:0 15px;border-bottom:1px solid #F1F1F4">
+            <span style="font-size:13px;font-weight:800">등록 채널</span>
+            <span style="margin-left:auto;font-size:11.5px;font-weight:700;color:#B45309;cursor:pointer">＋ 추가</span>
+          </div>
+          <sc-for list="{{ profChannels }}" as="c" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:11px;padding:13px 15px;border-bottom:1px solid #F5F5F7">
+              <span style="{{ c.iconStyle }}">{{ c.code }}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12.5px;font-weight:700;color:#2A2A33">{{ c.name }}</div>
+                <div style="font-size:10.5px;color:#9A9AA5;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.handle }}</div>
+              </div>
+              <span style="{{ c.stStyle }}">{{ c.st }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:11px 15px;background:#FAFAFB;font-size:10.5px;color:#7C7C88;line-height:1.6">등록한 채널은 광고주 검색에 그대로 노출돼요. 분석 수치는 블로그부터 순차 지원합니다.</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isChan }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#fff;border-radius:15px;padding:15px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:22px;font-weight:800;letter-spacing:-0.02em;background:#F1F1F4;color:#5C5C68;border-radius:12px;padding:7px 15px">D-3</span>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:baseline;gap:4px">
+                <span style="font-size:20px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">12</span>
+                <span style="font-size:11.5px;font-weight:700;color:#9A9AA5">점</span>
+                <span style="font-size:9.5px;font-weight:800;background:#FEF3C7;color:#B45309;border-radius:4px;padding:2px 5px;margin-left:3px">베타</span>
+              </div>
+              <div style="font-size:10.5px;color:#9A9AA5;margin-top:2px">D-2까지 23점</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px;margin-top:15px">
+            <sc-for list="{{ chanScore }}" as="s" hint-placeholder-count="4">
+              <div>
+                <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:5px">
+                  <span style="font-size:11.5px;font-weight:700;color:#3C3C46">{{ s.k }}</span>
+                  <span style="{{ s.valStyle }}">{{ s.val }}</span>
+                </div>
+                <div style="height:5px;background:#F1F1F4;border-radius:3px;overflow:hidden"><div style="{{ s.barStyle }}"></div></div>
+                <div style="font-size:10px;color:#9A9AA5;margin-top:4px">{{ s.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:9px;padding:11px 12px;font-size:11px;color:#92400E;line-height:1.6">등급은 아직 베타입니다. 데이터가 쌓이는 대로 배점을 다듬을 예정이라 등급이 조정될 수 있어요.</div>
+        </div>
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;height:46px;padding:0 15px;border-bottom:1px solid #F1F1F4">
+            <span style="font-size:13px;font-weight:800">포스팅별 검색 노출</span>
+            <span style="margin-left:auto;font-size:10.5px;color:#B0B0BB">최근 4건</span>
+          </div>
+          <sc-for list="{{ chanPosts }}" as="p" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid #F5F5F7">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:600;color:#2A2A33;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.t }}</div>
+                <div style="font-size:10.5px;color:#9A9AA5;margin-top:3px">{{ p.n }}</div>
+              </div>
+              <span style="{{ p.bestStyle }}">{{ p.best }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:11px 15px;background:#FAFAFB;font-size:10.5px;color:#7C7C88;line-height:1.6">순위가 높아도 그 말을 검색하는 사람이 적으면 점수가 크게 오르지 않아요.</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isPast }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0;display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ pastList }}" as="p" hint-placeholder-count="3">
+          <div style="background:#fff;border-radius:15px;padding:14px 15px;display:flex;align-items:center;gap:11px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:800;letter-spacing:-0.02em;line-height:1.35">{{ p.name }}</div>
+              <div style="font-size:11px;color:#9A9AA5;margin-top:4px">{{ p.at }} · {{ p.amt }}</div>
+            </div>
+            <span style="{{ p.revStyle }}">{{ p.revLabel }}</span>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isRevs }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#fff;border-radius:15px;padding:16px 15px">
+          <div style="display:flex;align-items:baseline;gap:7px">
+            <span style="font-size:26px;font-weight:800;letter-spacing:-0.03em;color:#F59E0B">★ 4.8</span>
+            <span style="font-size:12px;color:#9A9AA5">12건</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:13px">
+            <sc-for list="{{ revTags2 }}" as="t" hint-placeholder-count="4">
+              <span style="font-size:11.5px;font-weight:600;background:#F1F1F4;color:#5C5C68;border-radius:6px;padding:5px 10px">{{ t.label }}</span>
+            </sc-for>
+          </div>
+          <div style="font-size:10.5px;color:#B0B0BB;margin-top:12px;line-height:1.6">3명 이상이 고른 태그만 보여요. 누가 어떤 평가를 했는지는 아무에게도 공개되지 않습니다.</div>
+        </div>
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;height:46px;padding:0 15px;border-bottom:1px solid #F1F1F4">
+            <span style="font-size:13px;font-weight:800">남겨진 코멘트</span>
+            <span style="margin-left:auto;font-size:10.5px;color:#B0B0BB">작성자 비공개</span>
+          </div>
+          <sc-for list="{{ revsList }}" as="r" hint-placeholder-count="3">
+            <div style="padding:13px 15px;border-bottom:1px solid #F5F5F7">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:11.5px;color:#F59E0B">{{ r.starLabel }}</span>
+                <span style="margin-left:auto;font-size:10.5px;color:#B0B0BB">{{ r.at }}</span>
+              </div>
+              <div style="font-size:12.5px;color:#2A2A33;margin-top:6px;line-height:1.6">{{ r.txt }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isBank }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:13px;padding:13px 14px;font-size:11.5px;color:#92400E;line-height:1.65">
+          캠페인에 참여하거나 오픈을 통해 협업이 확정되면 <strong style="font-weight:700">이 계좌 정보가 광고주에게 자동으로 전달</strong>됩니다. 매치포스트는 송금을 대행하지 않아요.
+        </div>
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <div style="display:flex;align-items:center;height:46px;padding:0 15px;border-bottom:1px solid #F1F1F4">
+            <span style="font-size:13px;font-weight:800">등록된 계좌</span>
+            <span style="margin-left:auto;font-size:11.5px;font-weight:700;color:#B45309;cursor:pointer">변경</span>
+          </div>
+          <sc-for list="{{ bankFields }}" as="f" hint-placeholder-count="3">
+            <div style="display:flex;gap:11px;padding:13px 15px;border-bottom:1px solid #F5F5F7">
+              <span style="font-size:11px;color:#9A9AA5;width:60px;flex-shrink:0">{{ f.k }}</span>
+              <span style="font-size:12.5px;font-weight:600;color:#2A2A33;font-variant-numeric:tabular-nums">{{ f.v }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:11px 15px;background:#FAFAFB;font-size:10.5px;color:#7C7C88;line-height:1.6">예금주와 계정 실명이 다르면 정산이 지연될 수 있어요.</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isNoti }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0">
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <sc-for list="{{ notiRows }}" as="n" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid #F5F5F7">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12.5px;font-weight:700;color:#2A2A33">{{ n.k }}</div>
+                <div style="font-size:10.5px;color:#9A9AA5;margin-top:2px">{{ n.d }}</div>
+              </div>
+              <div style="{{ n.tStyle }}"><span style="{{ n.knob }}"></span></div>
+            </div>
+          </sc-for>
+          <div style="padding:11px 15px;background:#FAFAFB;font-size:10.5px;color:#7C7C88;line-height:1.6">정산·입금 알림은 끌 수 없어요. 돈과 관련된 일은 놓치면 안 됩니다.</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isCred }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:12px 13px 0;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#17171B;border-radius:15px;padding:16px 15px">
+          <div style="font-size:11.5px;font-weight:700;color:rgba(255,255,255,0.6)">현재 잔액</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <span style="font-size:26px;font-weight:800;letter-spacing:-0.03em;color:#fff;font-variant-numeric:tabular-nums">109,200</span>
+            <span style="width:22px;height:22px;border-radius:50%;background:#F59E0B;color:#17171B;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">C</span>
+          </div>
+        </div>
+        <div style="background:#fff;border-radius:15px;overflow:hidden">
+          <sc-for list="{{ credRows }}" as="r" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:11px;padding:13px 15px;border-bottom:1px solid #F5F5F7">
+              <span style="font-size:10.5px;color:#B0B0BB;width:34px;flex-shrink:0;font-variant-numeric:tabular-nums">{{ r.at }}</span>
+              <span style="font-size:12.5px;font-weight:600;color:#2A2A33;flex:1;min-width:0">{{ r.k }}</span>
+              <span style="{{ r.style }}">{{ r.label }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:11px 15px;background:#FAFAFB;font-size:10.5px;color:#7C7C88;line-height:1.6">액션마다 쓰는 것보다 더 많이 지급하고 있어요. 부족할 일은 없습니다.</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isStub }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:70px 30px;text-align:center">
+        <div style="font-size:34px">{{ stubIcon }}</div>
+        <div style="font-size:14px;font-weight:800;margin-top:14px;letter-spacing:-0.025em">{{ stubTitle }}</div>
+        <div style="font-size:12px;color:#9A9AA5;margin-top:7px;line-height:1.65">{{ stubDesc }}</div>
+      </div>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ isDashRoom }}" hint-placeholder-val="{{ false }}">
+    <div style="flex-shrink:0;background:#fff;border-top:1px solid #EAEAEE;padding:9px 12px 12px">
+      <div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:9px" class="noscroll">
+        <sc-for list="{{ quicks }}" as="q" hint-placeholder-count="3">
+          <div style="font-size:11.5px;font-weight:600;background:#F6F6F7;color:#5C5C68;border-radius:15px;padding:0 12px;min-height:30px;display:flex;align-items:center;white-space:nowrap;cursor:pointer" style-active="background:#FEF3C7;color:#B45309">{{ q }}</div>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:7px">
+        <div style="width:40px;height:40px;border-radius:11px;background:#F6F6F7;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;cursor:pointer">＋</div>
+        <div style="flex:1;min-height:40px;border-radius:11px;border:1px solid #E2E2E8;display:flex;align-items:center;padding:0 13px;font-size:12.5px;color:#B0B0BB">메시지를 입력하세요</div>
+        <div style="width:40px;height:40px;border-radius:11px;background:#F59E0B;color:#17171B;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;cursor:pointer">↑</div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isOpenMode }}" hint-placeholder-val="{{ false }}">
+    <div style="flex-shrink:0;background:#fff;border-top:1px solid #EAEAEE;padding:13px 15px 14px;box-shadow:0 -8px 24px rgba(0,0,0,0.06)">
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <span style="font-size:12.5px;font-weight:800;letter-spacing:-0.02em">{{ openCountLabel }}</span>
+        <span style="font-size:11px;color:#9A9AA5">{{ openDatesLabel }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:6px">
+        <span style="width:15px;height:15px;border-radius:50%;background:#F59E0B;color:#17171B;font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">C</span>
+        <span style="font-size:11.5px;color:#7C7C88">{{ openCostLabel }}</span>
+      </div>
+      <div style="{{ openCtaStyle }}" onClick="{{ onOpenSubmit }}">{{ openCta }}</div>
+    </div>
+    </sc-if>
+
+    <div style="flex-shrink:0;background:#fff;border-top:1px solid #EAEAEE;padding:7px 6px 0;padding-bottom:env(safe-area-inset-bottom,0px)">
+      <div style="display:flex">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+          <div style="{{ t.style }}" onClick="{{ t.onClick }}">
+            <div style="position:relative;line-height:1">
+              <span style="{{ t.iconStyle }}">{{ t.icon }}</span>
+              <sc-if value="{{ t.hasBadge }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute;top:-3px;right:-8px;min-width:15px;height:15px;border-radius:20px;background:#EF4444;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px">{{ t.badge }}</span>
+              </sc-if>
+            </div>
+            <span style="{{ t.labelStyle }}">{{ t.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="height:22px;display:flex;align-items:center;justify-content:center">
+        <div style="width:134px;height:5px;border-radius:3px;background:#17171B"></div>
+      </div>
+    </div>
+
+    <sc-if value="{{ showCancelSheet }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:rgba(23,23,27,0.45);display:flex;align-items:flex-end;z-index:50" onClick="{{ closeCancel }}">
+        <div style="width:100%;background:#fff;border-radius:22px 22px 0 0;padding:20px 18px 26px">
+          <div style="display:flex;align-items:center">
+            <h2 style="margin:0;font-size:16.5px;font-weight:800;letter-spacing:-0.025em">협업 취소 요청</h2>
+            <span style="margin-left:auto;font-size:19px;color:#B0B0BB;cursor:pointer;line-height:1" onClick="{{ closeCancel }}">×</span>
+          </div>
+          <p style="margin:9px 0 0;font-size:12.5px;color:#7C7C88;line-height:1.65;text-wrap:pretty">누른다고 바로 취소되지 않아요. 사유를 적어 보내면 대화한 뒤, <strong style="font-weight:700;color:#3C3C46">광고주가 「취소 요청 수락」을 눌러야</strong> 취소가 확정됩니다.</p>
+          <div style="font-size:12px;font-weight:700;color:#3C3C46;margin:16px 0 7px">취소 사유</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ cancelReasons }}" as="r" hint-placeholder-count="5">
+              <div style="{{ r.style }}" onClick="{{ r.onClick }}">{{ r.label }}</div>
+            </sc-for>
+          </div>
+          <textarea placeholder="광고주에게 전할 말을 적어주세요. 사정을 설명할수록 합의가 빠릅니다." style="width:100%;box-sizing:border-box;min-height:84px;border:1px solid #E2E2E8;border-radius:11px;padding:11px 12px;margin-top:10px;font-size:12.5px;font-family:inherit;line-height:1.6;color:#17171B;resize:none;outline:none"></textarea>
+          <div style="margin-top:12px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:11px 13px;font-size:11.5px;color:#92400E;line-height:1.6">광고주가 동의해도 취소 요청 횟수에 반영돼요. 90일 동안 취소가 없으면 다시 0이 됩니다.</div>
+          <div style="display:flex;gap:8px;margin-top:15px">
+            <div style="flex:1;min-height:44px;border-radius:12px;border:1px solid #E2E2E8;color:#5C5C68;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer" onClick="{{ closeCancel }}">그만두기</div>
+            <div style="flex:1.4;min-height:44px;border-radius:12px;background:#17171B;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer" onClick="{{ closeCancel }}">취소 요청 보내기</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:920}}">
+const TODAY = 2;
+
+class Component extends DCLogic {
+  state = { tab: 'home' };
+  // 탭을 바꾸면 하위 페이지는 닫는다 — 안 닫으면 두 화면이 겹쳐 렌더된다.
+  go = (k) => () => this.setState({ tab: k, sub: null, room: null });
+
+  // ── 오픈 등록 ────────────────────────────────────────
+  // 오픈은 크레딧을 쓰는 행위다. 「무엇이 얼마에 열리는지」를 누르기 전에 보여준다.
+  // 날짜를 몇 개 묶든 **1건 = 1,000C** — 날짜별 과금은 적게 여는 쪽으로 유인을 만든다.
+  openVals() {
+    const OPENED = { 5:1, 12:1, 19:1 };   // 이미 연 날
+    const BUSY   = { 8:1, 13:1 };         // 확정 협업 — 고를 수 없다
+    const sel = this.state.oSel ?? [22, 23];
+    const kind = this.state.oKind ?? '지역';
+    const cells = [];
+    for (let i = 0; i < 6; i++) cells.push({ n:'', style:'aspect-ratio:1' });
+    for (let d = 1; d <= 31; d++) {
+      const opened = !!OPENED[d], busy = !!BUSY[d], on = sel.includes(d);
+      const lock = opened || busy;
+      cells.push({ n:d,
+        onClick: lock ? undefined : () => this.setState({
+          oSel: on ? sel.filter(x => x !== d) : [...sel, d] }),
+        style:'aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;'
+          + (lock ? 'cursor:default;' : 'cursor:pointer;')
+          + (on ? 'background:#F59E0B;'
+             : opened ? 'background:#FEF3C7;'
+             : busy ? 'background:#F1F1F4;' : ''),
+        numStyle:'font-size:12.5px;font-variant-numeric:tabular-nums;font-weight:' + (on || lock ? '800' : '600')
+          + ';color:' + (on ? '#17171B' : opened ? '#B45309' : busy ? '#B0B0BB' : '#3C3C46'),
+        hasDot: lock,
+        dotStyle:'font-size:8px;font-weight:800;color:' + (opened ? '#B45309' : '#B0B0BB') });
+    }
+    while (cells.length % 7) cells.push({ n:'', style:'aspect-ratio:1' });
+
+    const KINDS = [
+      { k:'지역', d:'매장·현장에 직접 방문해요' },
+      { k:'제품', d:'배송받아 집에서 리뷰해요' },
+      { k:'기자단', d:'자료만 받아 작성해요' },
+    ];
+    const kinds = KINDS.map(x => ({ ...x,
+      onClick: () => this.setState({ oKind: x.k }),
+      style:'flex:1;border-radius:12px;padding:11px 10px 12px;cursor:pointer;text-align:center;border:1px solid '
+        + (x.k === kind ? '#17171B;background:#17171B' : '#E2E2E8;background:#fff'),
+      kStyle:'font-size:12.5px;font-weight:800;color:' + (x.k === kind ? '#fff' : '#3C3C46'),
+      dStyle:'font-size:10px;line-height:1.45;margin-top:5px;color:' + (x.k === kind ? 'rgba(255,255,255,0.6)' : '#9A9AA5') }));
+
+    const sorted = [...sel].sort((a, b) => a - b);
+    return {
+      isOpen: this.state.tab === 'open',
+      oCells: cells, oKinds: kinds, oKind: kind,
+      oSelCount: sel.length,
+      oSelLabel: sorted.length ? sorted.map(d => '8/' + d).join(' · ') : '날짜를 골라주세요',
+      oCanSubmit: sel.length > 0,
+      oIsRegion: kind === '지역',
+      oCtaStyle:'flex:1;min-height:50px;border-radius:13px;font-size:14.5px;font-weight:800;display:flex;align-items:center;justify-content:center;'
+        + (sel.length ? 'background:#F59E0B;color:#17171B;cursor:pointer' : 'background:#EAEAEE;color:#B0B0BB'),
+      // 오픈은 날짜 수와 무관하게 1건. 버튼도 「N일」이 아니라 「1건」으로 말한다.
+      oCta: sel.length ? '오픈 1건 등록하기' : '날짜를 골라주세요',
+    };
+  }
+
+  renderVals() {
+    const tab = this.state.tab;
+    const META = {
+      home: { title: '매치포스트', logo: true },
+      cal:  { title: '내 일정' },
+      open: { title: '오픈 등록' },
+      find: { title: '캠페인 찾기' },
+      dash: { title: '대시' },
+      more: { title: '더보기' },
+    };
+    const meta = META[tab] ?? META.home;
+    // 하위 페이지 — 탭 안에서 한 단계 들어간다. 뒤로가기로 목록으로 돌아온다.
+    const sub = this.state.sub ?? null;
+    const SUB_TITLE = { sales:'매출 · 정산', apps:'지원 내역', profile:'프로필 · 채널',
+      chan:'내 채널 분석', past:'지난 협업', revs:'받은 평가',
+      bank:'정산 계좌', noti:'알림 설정', cred:'크레딧 내역' };
+    const openSub = (k) => () => this.setState({ sub: k });
+    const roomId = this.state.room ?? null;
+
+    const tabs = [
+      { icon:'⌂', label:'홈',    key:'home',  badge:0 },
+      { icon:'▦', label:'일정',  key:'cal',   badge:0 },
+      // 오픈은 인플루언서의 **가장 핵심 행동**이다. 탭을 따로 준다.
+      { icon:'▤', label:'오픈',  key:'open',  badge:0 },
+      { icon:'◇', label:'찾기',  key:'find',  badge:0 },
+      { icon:'▭', label:'대시',  key:'dash',  badge:2 },
+      { icon:'≡', label:'더보기', key:'more',  badge:1 },
+    ].map(t => {
+      const on = t.key === tab;
+      return {
+        ...t,
+        hasBadge: t.badge > 0,
+        onClick: this.go(t.key),
+        // 앱 탭바 — 최소 터치 영역 44px 확보
+        style: 'flex:1;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;border-radius:10px;-webkit-tap-highlight-color:transparent',
+        iconStyle: 'font-size:18px;display:block;color:' + (on ? '#17171B' : '#B0B0BB'),
+        labelStyle: 'font-size:10px;letter-spacing:-0.01em;font-weight:' + (on ? '800' : '600')
+          + ';color:' + (on ? '#17171B' : '#9A9AA5'),
+      };
+    });
+
+    // 임박 — 7일 이내, 최대 3. 미수금은 담당자 휴대폰을 바로 건다.
+    const urgent = [
+      { dday:'D+2', kind:'미수금', hot:true, title:'지역맘카페 협찬료 미입금',
+        // ⚠️ PC 와 같은 문장 — 「우리가 가만히 있지 않다」를 숫자로 보여준다
+        sub:'7/31 예정 · 150,000원 · 광고주에게 지연 알림 2회 발송 (매일 1회)',
+        // 번호만 보여주면 누구에게 거는지 모른다. 회사 · 담당자를 함께 붙인다.
+        // 표기는 **회사명 / 담당자 이름** — 전 화면 공통
+        tel:'tel:01044723318', who:'지역맘카페 / 김서연 · ', cta:'010-4472-3318',
+        // 전화보다 메시지를 먼저 — PC 와 같은 규칙. 그 캠페인 대화로 들어간다.
+        ask:'대시에서 문의하기', askTo:'c5' },
+      { dday:'D-6', kind:'방문', hot:false, warn:true, title:'브런치랩 성수 방문',
+        sub:'8/8 (토) 14:00 · 서울 성동구', cta:'가이드 다시 보기' },
+    ].map(u => {
+      const ink = u.hot ? '#DC2626' : u.warn ? '#B45309' : '#5C5C68';
+      const base = 'font-size:12px;font-weight:700;margin-top:11px;display:inline-flex;align-items:center;min-height:36px;padding:0 13px;border-radius:9px;cursor:pointer;text-decoration:none;color:' + ink + ';background:' + (u.hot ? '#fff' : 'rgba(255,255,255,0.7)') + ';border:1px solid ' + (u.hot ? '#FECACA' : '#FDE68A');
+      return {
+        ...u,
+        isTel: !!u.tel, notTel: !u.tel,
+        hasAsk: !!u.ask,
+        askStyle: 'font-size:11.5px;font-weight:700;color:#B45309;margin-left:10px;cursor:pointer;text-decoration:underline;text-underline-offset:2px',
+        onAsk: u.ask ? () => this.setState({ tab:'dash', sub:null, room:u.askTo }) : undefined,
+        ctaText: u.tel ? '📞 ' + u.cta : u.cta + ' ›',
+        cardStyle: 'border-radius:14px;padding:14px 15px 15px;border:1px solid '
+          + (u.hot ? '#FECACA;background:#FEF2F2' : u.warn ? '#FDE68A;background:#FFFBEB' : '#EAEAEE;background:#fff'),
+        ddayStyle: 'font-size:13.5px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;color:' + ink,
+        kindStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 7px;background:'
+          + (u.hot ? '#FEE2E2' : u.warn ? '#FEF3C7' : '#F1F1F4') + ';color:' + ink,
+        ctaStyle: base + ';font-variant-numeric:tabular-nums',
+        telStyle: base + ';font-variant-numeric:tabular-nums',
+      };
+    });
+
+    // ── 홈 화면에 추가 (PWA) ──────────────────────────────────
+    // ⚠️ 초기에는 앱스토어가 아니라 **모바일 웹**으로 나간다. 「홈 화면에 추가」를 하면
+    //    주소창이 사라지고 아이콘으로 열려, 인플루언서에게는 사실상 앱이 된다.
+    //    다만 배너는 **한 번 닫으면 다시 띄우지 않는다** — 반복 노출은 앱 설치 압박으로 읽힌다.
+    //    띄우는 시점도 첫 방문이 아니라 **첫 협업이 성사된 뒤** — 쓸 이유가 생긴 다음에 권한다.
+    const a2hs = !this.state.a2hsClosed;
+    const isIOS = this.state.a2hsOS !== 'android';
+    const a2hsSteps = isIOS
+      ? ['아래 공유 버튼을 누르세요', '「홈 화면에 추가」를 선택하세요']
+      : ['오른쪽 위 ⋮ 를 누르세요', '「홈 화면에 추가」를 선택하세요'];
+
+    const ini = (n) => (n.trim().split(/\s+/).pop() || n)[0];
+    const proposals = [
+      { brand:'주식회사 배곧레저', when:'8/14 (금) 방문', fee:'250,000원', left:2 },
+      { brand:'켄싱턴호텔 평창',   when:'8/22 – 8/24 중 1박', fee:'400,000원', left:5 },
+    ].map(p => ({
+      ...p,
+      ini: ini(p.brand),
+      dday: 'D-' + p.left,
+      avStyle: 'width:34px;height:34px;border-radius:50%;background:#FEF3C7;color:#B45309;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0',
+      ddayStyle: 'font-size:10.5px;font-weight:700;margin-top:2px;color:' + (p.left <= 2 ? '#DC2626' : '#9A9AA5'),
+    }));
+
+    const works = [
+      { brand:'브런치랩 성수',        step:'가이드 받음', next:'방문',      due:'8/8',  left:6 },
+      { brand:'가둘기정원 키즈풀빌라', step:'원고 작성중', next:'원고 마감', due:'8/13', left:11 },
+      { brand:'오도이촌 축제',        step:'게재 완료',   next:'결제 예정', due:'9/3',  left:32 },
+    ].map(w => ({
+      ...w,
+      stepStyle: 'font-size:10.5px;font-weight:700;border-radius:5px;padding:3px 7px;flex-shrink:0;background:#F1F1F4;color:#5C5C68',
+      dueStyle: 'font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:'
+        + (w.left <= 7 ? '#B45309' : '#5C5C68'),
+    }));
+
+    // ── 내 일정 ────────────────────────────────────────────────
+    // 보기 모드 = 통합 캘린더(출처 3종), 오픈 모드 = 같은 격자에서 날짜 복수 선택.
+    // 탭을 나누지 않은 이유: 「날짜를 고른다」는 행위가 같아서, 화면을 옮기면 흐름이 끊긴다.
+    const calMode = this.state.calMode ?? 'view';
+    const isView = calMode === 'view';
+    const sel = this.state.sel ?? [];
+    const selDay = this.state.selDay ?? 8;
+
+    const calModes = [
+      { k:'view', label:'일정 보기' },
+      { k:'open', label:'오픈 등록' },
+    ].map(m => ({
+      ...m,
+      onClick: () => this.setState({ calMode: m.k }),
+      style: 'flex:1;min-height:38px;display:flex;align-items:center;justify-content:center;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;'
+        + (m.k === calMode ? 'background:#fff;color:#17171B;box-shadow:0 1px 3px rgba(0,0,0,0.08)' : 'color:#7C7C88'),
+    }));
+
+    const weekdays = ['일','월','화','수','목','금','토'].map((d, i) => ({
+      d, style: 'text-align:center;font-size:10.5px;font-weight:700;padding-bottom:6px;color:'
+        + (i === 0 ? '#DC2626' : i === 6 ? '#B45309' : '#9A9AA5'),
+    }));
+
+    // 8/1 = 토 → 앞 빈칸 6
+    const OPENS = { 5:1, 12:1, 19:1 };
+    const DEALS = { 8:1, 13:1 };
+    const EXT   = { 20:1 };
+    const grid = [];
+    for (let i = 0; i < 6; i++) grid.push(null);
+    for (let d = 1; d <= 31; d++) grid.push(d);
+    while (grid.length % 7) grid.push(null);
+
+    const cells = grid.map((n, i) => {
+      if (!n) return { n:'', dots:[], style:'min-height:44px', numStyle:'display:none' };
+      const dow = i % 7;
+      const locked = !!OPENS[n] || !!DEALS[n] || n < TODAY;
+      const on = isView ? selDay === n : sel.includes(n);
+      const dots = [];
+      if (OPENS[n]) dots.push({ style:'width:4px;height:4px;border-radius:50%;background:#3B82F6' });
+      if (DEALS[n]) dots.push({ style:'width:4px;height:4px;border-radius:50%;background:#F59E0B' });
+      if (EXT[n])   dots.push({ style:'width:4px;height:4px;border-radius:50%;background:#9A9AA5' });
+      return {
+        n, dots,
+        onClick: isView
+          ? () => this.setState({ selDay: n })
+          : (locked ? undefined : () => this.setState({
+              sel: sel.includes(n) ? sel.filter(x => x !== n) : [...sel, n],
+            })),
+        style: 'min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:9px;cursor:'
+          + (isView || !locked ? 'pointer' : 'default')
+          + ';-webkit-tap-highlight-color:transparent;'
+          + (on ? 'background:#17171B' : !isView && locked ? 'background:#FAFAFB' : ''),
+        numStyle: 'font-size:13px;font-weight:' + (on ? '800' : '600')
+          + ';font-variant-numeric:tabular-nums;color:'
+          + (on ? '#fff' : !isView && locked ? '#C4C4CE' : dow === 0 ? '#DC2626' : dow === 6 ? '#B45309' : '#2A2A33'),
+      };
+    });
+
+    const legend = [
+      { label:'내 오픈', c:'#3B82F6' },
+      { label:'매치포스트 협업', c:'#F59E0B' },
+      { label:'내가 적은 일정', c:'#9A9AA5' },
+    ].map(l => ({ ...l, dotStyle:'width:6px;height:6px;border-radius:50%;background:' + l.c }));
+
+    const DAY_EVENTS = {
+      8:  [{ tag:'방문', src:'deal', title:'브런치랩 성수 방문', sub:'14:00 · 서울 성동구 · 300,000원', cta:'가이드 다시 보기 ›' }],
+      13: [{ tag:'원고 마감', src:'deal', title:'가둘기정원 키즈풀빌라', sub:'8/11 → 8/13 (가이드 지연 상계)', cta:'원고 전달하기 ›' }],
+      5:  [{ tag:'오픈', src:'open', title:'8월 5일 오픈', sub:'제안 2건 수신 · 미확정', cta:'받은 제안 보기 ›' }],
+      20: [{ tag:'외부', src:'ext', title:'로컬 카페 촬영', sub:'직접 등록 · 200,000원 · 9/5 결제 예정', cta:'수정하기 ›' }],
+    };
+    const SRC_LABEL = { deal:'매치포스트 협업 · 자동', open:'내 오픈 · 자동', ext:'내가 적은 일정' };
+    const evs = DAY_EVENTS[selDay] ?? [];
+    const selEvents = evs.map(e => ({
+      ...e,
+      srcLabel: SRC_LABEL[e.src],
+      tagStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 7px;background:'
+        + (e.src === 'deal' ? '#FEF3C7;color:#B45309' : e.src === 'open' ? '#EFF6FF;color:#1D4ED8' : '#F1F1F4;color:#5C5C68'),
+      // 자동 생성 일정은 캘린더에서 고칠 수 없다 — 원본은 딜시트/오픈에 있다
+      ctaStyle: 'font-size:12px;font-weight:700;margin-top:10px;display:inline-flex;align-items:center;min-height:38px;padding:0 12px;border-radius:9px;cursor:pointer;'
+        + (e.src === 'ext' ? 'border:1px solid #E2E2E8;color:#3C3C46' : 'background:#F6F6F7;color:#B45309'),
+    }));
+
+    const openCost = sel.length ? 1000 : 0;
+    const won = (n) => n.toLocaleString('ko-KR');
+
+    // ── 대시 ───────────────────────────────────────────────────
+    // PC 3-pane 은 폰에서 불가 → 목록 ↔ 대화 전환. 협업 정보는 대화 상단 확정 바로 압축.
+    const room = roomId;
+    const dFilter = this.state.dFilter ?? '전체';
+    const CONVOS = [
+      { id:'c1', brand:'브런치랩 성수', last:'가이드 파일 보내드렸어요. 확인 부탁드립니다.', at:'오후 2:14',
+        unread:2, me:true, other:true },
+      { id:'c2', brand:'주식회사 배곧레저', last:'8월 14일 방문 가능하실까요?', at:'오전 11:02',
+        unread:1, me:false, other:true },
+      { id:'c3', brand:'켄싱턴호텔 평창', last:'페이는 40만원으로 생각하고 있습니다.', at:'어제',
+        unread:0, me:true, other:false },
+      { id:'c4', brand:'가둘기정원 키즈풀빌라', last:'원고 확인했습니다. 감사합니다!', at:'7/30',
+        unread:0, me:true, other:true },
+      // ⚠️ 미수 건의 대화는 살아 있어야 한다 — 「대시에서 문의하기」가 갈 곳이다(PC 와 같은 규칙)
+      { id:'c5', brand:'지역맘카페', last:'게재 확인했습니다. 7/31에 정산 예정입니다.', at:'7/31',
+        unread:0, me:true, other:true },
+    ];
+    // 목록 칩과 상세 버튼이 같은 말을 써야 한다 — 전부 「수락」
+    const stageOf = (c) => c.me && c.other ? '양쪽 수락'
+      : c.other && !c.me ? '내 수락 대기'
+      : c.me && !c.other ? '광고주 수락 대기' : '협의중';
+    const STAGE_C = {
+      '양쪽 수락':        ['#DCFCE7', '#15803D'],
+      '내 수락 대기':     ['#FEF3C7', '#B45309'],
+      '광고주 수락 대기': ['#F1F1F4', '#7C7C88'],
+      '협의중':           ['#F1F1F4', '#7C7C88'],
+    };
+    const dCounts = {
+      '전체': CONVOS.length,
+      '미응답': CONVOS.filter(c => c.unread > 0).length,
+      '수락 대기': CONVOS.filter(c => stageOf(c) === '내 수락 대기' || stageOf(c) === '광고주 수락 대기').length,
+      '수락 완료': CONVOS.filter(c => stageOf(c) === '양쪽 수락').length,
+    };
+    const dFilters = ['전체','미응답','수락 대기','수락 완료'].map(k => ({
+      label: k + ' ' + dCounts[k],
+      onClick: () => this.setState({ dFilter: k }),
+      style: 'font-size:11.5px;font-weight:700;border-radius:15px;padding:0 12px;min-height:32px;display:flex;align-items:center;white-space:nowrap;cursor:pointer;'
+        + (k === dFilter ? 'background:#17171B;color:#fff'
+          : k === '미응답' ? 'background:#FEF3C7;color:#B45309' : 'background:#F1F1F4;color:#5C5C68'),
+    }));
+    const convoList = CONVOS.filter(c => {
+      const s = stageOf(c);
+      if (dFilter === '미응답') return c.unread > 0;
+      if (dFilter === '수락 대기') return s === '내 수락 대기' || s === '광고주 수락 대기';
+      if (dFilter === '수락 완료') return s === '양쪽 수락';
+      return true;
+    });
+    const convos = convoList.map(c => {
+      const s = stageOf(c);
+      const [bg, fg] = STAGE_C[s];
+      return {
+        ...c, ini: ini(c.brand), stage: s, hasUnread: c.unread > 0,
+        onClick: () => this.setState({ room: c.id }),
+        rowStyle: 'display:flex;gap:11px;padding:13px 14px;background:#fff;border-bottom:1px solid #F5F5F7;cursor:pointer;-webkit-tap-highlight-color:transparent',
+        avStyle: 'width:40px;height:40px;border-radius:50%;background:#FEF3C7;color:#B45309;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0',
+        nameStyle: 'font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:' + (c.unread ? '800' : '600'),
+        lastStyle: 'font-size:11.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:' + (c.unread ? '#3C3C46' : '#9A9AA5'),
+        stageStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 7px;background:' + bg + ';color:' + fg,
+      };
+    });
+
+    const cur = CONVOS.find(c => c.id === room) ?? CONVOS[0];
+    const curStage = stageOf(cur);
+    const bothOk = cur.me && cur.other;
+    const barSides = [
+      { label: cur.me ? '내 수락' : '내 수락 전', ok: cur.me },
+      { label: cur.other ? '광고주 수락' : '광고주 수락 전', ok: cur.other },
+    ].map(s => ({
+      ...s,
+      dotStyle: 'width:13px;height:13px;border-radius:50%;background:' + (s.ok ? '#22C55E' : '#D4D4DC'),
+      labelStyle: 'font-size:12px;font-weight:800;color:' + (s.ok ? '#15803D' : '#9A9AA5'),
+    }));
+    const MSGS = [
+      { who:'sys', text:'8월 8일 협업 조건을 협의 중입니다' },
+      { who:'them', text:'안녕하세요! 8월 8일 방문 가능하신지 문의드려요.', at:'오전 10:12' },
+      { who:'me', text:'네, 그날 오픈해두었습니다. 페이는 어떻게 되나요?', at:'오전 10:31' },
+      { who:'them', text:'30만원으로 생각하고 있습니다. 블로그 1건입니다.', at:'오전 11:02' },
+      { who:'me', text:'좋습니다. 조건 확인해볼게요.', at:'오후 1:40' },
+      { who:'them', text:'가이드 파일 보내드렸어요. 확인 부탁드립니다.', at:'오후 2:14' },
+    ];
+    // 고정 메시지 — 계좌번호 · 주소 · 마감일처럼 대화에서 계속 찾게 되는 것을 위로 올린다.
+    // 한 대화에 하나만. 여러 개를 허용하면 상단이 또 하나의 스크롤이 된다.
+    const pinIdx = this.state.pin ?? 4;
+    const msgs = MSGS.map((m, mi) => {
+      const mine = m.who === 'me';
+      const sys = m.who === 'sys';
+      const pinned = mi === pinIdx;
+      return {
+        ...m, isSys: sys, notSys: !sys,
+        wrapStyle: 'display:flex;align-items:flex-end;gap:6px;'
+          + (sys ? 'justify-content:center' : mine ? 'justify-content:flex-end;flex-direction:row' : ''),
+        // 파랑은 공개 오픈 일정 전용 — 내 버블은 먹색
+        bubbleStyle: 'max-width:72%;padding:10px 13px;font-size:12.5px;line-height:1.6;border-radius:14px;cursor:pointer;'
+          + (mine ? 'background:#17171B;color:#fff;border-bottom-right-radius:5px;order:2'
+                  : 'background:#fff;color:#2A2A33;border-bottom-left-radius:5px')
+          + (pinned ? ';box-shadow:0 0 0 2px #FDE68A' : ''),
+        pinMark: pinned ? '📌 ' : '',
+        onPin: sys ? undefined : () => this.setState({ pin: pinned ? null : mi }),
+      };
+    });
+    const pinMsg = pinIdx === null ? null : MSGS[pinIdx];
+
+    // ── 캠페인 찾기 ────────────────────────────────────────────
+    // 찾기의 1차 축은 **날짜**다. 목록이 아니라 달력이 먼저 온다.
+    // ⚠️ 내 오픈 일정은 이 화면에 넣지 않는다. 여기는 「등록된 캠페인」을 찾는 곳이고,
+    //    「내가 연 날」은 오픈 탭의 축이다. 한 화면에 두 축이 섞이면 무엇을 보는지 헷갈린다.
+    const fKw = this.state.fKw ?? [];
+    // 지역 칩은 걷어냈다. 입력이 쌓인 뒤 인기 지역만 칩으로 되살리는 것을 검토한다.
+    const _POPULAR_LATER = {
+      서울: ['강남','서초','송파','성동','마포','용산','종로','영등포','노원','은평'],
+      경기: ['수원','성남','고양','용인','부천','안산','시흥','화성','남양주','평택'],
+      인천: ['연수','남동','부평','서구','중구','미추홀'],
+      강원: ['춘천','원주','강릉','속초','평창','양양'],
+    };
+
+
+    // 분야 상수 INFLUENCER_CATEGORIES 23개 전체. 기본 8개만 보이고 나머지는 펼친다.
+    const CATS = ['맛집·카페','여행·숙박','뷰티','패션','육아·가족','생활·리빙','인테리어','반려동물',
+                  '건강·운동','요리·레시피','디지털·IT','자동차','문화·공연','교육·학습','재테크·금융',
+                  '스포츠·레저','사진·영상','게임','도서·리뷰','웨딩','시니어','지역·동네','기타'];
+    const kwOpen = this.state.kwOpen ?? false;
+    const fKeywords = (kwOpen ? CATS : CATS.slice(0, 8)).map(k => {
+      const on = fKw.includes(k);
+      return {
+        label: k,
+        onClick: () => this.setState({ fKw: on ? fKw.filter(x => x !== k) : [...fKw, k] }),
+        style: 'font-size:11.5px;font-weight:700;border-radius:15px;padding:0 12px;min-height:32px;display:flex;align-items:center;white-space:nowrap;cursor:pointer;'
+          + (on ? 'background:#FEF3C7;color:#B45309;border:1px solid #FDE68A' : 'background:#F6F6F7;color:#5C5C68;border:1px solid #EFEFF2'),
+      };
+    });
+
+    const CAMPS = [
+      { d:12, brand:'배곧한울공원 물놀이장', kind:'지역', when:'8/12 (수)', place:'경기 시흥',
+        addr:'경기 시흥시 배곧동', cats:['육아·가족','여행·숙박'],
+        fee:250000, ch:'블로그', left:2, slots:'2/3', match:true },
+      { d:12, brand:'시흥 키즈카페 오픈', kind:'지역', when:'8/12 (수)', place:'경기 시흥',
+        addr:'경기 시흥시 정왕동', cats:['육아·가족','맛집·카페'],
+        fee:150000, ch:'블로그', left:2, slots:'1/2', match:true },
+      { d:19, brand:'성수 델리카페', kind:'지역', when:'8/19 (수)', place:'서울 성동',
+        addr:'서울 성동구 성수동', cats:['맛집·카페'],
+        fee:300000, ch:'블로그 · 인스타그램', left:5, slots:'1/2', match:true },
+      { d:26, brand:'키즈풀빌라 가평', kind:'지역', when:'8/26 (수)', place:'경기 가평',
+        addr:'경기 가평군 청평면', cats:['여행·숙박','육아·가족'],
+        fee:400000, ch:'블로그', left:9, slots:'3/4', match:false },
+      { d:20, dTo:31, brand:'유아 세제 신제품', kind:'제품', when:'8/20 – 8/31', place:'배송',
+        addr:'', cats:['육아·가족','생활·리빙'],
+        fee:120000, ch:'블로그', left:6, slots:'8/15', match:false },
+      // 기간형이 실제로는 더 흔하다 — 아래 세 건은 여러 날에 걸쳐 모두 노출된다
+      { d:8, dTo:23, brand:'시흥 프리미엄 아울렛 여름 세일', kind:'지역', when:'8/8 – 8/23', place:'경기 시흥',
+        addr:'경기 시흥시 목감동', cats:['패션·뷰티','육아·가족'],
+        fee:200000, ch:'블로그 · 인스타그램', left:6, slots:'4/8', match:true },
+      { d:10, dTo:16, brand:'성동 로컬 맥주 페스타', kind:'기자단', when:'8/10 – 8/16', place:'서울 성동',
+        addr:'서울 성동구 성수동', cats:['맛집·카페','문화·공연'],
+        fee:180000, ch:'블로그', left:8, slots:'2/6', match:false },
+      { d:15, dTo:30, brand:'가평 계곡 캠핑장 예약 오픈', kind:'지역', when:'8/15 – 8/30', place:'경기 가평',
+        addr:'경기 가평군 설악면', cats:['여행·숙박','육아·가족'],
+        fee:280000, ch:'블로그 · 유튜브', left:13, slots:'3/5', match:true },
+    ];
+    const KIND_C = { '지역':['#FEF3C7','#B45309'], '제품':['#F1F1F4','#5C5C68'], '기자단':['#F1F1F4','#5C5C68'] };
+
+    const fDay = this.state.fDay ?? 12;
+    const countBy = {};
+    CAMPS.forEach(c => {
+      for (let d = c.d; d <= (c.dTo ?? c.d); d++) countBy[d] = (countBy[d] ?? 0) + 1;
+    });
+    const fCells = grid.map((n, i) => {
+      if (!n) return { n:'', cnt:'', style:'min-height:44px', numStyle:'display:none', cntStyle:'display:none' };
+      const dow = i % 7;
+      const cnt = countBy[n] ?? 0;
+      // 찾기는 「등록된 캠페인」을 찾는 화면이다. 내 오픈 표시는 넣지 않는다 — 축이 섞인다.
+      const on = fDay === n;
+      return {
+        n, cnt: cnt || '',
+        onClick: cnt ? () => this.setState({ fDay: n }) : undefined,
+        style: 'min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:9px;-webkit-tap-highlight-color:transparent;cursor:'
+          + (cnt ? 'pointer' : 'default') + ';'
+          + (on ? 'background:#17171B' : ''),
+        numStyle: 'font-size:13px;font-weight:' + (on ? '800' : cnt ? '700' : '500')
+          + ';font-variant-numeric:tabular-nums;color:'
+          + (on ? '#fff' : !cnt ? '#C4C4CE' : dow === 0 ? '#DC2626' : dow === 6 ? '#B45309' : '#2A2A33'),
+        cntStyle: cnt
+          ? 'font-size:9px;font-weight:800;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;'
+            + (on ? 'background:#F59E0B;color:#17171B' : 'background:#F1F1F4;color:#5C5C68')
+          : 'display:none',
+      };
+    });
+
+    // 날짜 → 지역 → 구 → 키워드 순으로 좁힌다. 하나라도 걸리면 결과가 줄어야 한다.
+    // 기간형 캠페인은 시작~종료 사이 **모든 날짜에** 걸린다. 하루짜리는 dTo 가 없다.
+    const covers = (c, day) => day >= c.d && day <= (c.dTo ?? c.d);
+    const daySrc = CAMPS.filter(c => covers(c, fDay));
+    // 지역은 직접 입력. 시·도/구/동 어느 단위로 쳐도 주소 문자열에 걸리면 잡힌다.
+    // 입력이 쌓이면 인기 지역을 칩으로 자동 노출하는 것을 검토한다 (BACKLOG: region_search_log)
+    const fAddr = (this.state.fAddr ?? '').trim();
+    // 초성 검색 — 「ㅅㅎ」로 「시흥」이 잡힌다. 한글 음절에서 초성만 뽑아 비교한다.
+    const CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    const toCho = (s) => [...s].map(ch => {
+      const c = ch.charCodeAt(0) - 0xac00;
+      return c >= 0 && c <= 11171 ? CHO[Math.floor(c / 588)] : ch;
+    }).join('');
+    const hit = (text, q) => {
+      if (!q) return true;
+      const t = (text ?? '');
+      return t.includes(q) || toCho(t).includes(toCho(q));
+    };
+    const dayCamps = daySrc.filter(c =>
+      (!fAddr || hit(c.addr, fAddr) || hit(c.brand, fAddr)) &&
+      (!fKw.length || fKw.some(k => c.cats.includes(k))));
+    const filtered = daySrc.length > 0 && dayCamps.length === 0;
+
+    // 자동완성 — 전체 캠페인에서 지역 토큰과 브랜드명을 모아 매칭. 초성도 걸린다.
+    const pool = [];
+    CAMPS.forEach(c => {
+      (c.addr ?? '').split(' ').filter(Boolean).forEach(tok => pool.push({ v: tok, kind: '지역' }));
+      pool.push({ v: c.brand, kind: '브랜드' });
+    });
+    const seen = new Set();
+    const suggests = (fAddr.length >= 1 ? pool : []).filter(s => {
+      if (s.v === fAddr || seen.has(s.v) || !hit(s.v, fAddr)) return false;
+      seen.add(s.v); return true;
+    }).slice(0, 5).map(s => ({
+      ...s,
+      onClick: () => this.setState({ fAddr: s.v }),
+      kindStyle: 'font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;flex-shrink:0;'
+        + (s.kind === '지역' ? 'background:#F1F1F4;color:#7C7C88' : 'background:#FEF3C7;color:#B45309'),
+    }));
+    // 이미 지원한 캠페인 — 지원 시각과 결과를 함께 들고 있다.
+    // 결과가 나오기 전에는 「심사중」, 나온 뒤에는 선정/미선정을 그대로 보여준다.
+    const APPLIED = {
+      '성수 델리카페':        { at:'8월 1일', recruit:'8/1 – 8/12', pick:null, applicants:7, slots:2 },
+      // 선정자 명단은 **광고주가 캠페인 등록 시 공개를 켠 경우에만** 보여준다(reveal).
+      // 끄면 경쟁률까지만. 등급·채널까지만 노출하고 팔로워·페이는 절대 보여주지 않는다.
+      '성동 로컬 맥주 페스타': { at:'7월 28일', recruit:'7/20 – 7/31', pick:false, applicants:14, slots:6,
+        reveal:true,
+        picked:[
+          { name:'성수 미식가 준호', ch:'블로그', grade:'B-2' },
+          { name:'맥주하는 세연',   ch:'블로그 · 인스타그램', grade:'C-1' },
+          { name:'퇴근길 한잔 도영', ch:'블로그', grade:'C-3' },
+        ] },
+    };
+    const camps = dayCamps.map(c => {
+      const [kb, kf] = KIND_C[c.kind];
+      const ap = APPLIED[c.brand] ?? null;
+      const decided = ap && ap.pick !== null;
+      return {
+        ...c,
+        feeLabel: won(c.fee) + '원',
+        dday: 'D-' + c.left,
+        applied: !!ap,
+        notApplied: !ap,
+        appliedLabel: !ap ? '' : decided ? (ap.pick ? '선정됨' : '이번엔 아쉬워요') : '지원 완료',
+        appliedStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 7px;'
+          + (!ap ? 'display:none'
+             : decided
+               ? (ap.pick ? 'background:#DCFCE7;color:#15803D' : 'background:#F1F1F4;color:#7C7C88')
+               : 'background:#17171B;color:#fff'),
+        // 이미 결과가 나온 건에 「모집현황」은 의미가 없다. 상태별로 다음 행동을 다르게 준다.
+        ctaLabel: !ap ? '지원하기' : !decided ? '모집현황' : ap.pick ? '대시로 가기' : '결과 보기',
+        ctaStyle: 'margin-left:auto;min-height:40px;padding:0 17px;border-radius:10px;font-size:12.5px;font-weight:800;display:flex;align-items:center;cursor:pointer;'
+          + (!ap ? 'background:#F59E0B;color:#17171B'
+             : decided && ap.pick ? 'background:#17171B;color:#fff'
+             : 'background:#fff;border:1px solid #D4D4DC;color:#3C3C46'),
+        onCta: ap ? () => this.setState({ statOpen: this.state.statOpen === c.brand ? null : c.brand }) : undefined,
+        statShow: !!ap && this.state.statOpen === c.brand,
+        statRecruit: ap ? ap.recruit : '',
+        statApplied: ap ? ap.at : '',
+        statCount: !ap ? ''
+          : decided
+            ? ap.applicants + '명 지원 · ' + ap.slots + '명 선정'
+            : ap.applicants + '명 지원 · ' + ap.slots + '명 모집',
+        statHead: !ap ? '' : decided
+          ? (ap.pick ? '선정되었어요' : '이번엔 선정되지 않았어요')
+          : '모집이 진행 중이에요',
+        statBody: !ap ? '' : decided
+          ? (ap.pick
+              ? '대시에서 광고주와 조건을 맞추고 수락하면 협업이 시작돼요.'
+              : '지원 이력은 남지 않아요. 다음 캠페인에 불이익도 없습니다.')
+
+          : '모집 마감 후 광고주가 검토하고, 결과는 알림으로 알려드려요.',
+        picked: (ap && ap.reveal && ap.picked ? ap.picked : []).map(p => ({
+          ...p,
+          initial: (p.name.trim().split(/\s+/).pop() ?? p.name)[0],
+        })),
+        hasPicked: !!(decided && ap.reveal && ap.picked && ap.picked.length),
+        pickedNote: ap && ap.picked ? ap.picked.length + '명 · 광고주가 공개에 동의했어요' : '',
+        statHeadStyle: 'font-size:12.5px;font-weight:800;color:'
+          + (!decided ? '#B45309' : ap.pick ? '#15803D' : '#5C5C68'),
+        statBoxStyle: 'margin-top:12px;border-radius:11px;padding:12px 13px;border:1px solid '
+          + (!decided ? '#FDE68A;background:#FFFBEB' : ap.pick ? '#BBF7D0;background:#F0FDF4' : '#EAEAEE;background:#FAFAFB'),
+        kindStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 7px;background:' + kb + ';color:' + kf,
+        ddayStyle: 'font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;color:'
+          + (c.left <= 3 ? '#DC2626' : '#9A9AA5'),
+        cardStyle: 'background:#fff;border-radius:15px;padding:14px 15px 15px;cursor:pointer;'
+          + (c.match ? 'border:1px solid #FDE68A' : ''),
+      };
+    });
+    // 홈 추천 — 가입 시 등록한 분야·지역·채널 + 내가 연 날짜로 고른다.
+    // ⚠️ 매칭 근거(why)를 반드시 함께 보여준다. 이유 없는 추천은 광고로 읽힌다.
+    const WHY = {
+      '배곧한울공원 물놀이장': ['8/12 오픈', '경기 시흥', '육아·가족나들이'],
+      '성수 델리카페':        ['8/19 오픈', '블로그'],
+      '키즈풀빌라 가평':       ['육아·가족나들이', '경기'],
+    };
+    const recs = CAMPS.filter(c => WHY[c.brand]).slice(0, 3).map(c => {
+      const [kb, kf] = KIND_C[c.kind];
+      return {
+        ...c,
+        why: WHY[c.brand],
+        meta: c.when + ' · ' + c.place,
+        feeLabel: won(c.fee) + '원',
+        dday: 'D-' + c.left,
+        kindStyle: 'font-size:10px;font-weight:800;border-radius:5px;padding:3px 6px;background:' + kb + ';color:' + kf,
+        ddayStyle: 'font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums;color:'
+          + (c.left <= 3 ? '#DC2626' : '#9A9AA5'),
+      };
+    });
+
+    const STUB = {};
+    const stub = STUB[tab];
+
+    // 더보기 — 자주 쓰는 순서로. 매출이 맨 위인 이유는 인플루언서가 가장 자주 확인하는 값이라서다.
+    const rowVal = (v, warn) => 'font-size:12px;font-weight:700;flex-shrink:0;font-variant-numeric:tabular-nums;color:'
+      + (warn ? '#DC2626' : '#9A9AA5');
+    const moreAct = [
+      { icon:'💰', label:'매출 · 정산', val:'미수 1건', warn:true, go:'sales' },
+      { icon:'📊', label:'내 채널 분석', val:'D-3', go:'chan' },
+      { icon:'📮', label:'지원 내역',   val:'2건', go:'apps' },
+      { icon:'📁', label:'지난 협업',   val:'9건', go:'past' },
+    ].map(m => ({ ...m, valStyle: rowVal(m.val, m.warn), onClick: m.go ? openSub(m.go) : undefined }));
+
+    const moreAcc = [
+      { icon:'👤', label:'프로필 · 채널 관리', sub:'분야 · 지역 · 등록 채널', val:'', go:'profile' },
+      { icon:'🏦', label:'정산 계좌',        sub:'국민 ****3318 · 협업 확정 시 광고주에게 전달돼요', val:'', go:'bank' },
+      // ⚠️ 세무 정보는 보류. 주민번호·사업자번호는 민감정보라 계정에 상시 보관하는 것 자체가 위험하다.
+      //    지금은 대시(메시지)로 건별 전달하는 방식을 쓴다. 보관 여부는 별도 검토. (BACKLOG)
+      { icon:'🔔', label:'알림 설정',        sub:'제안 · 마감 · 정산', val:'', go:'noti' },
+    ].map(m => ({
+      ...m,
+      valStyle: rowVal('', false),
+      onClick: m.go ? openSub(m.go) : undefined,
+      subStyle: 'font-size:11px;margin-top:2px;line-height:1.45;color:' + (m.warnSub ? '#DC2626' : '#9A9AA5'),
+    }));
+
+    // ── 매출 · 정산 (하위 페이지) ─────────────────────────────
+    // ⚠️ 귀속 기준은 결제일. 활동일이 아니다. 화면에도 병기한다.
+    const SALES = [
+      // ⚠️ 귀속은 **결제일** 기준. 9/3 결제 예정 건은 8월이 아니라 9월 그룹에 들어간다.
+      { m:'9월', rows:[
+        { name:'브런치랩 성수',        at:'9/3 결제 예정', amt:300000, st:'예정' },
+      ] },
+      { m:'8월', rows:[
+        { name:'제주 헬로키티 아일랜드', at:'8/5 입금', amt:300000, st:'받음' },
+        { name:'오도이촌 스테이',       at:'8/1 기록 · 확인 대기', amt:300000, st:'확인' },
+      ] },
+      { m:'7월', rows:[
+        { name:'켄싱턴호텔 평창',       at:'7/20 입금', amt:400000, st:'받음' },
+        { name:'지역맘카페 협찬',       at:'7/31 예정 · 미입금', amt:150000, st:'미수' },
+      ] },
+    ];
+    const ST_C = { 받음:['#DCFCE7','#15803D'], 확인:['#FEF3C7','#B45309'], 예정:['#F1F1F4','#7C7C88'], 미수:['#FEE2E2','#DC2626'] };
+    // 합계는 「받음」만 센다. 미수·예정을 섞으면 받은 돈인지 청구액인지 구분이 안 된다.
+    const sumBy = (rows, sts) => rows.filter(r => sts.includes(r.st)).reduce((s, r) => s + r.amt, 0);
+    const aug = SALES.find(g => g.m === '8월').rows;
+    const allRows = SALES.flatMap(g => g.rows);
+    const salesGroups = SALES.map(g => ({
+      m: g.m,
+      total: sumBy(g.rows, ['받음']) > 0
+        ? won(sumBy(g.rows, ['받음'])) + '원 받음'
+        : won(sumBy(g.rows, ['확인','예정','미수'])) + '원 받을 예정',
+      rows: g.rows.map(r => {
+        const [bg, fg] = ST_C[r.st];
+        return { ...r, amtLabel: won(r.amt) + '원',
+          stStyle: 'font-size:10px;font-weight:800;border-radius:5px;padding:3px 7px;flex-shrink:0;background:' + bg + ';color:' + fg };
+      }),
+    }));
+    // ⚠️ 입금 확인 전(`확인`)은 매출에 넣지 않는다. 「기록됨 ≠ 받음」 — PC 매출 카드와 같은 규칙.
+    //    한 건이 두 KPI 에 동시에 잡히지 않도록 상태를 서로 겹치지 않게 나눈다.
+    const salesKpis = [
+      { k:'8월 매출',    v: won(sumBy(aug, ['받음'])), c:'#17171B' },
+      { k:'확인 대기',   v: won(sumBy(allRows, ['확인'])), c:'#B45309' },
+      { k:'받을 예정',   v: won(sumBy(allRows, ['예정'])), c:'#7C7C88' },
+      { k:'미수금',     v: won(sumBy(allRows, ['미수'])), c:'#DC2626' },
+    ].map(x => ({ ...x, vStyle:'font-size:15px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;margin-top:4px;color:' + x.c }));
+
+    // ── 지원 내역 (하위 페이지) ───────────────────────────────
+    const APPS_LIST = [
+      { name:'성수 델리카페',        at:'8월 1일 지원', sub:'8/19 · 서울 성동구 · 300,000원', st:'심사중' },
+      { name:'성동 로컬 맥주 페스타', at:'7월 28일 지원', sub:'14명 지원 · 6명 선정', st:'미선정' },
+      { name:'배곧한울공원 물놀이장', at:'7월 10일 지원', sub:'7/28 진행 완료 · 250,000원', st:'선정' },
+    ].map(a => {
+      const c = a.st === '선정' ? ['#DCFCE7','#15803D'] : a.st === '심사중' ? ['#17171B','#fff'] : ['#F1F1F4','#7C7C88'];
+      return { ...a, stStyle:'font-size:10px;font-weight:800;border-radius:5px;padding:3px 7px;flex-shrink:0;background:' + c[0] + ';color:' + c[1] };
+    });
+
+    // ── 프로필 · 채널 (하위 페이지) ───────────────────────────
+    const profFields = [
+      { k:'별명',   v:'뷰티하는 지연' },
+      { k:'활동 지역', v:'경기 시흥 · 서울' },
+      { k:'분야',   v:'육아·가족  여행·숙박  맛집·카페' },
+      { k:'소개',   v:'아이와 함께 가는 수도권·강원 나들이 장소를 직접 다녀와 정리합니다.' },
+    ];
+    const profChannels = [
+      // 아이콘 타일은 **각 채널의 브랜드 컬러 + 중립 글리프**. 로고 자체를 그리지 않는다.
+      // 구현 시 각 사의 공식 브랜드 리소스(SVG)를 받아 같은 자리에 끼우면 된다.
+      { code:'블', name:'네이버 블로그', handle:'blog.naver.com/merry9849', st:'분석 중', on:true,  bg:'#03C75A' },
+      { code:'▶', name:'유튜브',       handle:'youtube.com/@merry9849',   st:'분석 준비 중', on:false, bg:'#FF0033' },
+      { code:'◎', name:'인스타그램',    handle:'@merry_dayoff',            st:'분석 준비 중', on:false, bg:'#E1306C' },
+    ].map(c => ({ ...c,
+      iconStyle:'width:32px;height:32px;border-radius:9px;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:' + c.bg,
+      stStyle:'font-size:10px;font-weight:800;border-radius:5px;padding:3px 7px;flex-shrink:0;'
+        + (c.on ? 'background:#DCFCE7;color:#15803D' : 'background:#F1F1F4;color:#9A9AA5') }));
+
+    // ── 내 채널 분석 (하위) ─ PC 「내 채널」의 요약판. 산식·문구는 같아야 한다.
+    const chanScore = [
+      { k:'일 방문자',   got:0,  max:40, note:'162명 — 1,000명부터' },
+      { k:'포스팅 노출', got:12, max:35, note:'월 예상 유입 180명' },
+      { k:'포스팅 빈도', got:0,  max:15, note:'수집 실패 · 다음 크롤에서 재시도' },
+      { k:'이웃 수',    got:0,  max:10, note:'325명 — 3,000명부터' },
+    ].map(s => ({ ...s, val: s.got + ' / ' + s.max,
+      barStyle:'height:5px;border-radius:3px;width:' + Math.round(s.got / s.max * 100) + '%;background:'
+        + (s.got === 0 ? '#E5E7EB' : '#F59E0B'),
+      valStyle:'margin-left:auto;font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums;color:'
+        + (s.got === 0 ? '#C4C4CE' : '#17171B') }));
+    const chanPosts = [
+      { t:'시흥 배곧한울공원 해수풀장 운영시간, 주차, 이용정보 총정리', best:'최고 5위', n:'3/3 노출' },
+      { t:'인천 계양구 오조산 물놀이장 후기', best:'최고 6위', n:'2/3 노출' },
+      { t:'가평 가둘기정원 키즈풀빌라 펜션', best:'최고 14위', n:'1/3 노출' },
+      { t:'속초 해수욕장｜강원도 해수욕장 물놀이', best:'노출 없음', n:'0/3 노출', none:true },
+    ].map(p => ({ ...p, bestStyle:'font-size:11.5px;font-weight:800;flex-shrink:0;color:' + (p.none ? '#B0B0BB' : '#17171B') }));
+
+    // ── 지난 협업 (하위) ───────────────────────────────────
+    const pastList = [
+      { name:'제주 헬로키티 아일랜드', at:'7/25 완료', amt:'300,000원', rev:true },
+      { name:'켄싱턴호텔 평창',       at:'7/12 완료', amt:'400,000원', rev:true },
+      { name:'배곧한울공원 물놀이장',  at:'7/28 완료', amt:'250,000원', rev:false },
+    ].map(p => ({ ...p, revLabel: p.rev ? '평가 완료' : '평가하기',
+      revStyle:'font-size:11px;font-weight:700;border-radius:7px;padding:6px 10px;flex-shrink:0;cursor:pointer;'
+        + (p.rev ? 'background:#F1F1F4;color:#9A9AA5' : 'background:#F59E0B;color:#17171B') }));
+
+    // ── 받은 평가 (하위) ─ 개별 평가는 비공개. 집계만 보여준다.
+    const revsList = [
+      { at:'7월', txt:'가이드대로 정확히 작성해주셨어요.', stars:5 },
+      { at:'7월', txt:'일정이 밀리지 않아 좋았습니다.',   stars:5 },
+      { at:'6월', txt:'사진 품질이 기대 이상이었어요.',   stars:4 },
+    ].map(r => ({ ...r, starLabel:'★'.repeat(r.stars) }));
+    const revTags2 = [
+      { t:'일정을 잘 지켜요', n:9 },
+      { t:'사진이 좋아요',   n:7 },
+      { t:'소통이 빨라요',   n:5 },
+      { t:'가이드를 잘 반영해요', n:4 },
+    ].map(x => ({ ...x, label: x.t + ' ' + x.n }));
+
+    // ── 정산 계좌 (하위) ───────────────────────────────────
+    const bankFields = [
+      { k:'은행',     v:'국민은행' },
+      { k:'계좌번호',  v:'123456-**-**3318' },
+      { k:'예금주',    v:'김지연' },
+    ];
+
+    // ── 알림 설정 (하위) ───────────────────────────────────
+    const notiRows = [
+      { k:'새 제안',        d:'광고주가 협업을 제안했을 때', on:true },
+      { k:'마감 임박',      d:'원고·게재 마감 3일 전', on:true },
+      { k:'정산 · 입금',    d:'정산 기록 · 입금 확인 요청', on:true },
+      { k:'추천 캠페인',    d:'내 조건에 맞는 새 캠페인', on:false },
+      { k:'등급 갱신',      d:'블로그 분석이 갱신됐을 때', on:false },
+    ].map(n => ({ ...n,
+      tStyle:'width:38px;height:22px;border-radius:11px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;padding:0 3px;'
+        + (n.on ? 'background:#F59E0B;justify-content:flex-end' : 'background:#D4D4DC;justify-content:flex-start'),
+      knob:'width:16px;height:16px;border-radius:50%;background:#fff;display:block' }));
+
+    // ── 크레딧 내역 (하위) ─────────────────────────────────
+    const credRows = [
+      { at:'8/2', k:'오픈 등록 (3일)', d:-1000 },
+      { at:'8/2', k:'응원 크레딧',     d:+500 },
+      { at:'7/25', k:'협업 완료',      d:+3000 },
+      { at:'7/25', k:'상호 평가 작성',  d:+1000 },
+      { at:'7/10', k:'웰컴 크레딧',    d:+100000 },
+    ].map(r => ({ ...r,
+      label: (r.d > 0 ? '+' : '') + won(r.d) + ' C',
+      style:'font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;flex-shrink:0;color:'
+        + (r.d > 0 ? '#15803D' : '#DC2626') }));
+
+    const moreEtc = [
+      { label:'고객센터',      val:'', href:'mailto:help@matchpost.kr' },
+      // 약관과 처리방침은 각각 따로 연다 (광고주 모바일과 같은 규칙)
+      { label:'이용약관',       val:'', href:'매치포스트 이용약관.dc.html' },
+      { label:'개인정보처리방침', val:'', href:'매치포스트 개인정보처리방침.dc.html' },
+      { label:'로그아웃',      val:'', danger:true },
+    ].map(m => ({
+      ...m,
+      isLink: !!m.href, notLink: !m.href,
+      onClick: m.href ? undefined : () => this.setState({ askOut: true }),
+      labelStyle: 'font-size:12.5px;font-weight:600;color:' + (m.danger ? '#DC2626' : '#5C5C68'),
+    }));
+
+    return {
+      tabs,
+      title: sub ? SUB_TITLE[sub] : roomId ? cur.brand : meta.title,
+      showLogo: !!meta.logo && !roomId && !sub,
+      isHome: tab === 'home',
+      a2hsShow: a2hs && tab === 'home' && !sub && !roomId,
+      a2hsSteps,
+      a2hsTitle: '홈 화면에 추가하면 앱처럼 열려요',
+      // ⚠️ 푸시는 OS 마다 조건이 다르다. 아이폰은 **홈 화면에 추가한 뒤에만** 알림이 오고,
+      //    안드로이드는 추가 없이도 온다. 한 문장으로 뭉뚱그리면 한쪽에는 거짓말이 된다.
+      a2hsSub: isIOS
+        ? '주소창 없이 전체화면으로 열려요. 아이폰은 추가해야 새 제안 알림을 받을 수 있어요.'
+        : '주소창 없이 전체화면으로 열려요. 알림은 추가하지 않아도 받을 수 있어요.',
+      closeA2hs: () => this.setState({ a2hsClosed: true }),
+      a2hsOSTabs: [['iPhone','ios'], ['Android','android']].map(([label, k]) => ({
+        label,
+        onClick: () => this.setState({ a2hsOS: k }),
+        style: 'flex:1;display:flex;align-items:center;justify-content:center;height:28px;border-radius:7px;font-size:11.5px;cursor:pointer;font-weight:'
+          + ((isIOS ? 'ios' : 'android') === k ? '700;background:#17171B;color:#fff' : '600;color:#5C5C68'),
+      })),
+      isCal: tab === 'cal',
+      ...this.openVals(),
+      calModes, isView, weekdays, cells, legend, selEvents,
+      calHint: isView ? '날짜를 눌러 보기' : '여러 날 선택 가능',
+      selLabel: '8월 ' + selDay + '일',
+      selCount: evs.length ? evs.length + '건' : '',
+      selEmpty: evs.length === 0,
+      toOpenMode: () => this.setState({ calMode: 'open' }),
+      isOpenMode: tab === 'cal' && !isView,
+      openCountLabel: sel.length ? sel.length + '일 선택됨' : '날짜를 선택하세요',
+      openDatesLabel: sel.length ? sel.slice().sort((a,b) => a-b).map(d => '8/' + d).join(' · ') : '',
+      // 오픈은 날짜 수와 무관하게 1건 = 1,000C
+      // ⚠️ 베타 기간에는 청구하지 않는다 — 값은 남기고 「무료」로 보여준다(관리자 크레딧 정책과 같은 규칙)
+      openCostLabel: sel.length
+        ? '베타 기간 무료 (원래 1,000C) · 고른 날짜 ' + sel.length + '일이 오픈 1건으로 묶여요'
+        : '베타 기간 무료 (원래 1,000C) · 며칠을 골라도 1건이에요',
+      openCta: sel.length ? '오픈 등록하기' : '날짜를 선택하세요',
+      openCtaStyle: 'min-height:48px;border-radius:11px;margin-top:11px;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:800;letter-spacing:-0.02em;'
+        + (sel.length ? 'background:#F59E0B;color:#17171B;cursor:pointer' : 'background:#F1F1F4;color:#B0B0BB'),
+      onOpenSubmit: sel.length ? () => this.setState({ sel: [], calMode: 'view' }) : undefined,
+      recs,
+      goFind: this.go('find'),
+      isFind: tab === 'find',
+      fKeywords, camps, fCells,
+      fAddr,
+      hasAddr: !!fAddr,
+      onAddr: (e) => this.setState({ fAddr: e.target.value }),
+      clearAddr: () => this.setState({ fAddr: '' }),
+      addrHint: fAddr
+        ? '「' + fAddr + '」로 지역 · 브랜드를 함께 찾고 있어요'
+        : '지역(구·동) 또는 브랜드 이름 · 초성도 됩니다',
+      suggests, hasSuggest: suggests.length > 0,
+      kwMoreLabel: kwOpen ? '접기' : '＋ ' + (CATS.length - 8) + '개 더',
+      kwMore: () => this.setState({ kwOpen: !kwOpen }),
+      kwMoreStyle: 'font-size:11.5px;font-weight:700;border-radius:15px;padding:0 12px;min-height:32px;display:flex;align-items:center;white-space:nowrap;cursor:pointer;'
+        + 'background:#fff;border:1px dashed #D4D4DC;color:#7C7C88',
+      fDayLabel: '8월 ' + fDay + '일',
+      matchNote: dayCamps.length
+        ? dayCamps.length + '건'
+        : filtered
+          ? '조건에 맞는 캠페인이 없어요 — 지역·키워드를 넓혀보세요'
+          : '이 날 참여할 수 있는 캠페인이 없어요',
+      isDashList: tab === 'dash' && !room,
+      isDashRoom: tab === 'dash' && !!room,
+      showBack: !!sub || (tab === 'dash' && !!room),
+      onBack: () => sub ? this.setState({ sub: null }) : this.setState({ room: null }),
+      dFilters, convos, msgs, barSides,
+      quicks: ['일정 확인했어요','원고 초안 보냈어요','가이드 확인 부탁드려요','수정 반영했습니다'],
+      barStyle: 'margin:13px 13px 0;padding:13px 14px 14px;border-radius:13px;border:1px solid '
+        + (bothOk ? '#BBF7D0;background:#F0FDF4' : '#FDE68A;background:#FFFBEB'),
+      barCta: bothOk ? '협업 상세 보기' : cur.me ? '광고주 응답 대기중' : '협업 수락',
+      barCtaStyle: 'min-height:42px;border-radius:10px;margin-top:11px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;cursor:pointer;'
+        + (bothOk ? 'background:#fff;border:1px solid #BBF7D0;color:#15803D'
+           : cur.me ? 'background:#F6F6F7;color:#B0B0BB' : 'background:#F59E0B;color:#17171B'),
+      // 앱이 주력이라 취소 요청 경로가 여기 없으면 그냥 잠수한다. 눈에 띄지 않되 있어야 한다.
+      showCancelLink: bothOk,
+      openCancel: () => this.setState({ cancelOpen: true }),
+      closeCancel: () => this.setState({ cancelOpen: false }),
+      showCancelSheet: !!this.state.cancelOpen,
+      cancelReasons: ['개인 사정','일정 중복','조건 불일치','건강 문제','기타'].map(r => ({
+        label: r,
+        onClick: () => this.setState({ cancelReason: r }),
+        style: 'font-size:11.5px;font-weight:600;border-radius:15px;padding:0 12px;min-height:32px;display:flex;align-items:center;cursor:pointer;'
+          + (this.state.cancelReason === r ? 'background:#17171B;color:#fff' : 'background:#F1F1F4;color:#5C5C68'),
+      })),
+      hasPin: !!pinMsg,
+      pinText: pinMsg ? pinMsg.text : '',
+      pinFrom: pinMsg ? (pinMsg.who === 'me' ? '내가 보낸 메시지 · ' : '광고주 · ') + (pinMsg.at ?? '') : '',
+      unpin: () => this.setState({ pin: null }),
+      barNote: bothOk ? '양쪽 수락 완료 — 연락처가 공개됐어요.'
+        : cur.me ? '광고주가 수락하면 협업이 시작돼요.'
+        : '수락하면 딜시트가 만들어지고 연락처가 공개돼요.',
+      isMore: tab === 'more' && !sub,
+      isSales: sub === 'sales',
+      isApps: sub === 'apps',
+      isProfile: sub === 'profile',
+      isChan: sub === 'chan', isPast: sub === 'past', isRevs: sub === 'revs',
+      isBank: sub === 'bank', isNoti: sub === 'noti', isCred: sub === 'cred',
+      openCred: openSub('cred'), openRevs: openSub('revs'),
+      salesGroups, salesKpis, appsList: APPS_LIST, profFields, profChannels,
+      chanScore, chanPosts, pastList, revTags2, revsList, bankFields, notiRows, credRows,
+      moreAct, moreAcc, moreEtc,
+      askOut: !!this.state.askOut,
+      cancelOut: () => this.setState({ askOut: false }),
+      isStub: !!stub,
+      stubIcon: stub ? stub.icon : '',
+      stubTitle: stub ? stub.title : '',
+      stubDesc: stub ? stub.desc : '',
+      urgent, proposals, works,
+      goDash: this.go('dash'),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
