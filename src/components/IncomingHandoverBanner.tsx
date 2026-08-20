@@ -47,13 +47,6 @@ export default function IncomingHandoverBanner({ items }: { items: IncomingHando
             >
               이관내역 보기 →
             </Link>
-            <Link
-              href={`/advertiser/team/handover/${it.leaverId}`}
-              style={{ fontSize: '11.5px', fontWeight: 700, color: '#B45309' }}
-              className="underline"
-            >
-              이관 기록
-            </Link>
           </div>
         </div>
       ))}

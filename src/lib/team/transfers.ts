@@ -226,7 +226,7 @@ export async function transferConversation(conversationId: string): Promise<Tran
   const db = createServiceClient()
   const { data: conv } = await db
     .from('conversations')
-    .select('id, advertiser_id, kind, manager_id')
+    .select('id, advertiser_id, kind, manager_id, other_id')
     .eq('id', conversationId)
     .maybeSingle()
   if (!conv) return { ok: false, error: '대화를 찾을 수 없어요.' }
@@ -248,7 +248,56 @@ export async function transferConversation(conversationId: string): Promise<Tran
       ref_id: conversationId,
       by_id: user.id,
     })
+    // 5-9(개인 대화) — 담당자가 대표로 바뀐 걸 그 대화의 인플루언서에게 알린다.
+    // 개인 대화는 1:1 이라 캠페인처럼 여러 명이 아니라 상대(other_id) 한 명만 대상이다.
+    await notifyConversationManagerChange(db, adv, conversationId, conv.other_id as string)
     await inactivateIfEmpty(db, adv, fromId)
   }
   return { ok: true }
+}
+
+// 개인 대화 담당자 교체를 그 대화의 인플루언서에게 알린다(5-9, 개인 대화용).
+// 캠페인과 달리 상대가 한 명(other_id)이고, 옮겨 받는 사람은 항상 대표(advertiser_id)라
+// 바뀐 담당자 이름 = 대표 이름이다. 캠페인 제목이 없으니 body 는 그 문장만.
+async function notifyConversationManagerChange(
+  db: SupabaseClient,
+  advertiserId: string,
+  conversationId: string,
+  influencerId: string,
+) {
+  const { data: advProf } = await db.from('profiles').select('name').eq('id', advertiserId).maybeSingle()
+  const toName = (advProf?.name as string | null) || '담당자'
+
+  // 개인 대화방은 (광고주·인플루언서) 쌍으로 메시지를 묶고, 마지막 메시지의 proposal_id 로
+  // 확정 바를 파생한다. 시스템 줄이 그 파생을 깨지 않도록 마지막 메시지의 proposal_id 를 잇는다.
+  const { data: lastMsg } = await db
+    .from('messages')
+    .select('proposal_id')
+    .or(`and(sender_id.eq.${advertiserId},receiver_id.eq.${influencerId}),and(sender_id.eq.${influencerId},receiver_id.eq.${advertiserId})`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const pid = (lastMsg?.proposal_id as string | null) ?? null
+
+  const line = `담당자가 ${toName}님으로 바뀌었어요`
+
+  // 같은 창에 is_system 줄만 들어간다(말풍선 아님 → 발신자 이름 불변).
+  await db.from('messages').insert({
+    sender_id: advertiserId,
+    receiver_id: influencerId,
+    proposal_id: pid,
+    content: line,
+    is_system: true,
+  })
+  await db.from('notifications').insert({
+    user_id: influencerId,
+    type: 'manager_changed',
+    kind: 'manager_changed',
+    title: '담당자가 바뀌었어요',
+    body: `${line}.`,
+    link: `/influencer/messages/${conversationId}`,
+    ref_type: 'conversation',
+    ref_id: conversationId,
+    state: 'unread',
+  })
 }
