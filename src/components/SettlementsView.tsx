@@ -2,8 +2,11 @@
 
 import { useState, useMemo } from 'react'
 import { requestTaxDocs, resolveSettlementDispute } from '@/lib/deals/settle'
-import { kstDateString, dDay as kstDDay, dDayLabel } from '@/lib/date'
+import { kstDateString, dDay as kstDDay, dDayLabel, monthDayKo } from '@/lib/date'
+import { settlementDateOf, isSettlementDateChanged } from '@/lib/deals/settlementDate'
 import SettleConfirmModal from './SettleConfirmModal'
+import SettlementDateModal from './messages/SettlementDateModal'
+import { proposeSettlementDate } from '@/lib/deals/time'
 
 type Proposal = {
   id: string
@@ -17,6 +20,7 @@ type Proposal = {
   settlement_status: string | null
   settled_at: string | null
   paid_disputed_at: string | null
+  settlement_date: string | null // D20 — 이 사람과 합의한 결제일. 비면 campaigns.settlement_date.
   profile: { name: string | null }
 }
 
@@ -58,6 +62,7 @@ export default function SettlementsView({
   // 정산 완료 처리는 아래에서 handleSettled로 흡수하지만, 화면 리렌더를 위해
   // settlement_status를 로컬에서도 낙관적으로 갱신한다.
   const [localProposals, setLocalProposals] = useState(proposals)
+  const [dateModal, setDateModal] = useState<{ proposalId: string; currentLabel: string | null } | null>(null)
 
   // D6 C1 — 미수 = 지급 예정일이 지났는데 기록되지 않은 건. C7 — "오늘" 기준은 kstDateString 하나뿐.
   const today = kstDateString()
@@ -74,7 +79,16 @@ export default function SettlementsView({
         if (targets.length === 0) return null
         const disputed = targets.some((p) => p.settled_at && p.paid_disputed_at)
         const allSettled = targets.every((p) => p.settlement_status === '완료')
-        const overdue = !allSettled && !!c.settlement_date && c.settlement_date < today
+        // D20 §2 — 미수 판정은 사람별 합의 결제일(settlementDateOf)로. 캠페인 기본값을 직접 읽지 않는다.
+        // 한 캠페인 안에서도 합의한 사람은 지연이 아니고, 안 한 사람만 미수로 잡힌다.
+        const targetOverdue = (p: Proposal) => {
+          if (p.settlement_status === '완료') return false
+          const d = settlementDateOf(p, c)
+          return !!d && d < today
+        }
+        const overdue = !allSettled && targets.some(targetOverdue)
+        const overdueOldest =
+          targets.filter(targetOverdue).map((p) => settlementDateOf(p, c)).filter((d): d is string => !!d).sort()[0] ?? null
         // C4 — 진행바 분모는 정산 대상 인원(보류자 제외)
         const settleableTargets = disputed ? targets.filter((p) => !(p.settled_at && p.paid_disputed_at)) : targets
         const bucket: Tab = allSettled ? '완료' : overdue ? '미수' : '예정'
@@ -83,7 +97,7 @@ export default function SettlementsView({
           .filter((p) => p.tax_doc_received)
           .reduce((s, p) => s + (p.budget ?? 0), 0)
         const taxReceived = targets.filter((p) => p.tax_doc_received).length
-        return { campaign: c, targets, settleableTargets, bucket, totalAmount, readyAmount, taxReceived, disputed, overdue }
+        return { campaign: c, targets, settleableTargets, bucket, totalAmount, readyAmount, taxReceived, disputed, overdue, overdueOldest }
       })
       .filter((r): r is NonNullable<typeof r> => r !== null)
   }, [campaigns, localProposals, today])
@@ -100,7 +114,7 @@ export default function SettlementsView({
     const overdueRows = rows.filter((r) => r.bucket === '미수')
     const overdueTotal = overdueRows.reduce((s, r) => s + r.totalAmount, 0)
     const oldestOverdue = overdueRows
-      .map((r) => r.campaign.settlement_date)
+      .map((r) => r.overdueOldest)
       .filter((d): d is string => !!d)
       .sort()[0]
     const taxMissing = rows
@@ -260,7 +274,7 @@ export default function SettlementsView({
                   <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-lg px-3 py-2 text-[12px] text-[#B91C1C] leading-relaxed">
                     예정일 {r.campaign.settlement_date?.slice(5).replace('-', '/')}에서 {Math.abs(dday ?? 0)}일 지났어요.
                     매일 1회 지연 알림이 발송되고 있고(누적 {r.campaign.overdue_reminder_count ?? 0}회), 이 기록이 이용 제한 판정에 쓰입니다.
-                    결제 예정일 변경이 필요하면 캠페인 대화창에서 참여 인플루언서에게 공지하고 결제일 변경을 확정하세요.
+                    결제 예정일을 미뤄야 하면 아래 「대상 인원 보기」에서 그 인플루언서에게 변경을 제안하세요. 상대가 수락하면 매출 시점도 함께 옮겨집니다.
                   </div>
                 )}
 
@@ -354,7 +368,29 @@ export default function SettlementsView({
                         const chip = TAX_CHIP(p.tax_doc_type, p.tax_doc_received)
                         return (
                           <div key={p.id} className="grid grid-cols-[minmax(0,1fr)_130px_130px_100px] gap-2 px-1 py-2 border-t border-[#F5F5F7] items-center text-[12.5px]">
-                            <span className="truncate font-medium">{p.profile.name ?? '인플루언서'}</span>
+                            <div className="min-w-0">
+                              <span className="block truncate font-medium">{p.profile.name ?? '인플루언서'}</span>
+                              {isSettlementDateChanged(p) && (
+                                <span className="block text-[10px] font-semibold text-[#5C5C68] mt-0.5">
+                                  {p.settlement_date!.slice(5).replace('-', '/')} · {dDayLabel(p.settlement_date)}{' '}
+                                  <span className="text-[#1D4ED8]">(변경)</span>
+                                </span>
+                              )}
+                              {p.settlement_status !== '완료' && (
+                                <button
+                                  onClick={() =>
+                                    setDateModal({
+                                      proposalId: p.id,
+                                      currentLabel: monthDayKo(settlementDateOf(p, r.campaign)) || null,
+                                    })
+                                  }
+                                  className="mt-1.5 text-[11.5px] font-semibold text-[#5C5C68] border border-[#E2E2E8] bg-white hover:bg-[#FAFAFB] rounded-[7px]"
+                                  style={{ padding: '6px 10px' }}
+                                >
+                                  {isSettlementDateChanged(p) ? '결제일 다시 제안' : '결제일 변경 제안'}
+                                </button>
+                              )}
+                            </div>
                             <span className="text-right">{fmt(p.budget ?? 0)}원</span>
                             <span className="text-right">
                               <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${chip.cls}`}>{chip.label}</span>
@@ -405,6 +441,14 @@ export default function SettlementsView({
           recorderName={recorderName}
           onClose={() => setSettleModalFor(null)}
           onDone={handleSettled}
+        />
+      )}
+
+      {dateModal && (
+        <SettlementDateModal
+          currentDateLabel={dateModal.currentLabel}
+          onClose={() => setDateModal(null)}
+          onSubmit={async (date, reason) => proposeSettlementDate(dateModal.proposalId, date, reason)}
         />
       )}
     </div>

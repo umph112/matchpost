@@ -56,3 +56,12 @@ export function dateWithDow(value: string | null | undefined): string {
   const dow = DOW_KO[new Date(ymd + 'T00:00:00').getDay()]
   return `${m}/${d} (${dow})`
 }
+
+// D20 §3 — 「8월 20일」 형태. 결제일 제안 모달의 "지금 X이에요"·카드 부제용.
+// 날짜만(YYYY-MM-DD)이면 그대로, 타임스탬프면 KST 달력일로 환산.
+export function monthDayKo(value: string | null | undefined): string {
+  if (!value) return ''
+  const ymd = value.length === 10 ? value : kstDateString(new Date(value))
+  const [, m, d] = ymd.split('-').map(Number)
+  return `${m}월 ${d}일`
+}

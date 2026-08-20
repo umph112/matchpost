@@ -14,6 +14,10 @@ import { requestCancellation, acceptCancellation, CANCEL_REASONS, type CancelRea
 import { proposeConnection } from '@/lib/connections/actions'
 import { computeEnabledStages, reindexStage, stageHintLine, type Stage } from '@/lib/campaign-stages'
 import { CalendarDays, MapPin, AlertTriangle } from 'lucide-react'
+import { dDayLabel, monthDayKo } from '@/lib/date'
+import { isSettlementDateChanged, settlementDateOf } from '@/lib/deals/settlementDate'
+import SettlementDateModal from './messages/SettlementDateModal'
+import { proposeSettlementDate } from '@/lib/deals/time'
 
 // 체크포인트가 있는 단계 → checkpoint kind (방문·수정/컨펌 제외)
 const STAGE_TO_CP: Record<string, string> = {
@@ -96,6 +100,7 @@ type Proposal = {
   tax_doc_type: string | null
   tax_doc_received: boolean | null
   settlement_status: string | null
+  settlement_date: string | null // D20 — 이 사람과 합의한 결제일. 비면 campaigns.settlement_date.
   settled_at: string | null
   paid_confirmed_at: string | null
   paid_disputed_at: string | null
@@ -157,6 +162,7 @@ export default function DealSheet({
     proposalId: string; revieweeId: string; revieweeName: string
   } | null>(null)
   const [settleModal, setSettleModal] = useState(false)
+  const [dateModal, setDateModal] = useState<{ proposalId: string; currentLabel: string | null } | null>(null)
   const [reportModal, setReportModal] = useState<string | null>(null)
   const [cancelModal, setCancelModal] = useState<string | null>(null)
   const [pendingCancellations, setPendingCancellations] = useState<
@@ -620,6 +626,26 @@ export default function DealSheet({
               <option value="완료">완료</option>
             </select>
           )}
+          {isSettlementDateChanged(p) && (
+            <span className="text-[10px] font-semibold text-[#5C5C68]">
+              {formatMD(p.settlement_date!)} · {dDayLabel(p.settlement_date)}{' '}
+              <span className="text-[#1D4ED8]">(변경)</span>
+            </span>
+          )}
+          {!isSettled && (
+            <button
+              onClick={() =>
+                setDateModal({
+                  proposalId: p.id,
+                  currentLabel: monthDayKo(settlementDateOf(p, campaign)) || null,
+                })
+              }
+              className="text-[11.5px] font-semibold text-[#5C5C68] border border-[#E2E2E8] bg-white hover:bg-[#FAFAFB] rounded-[7px]"
+              style={{ padding: '6px 10px' }}
+            >
+              {isSettlementDateChanged(p) ? '결제일 다시 제안' : '결제일 변경 제안'}
+            </button>
+          )}
           {p.stage === stages[stages.length - 1] && isConfirmed && !reviewedIds.has(p.id) && (
             <button
               onClick={() =>
@@ -757,6 +783,14 @@ export default function DealSheet({
             setSelected(new Set())
             setSettleModal(false)
           }}
+        />
+      )}
+
+      {dateModal && (
+        <SettlementDateModal
+          currentDateLabel={dateModal.currentLabel}
+          onClose={() => setDateModal(null)}
+          onSubmit={async (date, reason) => proposeSettlementDate(dateModal.proposalId, date, reason)}
         />
       )}
 

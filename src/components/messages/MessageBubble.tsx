@@ -17,6 +17,7 @@ export type BubbleMessage = {
   proxy?: boolean | null
   targeted_only?: boolean | null
   proposed_date?: string | null
+  proposed_date_kind?: 'progress' | 'settlement' | null
 }
 
 // 메시지 말풍선 — 캠페인 대화 상대 이름 표시(A2), 대리발송/개별발송 배지(A3/A5),
@@ -30,6 +31,7 @@ export default function MessageBubble({
   groupSentBadge,
   dateProposalStatus,
   openDateMatch,
+  settlementNowLabel,
   canAcceptDate,
   onAcceptDate,
 }: {
@@ -41,6 +43,7 @@ export default function MessageBubble({
   groupSentBadge?: boolean
   dateProposalStatus?: 'live' | 'accepted' | 'answered' | null
   openDateMatch?: boolean | null
+  settlementNowLabel?: string | null
   canAcceptDate?: boolean
   onAcceptDate?: () => void
 }) {
@@ -53,23 +56,33 @@ export default function MessageBubble({
   }
 
   if (msg.proposed_date) {
+    // D20 §3-2 — 같은 카드가 종류를 말한다. settlement 이면 라벨·부제가 다르고 오픈 부제를 붙이지 않는다.
+    const isSettlement = msg.proposed_date_kind === 'settlement'
     return (
       <div className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
         <div className="max-w-xs w-full bg-[#FFFBEB] border border-[#FDE68A] rounded-2xl px-4 py-3">
-          <p className="text-[10.5px] font-bold text-[#B45309]">날짜 제안</p>
+          <p className="text-[10.5px] font-bold text-[#B45309]">{isSettlement ? '결제일 제안' : '진행일 제안'}</p>
           <p className="text-lg font-extrabold text-[#17171B] mt-0.5">
             {dateWithDow(msg.proposed_date)}
           </p>
-          {openDateMatch != null && (
-            <p className="text-[11px] text-[#92702A] mt-1">
-              {openDateMatch ? '오픈해두신 날짜예요' : '오픈해두신 날짜와 다른 날이에요'}
-            </p>
-          )}
+          {isSettlement
+            ? dateProposalStatus === 'live' && settlementNowLabel && (
+                <p className="text-[11px] text-[#92702A] mt-1">지금은 {settlementNowLabel}이에요</p>
+              )
+            : openDateMatch != null && (
+                <p className="text-[11px] text-[#92702A] mt-1">
+                  {openDateMatch ? '오픈해두신 날짜예요' : '오픈해두신 날짜와 다른 날이에요'}
+                </p>
+              )}
           <p className="text-[11px] text-[#92400E] mt-1">
             {dateProposalStatus === 'accepted'
-              ? '확정됨'
+              ? isSettlement
+                ? '합의됨'
+                : '확정됨'
               : dateProposalStatus === 'answered'
               ? '다른 날짜로 답함'
+              : isSettlement
+              ? '상대가 수락하면 이 날짜가 매출 시점이 돼요'
               : '상대가 수락하면 이 날짜로 확정돼요'}
           </p>
           {dateProposalStatus === 'live' && !isMine && canAcceptDate && (

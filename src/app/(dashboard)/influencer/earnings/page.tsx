@@ -8,6 +8,7 @@ import { Download, Phone } from 'lucide-react'
 import PaidConfirmModal from '@/components/PaidConfirmModal'
 import InfluencerPaidReceivedModal from '@/components/InfluencerPaidReceivedModal'
 import { kstDateString, dDayLabel, listDateLabel } from '@/lib/date'
+import { settlementDateOf } from '@/lib/deals/settlementDate'
 
 type OverdueRow = {
   campaignId: string
@@ -69,10 +70,11 @@ export default function EarningsPage() {
     if (!user) return
 
     // ── 정산 목록/요약 원본: 양쪽 확정된 proposals (합의된 건) ──
-    // 귀속 기준 = campaigns.settlement_date (결제 예정일). 프로젝트 규칙.
+    // 귀속 기준 = settlementDateOf(proposal, campaign). 사람별 합의(proposals.settlement_date)가
+    // 있으면 그 날짜, 없으면 campaigns.settlement_date. D20 §2.
     const { data: props } = await supabase
       .from('proposals')
-      .select('id, budget, settled_at, paid_confirmed_at, paid_disputed_at, settlement_status, advertiser_id, campaign_id')
+      .select('id, budget, settled_at, paid_confirmed_at, paid_disputed_at, settlement_status, advertiser_id, campaign_id, settlement_date')
       .eq('influencer_id', user.id)
       .eq('advertiser_confirmed', true)
       .eq('influencer_confirmed', true)
@@ -101,7 +103,7 @@ export default function EarningsPage() {
     const today = kstDateString()
     const list: EarningRow[] = propRows.map((p) => {
       const c = p.campaign_id ? campById[p.campaign_id] : null
-      const settlementDate = c?.settlement_date ?? null
+      const settlementDate = settlementDateOf(p, c)
       let status: EarningStatus
       if (p.paid_confirmed_at || p.settlement_status === '완료') status = '완료'
       else if (p.settled_at && !p.paid_confirmed_at && !p.paid_disputed_at) status = '확인 대기'
@@ -146,10 +148,10 @@ export default function EarningsPage() {
 
     setPendingConfirm(rows)
 
-    // ── 미수 카드: 항상 전체. [기존 판정 기준 그대로 재사용] ──
+    // ── 미수 카드: 항상 전체. 판정 = settlementDateOf(proposal, campaign) < 오늘. D20 §2 ──
     const { data: myProps } = await supabase
       .from('proposals')
-      .select('id, campaign_id, advertiser_id, budget, settlement_status, advertiser_confirmed, influencer_confirmed')
+      .select('id, campaign_id, advertiser_id, budget, settlement_status, advertiser_confirmed, influencer_confirmed, settlement_date, overdue_reminder_count')
       .eq('influencer_id', user.id)
       .eq('advertiser_confirmed', true)
       .eq('influencer_confirmed', true)
@@ -157,13 +159,18 @@ export default function EarningsPage() {
     const campIds = [...new Set((myProps ?? []).map((p) => p.campaign_id).filter(Boolean))]
     if (campIds.length > 0) {
       const today = kstDateString()
+      // 사람별 합의 날짜(proposals.settlement_date)가 캠페인 기본값을 덮으므로 날짜 컷은 JS 에서 한다.
+      // campaigns.overdue_reminder_count 는 더 이상 증가하지 않으므로 조회 대상에서 뺀다(카운터는 proposal 로 이동).
       const { data: camps } = await supabase
         .from('campaigns')
-        .select('id, title, settlement_date, overdue_reminder_count, manager_phone, company_phone')
+        .select('id, title, settlement_date, manager_phone, company_phone')
         .in('id', campIds)
-        .lt('settlement_date', today)
       const campById = Object.fromEntries((camps ?? []).map((c) => [c.id, c]))
-      const baseRows = (myProps ?? []).filter((p) => p.campaign_id && campById[p.campaign_id])
+      const baseRows = (myProps ?? []).filter((p) => {
+        const camp = p.campaign_id ? campById[p.campaign_id] : null
+        const d = settlementDateOf(p, camp)
+        return !!d && d < today
+      })
 
       // 미수 카드 표기용 — 광고주 회사명(advertiser_profiles) · 담당자명(profiles) 배치 조회
       const advIds = [...new Set(baseRows.map((p) => p.advertiser_id))]
@@ -197,9 +204,9 @@ export default function EarningsPage() {
             title: camp.title,
             advertiserId: p.advertiser_id,
             proposalId: p.id,
-            settlementDate: camp.settlement_date,
+            settlementDate: settlementDateOf(p, camp) as string,
             budget: p.budget,
-            reminderCount: camp.overdue_reminder_count ?? 0,
+            reminderCount: p.overdue_reminder_count ?? 0,
             companyName: companyByAdv[p.advertiser_id] ?? null,
             managerName: nameByAdv[p.advertiser_id] ?? null,
             phone:

@@ -8,8 +8,11 @@ import { ArrowLeft, Paperclip, Loader2 } from 'lucide-react'
 import DealConfirmBar from '@/components/DealConfirmBar'
 import MessageBubble from '@/components/messages/MessageBubble'
 import ReportModal from '@/components/ReportModal'
+import SettlementDateModal from '@/components/messages/SettlementDateModal'
 import { initial } from '@/lib/initial'
-import { acceptDateProposal } from '@/lib/deals/time'
+import { acceptDateProposal, proposeSettlementDate } from '@/lib/deals/time'
+import { settlementDateOf } from '@/lib/deals/settlementDate'
+import { monthDayKo } from '@/lib/date'
 
 export default function InfluencerMessageRoomPage() {
   const params = useParams()
@@ -20,7 +23,14 @@ export default function InfluencerMessageRoomPage() {
   const [advertiserId, setAdvertiserId] = useState<string | null>(null)
   const [advertiserName, setAdvertiserName] = useState('')
   const [proposalId, setProposalId] = useState<string | null>(null)
-  const [proposalState, setProposalState] = useState<{ proposedDate: string | null; startAt: string | null } | null>(null)
+  const [proposalState, setProposalState] = useState<{
+    proposedDate: string | null
+    startAt: string | null
+    settlementDate: string | null
+    proposedDateKind: string | null
+    campaignSettlementDate: string | null
+  } | null>(null)
+  const [settleModalOpen, setSettleModalOpen] = useState(false)
   const [openDates, setOpenDates] = useState<Set<string>>(new Set())
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -57,8 +67,29 @@ export default function InfluencerMessageRoomPage() {
     const pid = last?.proposal_id ?? null
     setProposalId(pid)
     if (pid) {
-      const { data: prop } = await supabase.from('proposals').select('proposed_date, start_at').eq('id', pid).single()
-      setProposalState(prop ? { proposedDate: prop.proposed_date, startAt: prop.start_at } : null)
+      const { data: prop } = await supabase
+        .from('proposals')
+        .select('proposed_date, start_at, settlement_date, proposed_date_kind, campaign_id')
+        .eq('id', pid)
+        .single()
+      let campSettle: string | null = null
+      if (prop?.campaign_id) {
+        const { data: camp } = await supabase.from('campaigns').select('settlement_date').eq('id', prop.campaign_id).single()
+        campSettle = camp?.settlement_date ?? null
+      }
+      setProposalState(
+        prop
+          ? {
+              proposedDate: prop.proposed_date,
+              startAt: prop.start_at,
+              settlementDate: prop.settlement_date,
+              proposedDateKind: prop.proposed_date_kind,
+              campaignSettlementDate: campSettle,
+            }
+          : null,
+      )
+    } else {
+      setProposalState(null)
     }
 
     await supabase.from('messages').update({ is_read: true })
@@ -133,10 +164,25 @@ export default function InfluencerMessageRoomPage() {
     if (!msg.proposed_date) return null
     if (msg.id !== lastDateMsgId) return 'answered'
     if (!proposalState) return 'live'
+    // D20 §3 — 결제일 제안은 settlement_date 로 확정 판정(진행일 start_at 과 무관)
+    if (msg.proposed_date_kind === 'settlement') {
+      if (proposalState.proposedDate === msg.proposed_date && proposalState.proposedDateKind === 'settlement') return 'live'
+      if (proposalState.settlementDate === msg.proposed_date) return 'accepted'
+      return 'answered'
+    }
     if (proposalState.proposedDate === msg.proposed_date) return 'live'
     if (proposalState.startAt && proposalState.startAt.slice(0, 10) === msg.proposed_date) return 'accepted'
     return 'answered'
   }
+
+  // D20 §3 — 지금의 매출 시점(사람별 합의 > 캠페인 기본값). 결제일 카드 부제·제안 모달에 쓴다.
+  const currentSettlement = proposalState
+    ? settlementDateOf(
+        { settlement_date: proposalState.settlementDate },
+        { settlement_date: proposalState.campaignSettlementDate },
+      )
+    : null
+  const settlementNowLabel = currentSettlement ? monthDayKo(currentSettlement) : null
 
   // D17 §1-2 — 오픈 날짜가 하나도 없으면(친구 등 비교 대상 없음) 부제 생략(null)
   const openMatchFor = (d: string | null): boolean | null => {
@@ -185,6 +231,7 @@ export default function InfluencerMessageRoomPage() {
             groupSentBadge={!!msg.broadcast_id && msg.sender_id !== currentUser?.id}
             dateProposalStatus={dateStatusFor(msg)}
             openDateMatch={openMatchFor(msg.proposed_date)}
+            settlementNowLabel={settlementNowLabel}
             canAcceptDate={msg.sender_id !== currentUser?.id}
             onAcceptDate={() => handleAcceptDate(msg.proposal_id)}
           />
@@ -192,6 +239,17 @@ export default function InfluencerMessageRoomPage() {
       </div>
 
       <div className="px-4 pb-4 [.inf-pc_&]:px-5">
+        {/* D20 §3-1 — 결제일 변경 제안 입구(입력창 위). 양쪽 다 제안할 수 있다. */}
+        {proposalId && (
+          <div className="mb-2">
+            <button
+              onClick={() => setSettleModalOpen(true)}
+              className="text-[12px] font-semibold text-[#B45309] hover:text-[#92400E] hover:underline underline-offset-2"
+            >
+              결제일 변경 제안
+            </button>
+          </div>
+        )}
         {proposalId && (
           <div className="flex items-center gap-2 text-[11px] text-gray-500 mb-1.5">
             <span>다음 파일을 등록:</span>
@@ -227,6 +285,18 @@ export default function InfluencerMessageRoomPage() {
 
       {reportOpen && proposalId && (
         <ReportModal proposalId={proposalId} role="influencer" onClose={() => setReportOpen(false)} onDone={() => setReportOpen(false)} />
+      )}
+
+      {settleModalOpen && proposalId && (
+        <SettlementDateModal
+          currentDateLabel={settlementNowLabel}
+          onClose={() => setSettleModalOpen(false)}
+          onSubmit={async (date, reason) => {
+            const res = await proposeSettlementDate(proposalId, date, reason)
+            if (res.ok) load()
+            return res
+          }}
+        />
       )}
      </div>
 

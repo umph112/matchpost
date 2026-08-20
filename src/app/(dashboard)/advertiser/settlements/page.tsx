@@ -25,7 +25,7 @@ export default async function SettlementsPage() {
   const { data: proposals } = campIds.length
     ? await supabase
         .from('proposals')
-        .select('id, campaign_id, influencer_id, budget, advertiser_confirmed, influencer_confirmed, tax_doc_type, tax_doc_received, settlement_status, settled_at, paid_disputed_at')
+        .select('id, campaign_id, influencer_id, budget, advertiser_confirmed, influencer_confirmed, tax_doc_type, tax_doc_received, settlement_status, settled_at, paid_disputed_at, settlement_date')
         .in('campaign_id', campIds)
     : { data: [] }
 

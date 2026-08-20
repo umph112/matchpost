@@ -7,6 +7,7 @@ import MyOpensList from '@/components/MyOpensList'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
 import { BlogAnalyticsSummaryCard } from '@/components/BlogAnalyticsCard'
 import { initial } from '@/lib/initial'
+import { settlementDateOf } from '@/lib/deals/settlementDate'
 import {
   CalendarDays, Search, Hourglass, Inbox, Handshake, BarChart3, Wallet, Bell,
   MessageSquare, Plus, Megaphone, Pencil, CheckCircle2, Ban, CalendarPlus, CheckSquare,
@@ -179,10 +180,10 @@ export default async function InfluencerMyPage() {
   const nameById = Object.fromEntries((names ?? []).map((p) => [p.id, p.name]))
   const msgUnreadCount = convs.filter((c) => c.unread).length
 
-  // 매출 (이달) — proposals 기반. 귀속 기준 = campaigns.settlement_date (결제 예정일)
+  // 매출 (이달) — proposals 기반. 귀속 기준 = settlementDateOf(proposal, campaign). D20 §2
   const { data: earnProps } = await supabase
     .from('proposals')
-    .select('id, budget, settled_at, paid_confirmed_at, paid_disputed_at, settlement_status, campaign_id')
+    .select('id, budget, settled_at, paid_confirmed_at, paid_disputed_at, settlement_status, campaign_id, settlement_date')
     .eq('influencer_id', user.id)
     .eq('advertiser_confirmed', true)
     .eq('influencer_confirmed', true)
@@ -196,7 +197,7 @@ export default async function InfluencerMyPage() {
     ;(earnCamps ?? []).forEach((c) => { settleDateById[c.id] = c.settlement_date })
   }
   const earnRows = (earnProps ?? []).map((p) => {
-    const sd = p.campaign_id ? settleDateById[p.campaign_id] ?? null : null
+    const sd = settlementDateOf(p, p.campaign_id ? { settlement_date: settleDateById[p.campaign_id] ?? null } : null)
     let status: '예정' | '미수' | '확인 대기' | '완료'
     if (p.paid_confirmed_at || p.settlement_status === '완료') status = '완료'
     else if (p.settled_at && !p.paid_confirmed_at && !p.paid_disputed_at) status = '확인 대기'
