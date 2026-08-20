@@ -29,6 +29,7 @@ export default function MessageBubble({
   targetedName,
   groupSentBadge,
   dateProposalStatus,
+  openDateMatch,
   canAcceptDate,
   onAcceptDate,
 }: {
@@ -39,6 +40,7 @@ export default function MessageBubble({
   targetedName?: string | null
   groupSentBadge?: boolean
   dateProposalStatus?: 'live' | 'accepted' | 'answered' | null
+  openDateMatch?: boolean | null
   canAcceptDate?: boolean
   onAcceptDate?: () => void
 }) {
@@ -58,6 +60,11 @@ export default function MessageBubble({
           <p className="text-lg font-extrabold text-[#17171B] mt-0.5">
             {dateWithDow(msg.proposed_date)}
           </p>
+          {openDateMatch != null && (
+            <p className="text-[11px] text-[#92702A] mt-1">
+              {openDateMatch ? '오픈해두신 날짜예요' : '오픈해두신 날짜와 다른 날이에요'}
+            </p>
+          )}
           <p className="text-[11px] text-[#92400E] mt-1">
             {dateProposalStatus === 'accepted'
               ? '확정됨'
@@ -90,21 +97,27 @@ export default function MessageBubble({
           <p className="text-[10.5px] text-gray-400 mb-0.5 ml-0.5">{senderName}</p>
         )}
         {(msg.proxy || msg.targeted_only || groupSentBadge) && (
-          <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-0.5`}>
+          <div className={`flex flex-wrap items-center gap-x-[5px] gap-y-0.5 ${isMine ? 'justify-end' : 'justify-start'} mb-1`}>
             {msg.proxy && (
               <span className="text-[9.5px] font-bold bg-[#FEF3C7] text-[#92400E] rounded-full px-1.5 py-0.5">
                 회사 대표 대리 발송
               </span>
             )}
             {msg.targeted_only && targetedName && (
-              <span className="text-[9.5px] font-bold bg-[#DBEAFE] text-[#1D4ED8] rounded-full px-1.5 py-0.5">
-                {targetedName}님에게만
-              </span>
+              <>
+                <span className="text-[9.5px] font-bold bg-[#DBEAFE] text-[#1D4ED8] rounded-full px-1.5 py-0.5">
+                  {targetedName}님에게만
+                </span>
+                <span className="text-[10px] text-[#93A3B8]">다른 참여자에게는 가지 않았어요</span>
+              </>
             )}
             {groupSentBadge && (
-              <span className="text-[9.5px] font-bold bg-[#DBEAFE] text-[#1E3A8A] rounded-full px-1.5 py-0.5">
-                단체 발송
-              </span>
+              <>
+                <span className="text-[9.5px] font-bold bg-[#DBEAFE] text-[#1E3A8A] rounded-full px-1.5 py-0.5">
+                  단체 발송
+                </span>
+                <span className="text-[10px] text-[#93A3B8]">참여자 모두에게 같은 내용이 갔어요</span>
+              </>
             )}
           </div>
         )}
@@ -150,9 +163,6 @@ export default function MessageBubble({
             {new Date(msg.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
-        {groupSentBadge && !isMine && (
-          <p className="text-[10px] text-gray-400 mt-0.5">참여자 모두에게 같은 내용이 갔어요</p>
-        )}
       </div>
     </div>
   )

@@ -21,6 +21,7 @@ export default function InfluencerMessageRoomPage() {
   const [advertiserName, setAdvertiserName] = useState('')
   const [proposalId, setProposalId] = useState<string | null>(null)
   const [proposalState, setProposalState] = useState<{ proposedDate: string | null; startAt: string | null } | null>(null)
+  const [openDates, setOpenDates] = useState<Set<string>>(new Set())
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
@@ -34,6 +35,10 @@ export default function InfluencerMessageRoomPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     setCurrentUser(user)
+
+    // D17 §1-2 — 날짜 제안 카드 부제 판정용: 내가 열어둔(오픈) 날짜 집합
+    const { data: sch } = await supabase.from('schedules').select('date').eq('influencer_id', user.id).eq('status', 'open')
+    setOpenDates(new Set((sch ?? []).map((s) => s.date)))
 
     const { data: conv } = await supabase.from('conversations').select('*').eq('id', id).single()
     if (!conv) { setLoading(false); return }
@@ -133,6 +138,12 @@ export default function InfluencerMessageRoomPage() {
     return 'answered'
   }
 
+  // D17 §1-2 — 오픈 날짜가 하나도 없으면(친구 등 비교 대상 없음) 부제 생략(null)
+  const openMatchFor = (d: string | null): boolean | null => {
+    if (!d || openDates.size === 0) return null
+    return openDates.has(d)
+  }
+
   return (
     <div className="flex flex-col [.inf-pc_&]:flex-row flex-1 min-h-0 [.inf-pc_&]:h-full">
      <div className="flex flex-col flex-1 min-w-0 min-h-0">
@@ -173,6 +184,7 @@ export default function InfluencerMessageRoomPage() {
             isMine={msg.sender_id === currentUser?.id}
             groupSentBadge={!!msg.broadcast_id && msg.sender_id !== currentUser?.id}
             dateProposalStatus={dateStatusFor(msg)}
+            openDateMatch={openMatchFor(msg.proposed_date)}
             canAcceptDate={msg.sender_id !== currentUser?.id}
             onAcceptDate={() => handleAcceptDate(msg.proposal_id)}
           />

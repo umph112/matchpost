@@ -29,6 +29,7 @@ export default function AdvertiserMessageRoomPage() {
   const [otherId, setOtherId] = useState<string | null>(null)
   const [singleProposalId, setSingleProposalId] = useState<string | null>(null)
   const [singleProposalState, setSingleProposalState] = useState<{ proposedDate: string | null; startAt: string | null } | null>(null)
+  const [openDatesByInfluencer, setOpenDatesByInfluencer] = useState<Record<string, Set<string>>>({})
   const [managerName, setManagerName] = useState<string | null>(null)
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -57,6 +58,7 @@ export default function AdvertiserMessageRoomPage() {
       setManagerName(null)
     }
 
+    let involvedInfIds: string[] = []
     if (c.kind === 'campaign') {
       const { data: camp } = await supabase.from('campaigns').select('title').eq('id', c.campaign_id).single()
       setCampaignTitle(camp?.title ?? '캠페인')
@@ -66,6 +68,7 @@ export default function AdvertiserMessageRoomPage() {
         .select('id, influencer_id, advertiser_confirmed, influencer_confirmed, proposed_date, start_at')
         .eq('campaign_id', c.campaign_id)
       const infIds = [...new Set((props ?? []).map((p) => p.influencer_id))]
+      involvedInfIds = infIds
       const { data: profs } = infIds.length
         ? await supabase.from('profiles').select('id, name').in('id', infIds)
         : { data: [] }
@@ -89,6 +92,7 @@ export default function AdvertiserMessageRoomPage() {
         .in('proposal_id', proposalIds).eq('receiver_id', user.id).eq('is_read', false)
     } else {
       setOtherId(c.other_id)
+      involvedInfIds = c.other_id ? [c.other_id] : []
       const { data: prof } = await supabase.from('profiles').select('name').eq('id', c.other_id).single()
       setOtherName(prof?.name ?? '인플루언서')
 
@@ -107,6 +111,14 @@ export default function AdvertiserMessageRoomPage() {
       }
       await supabase.from('messages').update({ is_read: true })
         .eq('sender_id', c.other_id).eq('receiver_id', user.id).eq('is_read', false)
+    }
+
+    // D17 §1-2 — 날짜 제안 카드 부제 판정용: 관련 인플루언서별 오픈 날짜 집합
+    if (involvedInfIds.length) {
+      const { data: sch } = await supabase.from('schedules').select('influencer_id, date').in('influencer_id', involvedInfIds).eq('status', 'open')
+      const map: Record<string, Set<string>> = {}
+      for (const s of sch ?? []) (map[s.influencer_id] ??= new Set()).add(s.date)
+      setOpenDatesByInfluencer(map)
     }
     setLoading(false)
   }, [id, supabase])
@@ -235,6 +247,15 @@ export default function AdvertiserMessageRoomPage() {
     return 'answered'
   }
 
+  // D17 §1-2 — 그 메시지의 인플루언서가 열어둔 오픈 날짜와 비교. 오픈 없으면(친구 등) null
+  const openMatchFor = (msg: any): boolean | null => {
+    if (!msg.proposed_date) return null
+    const infId = isCampaign ? proposalToInfluencer[msg.proposal_id] : otherId
+    const set = infId ? openDatesByInfluencer[infId] : undefined
+    if (!set || set.size === 0) return null
+    return set.has(msg.proposed_date)
+  }
+
   // 신고: 캠페인 대화면 선택된 참여자의 proposalId, 개인 대화면 singleProposalId
   const reportProposalId = isCampaign ? (targetedId ? participants.find((p) => p.influencerId === targetedId)?.proposalId ?? null : null) : singleProposalId
   const canReport = isCampaign ? !!reportProposalId : !!singleProposalId
@@ -325,6 +346,7 @@ export default function AdvertiserMessageRoomPage() {
               senderName={senderInfluencerId ? nameByInfluencer[senderInfluencerId] : otherName}
               targetedName={msg.targeted_only ? nameByInfluencer[msg.receiver_id] ?? otherName : null}
               dateProposalStatus={dateStatusFor(msg)}
+              openDateMatch={openMatchFor(msg)}
               canAcceptDate={!isMine}
               onAcceptDate={() => handleAcceptDate(msg.proposal_id)}
             />
