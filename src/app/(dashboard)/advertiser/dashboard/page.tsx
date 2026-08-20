@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import CampaignCalendar from '@/components/CampaignCalendar'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
+import IncomingHandoverBanner, { type IncomingHandoverItem } from '@/components/IncomingHandoverBanner'
 import { initial } from '@/lib/initial'
 import { resolveCompany } from '@/lib/team/company'
 import {
@@ -54,6 +55,55 @@ export default async function AdvertiserMyPage() {
   const view = cookieStore.get('adv_view')?.value === 'all' ? 'all' : 'me'
   // 「내 담당」이면 manager_id=본인으로 좁힌다. 솔로 대표는 모든 캠페인이 본인 담당이라 무변경.
   const scopeToMe = company.isMember || view === 'me'
+
+  // 5-5 받는 사람 이관 배너 — 나에게 캠페인이 넘어오기 시작한 퇴사(예정/비활성) 팀원별 진행률.
+  // 받는 사람은 미리 지정되지 않으므로(5-3) transfers(to_id=나)로 대상 퇴사자를 역산한다.
+  // remaining(퇴사자에게 남은 캠페인)이 0이면 배너를 띄우지 않는다.
+  const incomingHandovers: IncomingHandoverItem[] = []
+  {
+    const { data: myReceipts } = await supabase
+      .from('transfers')
+      .select('from_id')
+      .eq('to_id', user.id)
+      .eq('kind', 'campaign')
+    const recByLeaver: Record<string, number> = {}
+    for (const r of myReceipts ?? []) {
+      const f = r.from_id as string | null
+      if (f) recByLeaver[f] = (recByLeaver[f] ?? 0) + 1
+    }
+    const leaverIds = Object.keys(recByLeaver)
+    if (leaverIds.length) {
+      const { data: leaverRows } = await supabase
+        .from('team_members')
+        .select('member_id, leave_on')
+        .eq('owner_id', company.advertiserId)
+        .in('member_id', leaverIds)
+        .in('status', ['leaving', 'inactive'])
+      const { data: leaverProfs } = await supabase.from('profiles').select('id, name').in('id', leaverIds)
+      const lname = Object.fromEntries(
+        (leaverProfs ?? []).map((p) => [p.id as string, (p.name as string | null) || '이름 미설정']),
+      )
+      for (const lr of leaverRows ?? []) {
+        const lid = lr.member_id as string
+        const { count } = await supabase
+          .from('campaigns')
+          .select('id', { count: 'exact', head: true })
+          .eq('advertiser_id', company.advertiserId)
+          .eq('manager_id', lid)
+        const remaining = count ?? 0
+        if (remaining === 0) continue // 남은 게 없으면 배너를 띄우지 않는다
+        const received = recByLeaver[lid] ?? 0
+        incomingHandovers.push({
+          leaverId: lid,
+          leaverName: lname[lid] ?? '이름 미설정',
+          leaveOn: (lr.leave_on as string | null) ?? null,
+          total: received + remaining,
+          received,
+          remaining,
+        })
+      }
+    }
+  }
 
   const { data: campaigns } = scopeToMe
     ? await supabase
@@ -232,6 +282,9 @@ export default async function AdvertiserMyPage() {
   return (
     <div className="flex flex-col gap-5 [.adv-pc_&]:gap-[14px]">
       <NotificationsRealtime userId={user.id} />
+
+      {/* 5-5 받는 사람 이관 배너 — 넘어오는 담당이 있을 때만, 내 페이지 위에 한 줄. */}
+      <IncomingHandoverBanner items={incomingHandovers} />
 
       {/* 페이지 헤더 */}
       <div className="flex flex-col gap-3 [.adv-pc_&]:flex-row [.adv-pc_&]:items-end [.adv-pc_&]:gap-4">

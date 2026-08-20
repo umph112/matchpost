@@ -122,7 +122,7 @@ export async function transferCampaign(
   const db = createServiceClient()
   const { data: camp } = await db
     .from('campaigns')
-    .select('id, advertiser_id, manager_id')
+    .select('id, advertiser_id, manager_id, title')
     .eq('id', campaignId)
     .maybeSingle()
   if (!camp) return { ok: false, error: '캠페인을 찾을 수 없어요.' }
@@ -156,9 +156,65 @@ export async function transferCampaign(
       memo: memo?.trim() || null,
       by_id: user.id,
     })
+    // 5-9 담당자 교체 — 인플루언서 대화에 시스템 줄 + 알림.
+    // 캠페인 대화는 (광고주·인플루언서·proposal)로 이미 이어져 있어 창을 새로 만들지 않는다.
+    // 같은 창에 is_system 줄만 들어가고(말풍선 아님 → 발신자 이름 불변), 참여자에게 알림을 보낸다.
+    await notifyManagerChange(db, adv, campaignId, (camp.title as string) || '', toId)
     await inactivateIfEmpty(db, adv, fromId)
   }
   return { ok: true }
+}
+
+// 담당자 교체를 캠페인 참여 인플루언서에게 알린다(5-9).
+// 대상은 인플루언서별 최신 제안 1건 — send_campaign_message 브로드캐스트와 같은 대상.
+async function notifyManagerChange(
+  db: SupabaseClient,
+  advertiserId: string,
+  campaignId: string,
+  campaignTitle: string,
+  toId: string,
+) {
+  const { data: toProf } = await db.from('profiles').select('name').eq('id', toId).maybeSingle()
+  const toName = (toProf?.name as string | null) || '담당자'
+
+  const { data: props } = await db
+    .from('proposals')
+    .select('id, influencer_id, created_at')
+    .eq('campaign_id', campaignId)
+    .order('created_at', { ascending: false })
+  const latestByInf = new Map<string, string>() // influencer_id → 최신 proposal_id
+  for (const p of props ?? []) {
+    const inf = p.influencer_id as string | null
+    if (inf && !latestByInf.has(inf)) latestByInf.set(inf, p.id as string)
+  }
+  if (!latestByInf.size) return
+  const pairs = [...latestByInf]
+
+  const line = `담당자가 ${toName}님으로 바뀌었어요`
+  const body = `${campaignTitle ? campaignTitle + ' — ' : ''}담당자가 ${toName}님으로 바뀌었어요.`
+
+  await db.from('messages').insert(
+    pairs.map(([inf, pid]) => ({
+      sender_id: advertiserId,
+      receiver_id: inf,
+      proposal_id: pid,
+      content: line,
+      is_system: true,
+    })),
+  )
+  await db.from('notifications').insert(
+    pairs.map(([inf, pid]) => ({
+      user_id: inf,
+      type: 'manager_changed',
+      kind: 'manager_changed',
+      title: '담당자가 바뀌었어요',
+      body,
+      link: `/influencer/messages?receiverId=${advertiserId}&proposalId=${pid}`,
+      ref_type: 'campaign',
+      ref_id: campaignId,
+      state: 'unread',
+    })),
+  )
 }
 
 // 개인 대화 이관 — 항상 대표(advertiser_id)가 보관한다(5-7). 받는 사람 지정 없음.

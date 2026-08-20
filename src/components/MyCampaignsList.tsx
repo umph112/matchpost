@@ -19,6 +19,7 @@ type Campaign = {
   location_district: string | null
   derivedStatus: '진행중' | '마감' | '캔슬' | '완료'
   stats: { total: number; confirmed: number; negotiating: number }
+  received?: { fromName: string; when: string } | null
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -40,7 +41,7 @@ const CH_BADGE: Record<string, { bg: string; fg: string; label: string }> = {
 }
 const CH_ORDER = ['블로그', '유튜브', '인스타그램', '틱톡']
 
-type FilterTab = '전체' | '진행중' | '마감' | '완료' | '취소'
+type FilterTab = '전체' | '진행중' | '마감' | '완료' | '취소' | '이관받은 것'
 type SortKey = 'created_desc' | 'created_asc' | 'budget_desc' | 'budget_asc'
 // 표에는 진행일(date)만 보이지만 정렬 기준은 등록일(created_at)이라, 라벨에 "등록"을 밝힌다(C1)
 const SORT_LABELS: Record<SortKey, string> = {
@@ -55,11 +56,15 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
   const [search, setSearch] = useState('')
   const [sort, setSort]   = useState<SortKey>('created_desc')
 
-  const tabs: FilterTab[] = ['전체', '진행중', '마감', '완료', '취소']
+  // 「이관받은 것」 탭은 나에게 이관된 캠페인이 있을 때만 노출한다(5-8)
+  const receivedCount = campaigns.filter((c) => c.received).length
+  const tabs: FilterTab[] = ['전체', '진행중', '마감', '완료', '취소', ...(receivedCount > 0 ? ['이관받은 것' as const] : [])]
 
   const filtered = useMemo(() => {
     let list = campaigns
-    if (tab !== '전체') {
+    if (tab === '이관받은 것') {
+      list = list.filter((c) => c.received)
+    } else if (tab !== '전체') {
       list = list.filter((c) => statusLabel(c.derivedStatus) === tab)
     }
     if (search.trim()) {
@@ -76,6 +81,7 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
 
   const tabCount = (t: FilterTab) => {
     if (t === '전체') return campaigns.length
+    if (t === '이관받은 것') return receivedCount
     return campaigns.filter((c) => statusLabel(c.derivedStatus) === t).length
   }
 
@@ -165,6 +171,16 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
                   <p className="text-[11.5px] text-[#9A9AA5] mt-0.5 truncate">
                     {[c.campaign_type, c.channels?.join('·'), c.location_city].filter(Boolean).join(' · ')}
                   </p>
+                  {c.received && (
+                    <div className="mt-1">
+                      <span style={{ fontSize: '9.5px', fontWeight: 800, background: '#FEF3C7', color: '#B45309', borderRadius: 4, padding: '2px 5px' }}>
+                        이관
+                      </span>
+                      <p style={{ fontSize: '10.5px', color: '#B45309', marginTop: 2 }}>
+                        {c.received.fromName}님에게서 {c.received.when} 이관
+                      </p>
+                    </div>
+                  )}
                 </Link>
 
                 {/* 상태 */}
@@ -260,6 +276,16 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
                       {c.date && <span className="inline-flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {c.date}</span>}
                       {c.location_city && <span className="inline-flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {c.location_city} {c.location_district ?? ''}</span>}
                     </p>
+                    {c.received && (
+                      <div className="mt-1">
+                        <span style={{ fontSize: '9.5px', fontWeight: 800, background: '#FEF3C7', color: '#B45309', borderRadius: 4, padding: '2px 5px' }}>
+                          이관
+                        </span>
+                        <span style={{ fontSize: '10.5px', color: '#B45309', marginLeft: 6 }}>
+                          {c.received.fromName}님에게서 {c.received.when} 이관
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[c.derivedStatus]}`}>
                     {statusLabel(c.derivedStatus)}
