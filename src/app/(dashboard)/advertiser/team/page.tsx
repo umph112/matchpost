@@ -62,6 +62,11 @@ export default function TeamPage() {
   const [fallbackEmail, setFallbackEmail] = useState('')
   const [fallbackPhone, setFallbackPhone] = useState('')
   const [showContactInputs, setShowContactInputs] = useState(false)
+  // 공개 프로필 — 직접 작성 항목(대표만). advertiser_profiles.one_line/intro/brands/history (0082)
+  const [oneLine, setOneLine] = useState('')
+  const [intro, setIntro] = useState('')
+  const [brands, setBrands] = useState('')
+  const [history, setHistory] = useState('')
 
   const supabase = createClient()
 
@@ -89,13 +94,17 @@ export default function TeamPage() {
     setMyId(user.id)
     const { data: ap } = await supabase
       .from('advertiser_profiles')
-      .select('marketing_contact_public, marketing_email, marketing_phone')
+      .select('marketing_contact_public, marketing_email, marketing_phone, one_line, intro, brands, history')
       .eq('user_id', user.id)
       .maybeSingle()
     if (ap) {
       setMktPublic(!!ap.marketing_contact_public)
       setMktEmail(ap.marketing_email ?? '')
       setMktPhone(ap.marketing_phone ?? '')
+      setOneLine(ap.one_line ?? '')
+      setIntro(ap.intro ?? '')
+      setBrands(ap.brands ?? '')
+      setHistory(ap.history ?? '')
     }
     // 본인 user_private는 RLS(본인·관리자)로 조회 가능
     const { data: priv } = await supabase
@@ -127,8 +136,18 @@ export default function TeamPage() {
     await supabase.from('advertiser_profiles').update(patch).eq('user_id', myId)
   }
 
+  // 직접 작성 항목 — 빈 값은 null로 저장(읽는 쪽 ap?.brands && 조건이 그대로 동작)
+  const persistProfile = async (patch: {
+    one_line?: string | null; intro?: string | null; brands?: string | null; history?: string | null
+  }) => {
+    if (!myId) return
+    await supabase.from('advertiser_profiles').update(patch).eq('user_id', myId)
+  }
+
   const previewEmail = mktEmail.trim() || fallbackEmail
   const previewPhone = mktPhone.trim() || fallbackPhone
+  // 한 줄 소개 비었을 때 안내용 — 읽는 쪽([id]/page.tsx:110)과 동일한 첫 문장 규칙
+  const introFirst = intro.trim() ? intro.split(/(?<=[.!?。])\s|\n/)[0]?.trim() : ''
 
   const invite = async () => {
     if (!email.trim()) { setError('이메일을 입력해주세요.'); return }
@@ -332,6 +351,92 @@ export default function TeamPage() {
             )}
           </>
         )}
+
+        {/* ── 직접 작성 항목 (한 줄 소개·소개·브랜드·이력) — 읽는 쪽 /advertiser/[id] 에 그대로 노출 ── */}
+        <div style={{ borderTop: '1px solid #EFEFF2' }} className="mt-5 pt-5">
+          <p style={{ fontSize: 11.5, color: '#7C7C88', lineHeight: 1.65 }}>
+            비워두면 회사 페이지에 그 항목이 안 보여요. 인플루언서가 처음 보는 화면이니 어떤 일을 하는 곳인지만 적어도 충분해요.
+          </p>
+
+          <div className="flex flex-col" style={{ gap: 14, marginTop: 14 }}>
+            {/* 한 줄 소개 */}
+            <div>
+              <label className="flex items-center gap-1.5">
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#3C3C46' }}>한 줄 소개</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#B0B0BB' }}>선택</span>
+              </label>
+              <input
+                value={oneLine}
+                onChange={(e) => setOneLine(e.target.value)}
+                onBlur={() => persistProfile({ one_line: oneLine.trim() || null })}
+                placeholder="비우면 소개의 첫 문장이 쓰여요"
+                className="w-full mt-1.5"
+                style={{ border: '1px solid #E2E2E8', borderRadius: 10, padding: '0 13px', height: 46, fontSize: 12.5, fontFamily: 'inherit', color: '#17171B', outline: 'none' }}
+              />
+              {!oneLine.trim() && (
+                <p style={{ fontSize: 11, color: '#9A9AA5', marginTop: 6 }}>
+                  {introFirst
+                    ? `지금은 소개의 첫 문장이 쓰여요 — "${introFirst}"`
+                    : '소개를 적으면 첫 문장이 자동으로 쓰여요'}
+                </p>
+              )}
+            </div>
+
+            {/* 소개 */}
+            <div>
+              <label className="flex items-center gap-1.5">
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#3C3C46' }}>소개</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#B0B0BB' }}>선택</span>
+              </label>
+              <textarea
+                value={intro}
+                onChange={(e) => setIntro(e.target.value)}
+                onBlur={() => persistProfile({ intro: intro.trim() || null })}
+                placeholder="어떤 일을 하는 곳인지 적어주세요."
+                className="w-full mt-1.5"
+                style={{ border: '1px solid #E2E2E8', borderRadius: 10, padding: '12px 13px', minHeight: 110, fontSize: 12.5, fontFamily: 'inherit', color: '#17171B', outline: 'none', resize: 'vertical' }}
+              />
+            </div>
+
+            {/* 함께 일하는 브랜드 */}
+            <div>
+              <label className="flex items-center gap-1.5">
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#3C3C46' }}>함께 일하는 브랜드</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#B0B0BB' }}>선택</span>
+              </label>
+              <textarea
+                value={brands}
+                onChange={(e) => setBrands(e.target.value)}
+                onBlur={() => persistProfile({ brands: brands.trim() || null })}
+                placeholder="한 줄에 하나씩 적어주세요."
+                className="w-full mt-1.5"
+                style={{ border: '1px solid #E2E2E8', borderRadius: 10, padding: '12px 13px', minHeight: 90, fontSize: 12.5, fontFamily: 'inherit', color: '#17171B', outline: 'none', resize: 'vertical' }}
+              />
+              <p style={{ fontSize: 11, color: '#7C7C88', lineHeight: 1.6, marginTop: 6 }}>
+                한 줄에 하나씩. 인플루언서가 &quot;이 회사가 어떤 브랜드를 다루나&quot;를 봅니다.
+              </p>
+            </div>
+
+            {/* 주요 이력 */}
+            <div>
+              <label className="flex items-center gap-1.5">
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#3C3C46' }}>주요 이력</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#B0B0BB' }}>선택</span>
+              </label>
+              <textarea
+                value={history}
+                onChange={(e) => setHistory(e.target.value)}
+                onBlur={() => persistProfile({ history: history.trim() || null })}
+                placeholder="한 줄에 하나씩 적어주세요."
+                className="w-full mt-1.5"
+                style={{ border: '1px solid #E2E2E8', borderRadius: 10, padding: '12px 13px', minHeight: 110, fontSize: 12.5, fontFamily: 'inherit', color: '#17171B', outline: 'none', resize: 'vertical' }}
+              />
+              <p style={{ fontSize: 11, color: '#7C7C88', lineHeight: 1.6, marginTop: 6 }}>
+                한 줄에 하나씩. 예: 2025 성수 카페 오픈 캠페인 · 인플루언서 12명
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 표 */}
