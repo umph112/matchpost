@@ -179,17 +179,41 @@ export default async function InfluencerMyPage() {
   const nameById = Object.fromEntries((names ?? []).map((p) => [p.id, p.name]))
   const msgUnreadCount = convs.filter((c) => c.unread).length
 
-  // 매출 (이달)
-  const { data: earn } = await supabase
-    .from('earnings')
-    .select('amount, status, created_at')
+  // 매출 (이달) — proposals 기반. 귀속 기준 = campaigns.settlement_date (결제 예정일)
+  const { data: earnProps } = await supabase
+    .from('proposals')
+    .select('id, budget, settled_at, paid_confirmed_at, paid_disputed_at, settlement_status, campaign_id')
     .eq('influencer_id', user.id)
-  const monthEarn = (earn ?? []).filter((e) => {
-    const d = new Date(e.created_at)
-    return d.getFullYear() === year && d.getMonth() + 1 === month
+    .eq('advertiser_confirmed', true)
+    .eq('influencer_confirmed', true)
+  const earnCampIds = [...new Set((earnProps ?? []).map((p) => p.campaign_id).filter(Boolean))]
+  const settleDateById: Record<string, string | null> = {}
+  if (earnCampIds.length > 0) {
+    const { data: earnCamps } = await supabase
+      .from('campaigns')
+      .select('id, settlement_date')
+      .in('id', earnCampIds)
+    ;(earnCamps ?? []).forEach((c) => { settleDateById[c.id] = c.settlement_date })
+  }
+  const earnRows = (earnProps ?? []).map((p) => {
+    const sd = p.campaign_id ? settleDateById[p.campaign_id] ?? null : null
+    let status: '예정' | '미수' | '확인 대기' | '완료'
+    if (p.paid_confirmed_at || p.settlement_status === '완료') status = '완료'
+    else if (p.settled_at && !p.paid_confirmed_at && !p.paid_disputed_at) status = '확인 대기'
+    else if (sd && sd < todayStr) status = '미수'
+    else status = '예정'
+    return { budget: p.budget ?? 0, settlementDate: sd, status }
   })
-  const monthTotal = monthEarn.reduce((s, e) => s + (e.amount || 0), 0)
-  const pendingTotal = monthEarn.filter((e) => e.status === '예정').reduce((s, e) => s + (e.amount || 0), 0)
+  // 이번 달 매출: 결제 예정일이 이번 달인 모든 건(완료·미수·확인대기·예정)
+  const monthEarn = earnRows.filter((e) =>
+    e.settlementDate != null &&
+    Number(e.settlementDate.slice(0, 4)) === year &&
+    Number(e.settlementDate.slice(5, 7)) === month
+  )
+  const monthTotal = monthEarn.reduce((s, e) => s + e.budget, 0)
+  const pendingTotal = monthEarn.filter((e) => e.status === '예정').reduce((s, e) => s + e.budget, 0)
+  // 미수: 기간 무관(항상 전체)
+  const overdueCount = earnRows.filter((e) => e.status === '미수').length
 
   // 채널 분석
   const { data: blogAnalytics } = await supabase
@@ -210,13 +234,8 @@ export default async function InfluencerMyPage() {
   const unreadNotif = (notifs ?? []).filter((n) => !n.is_read).length
   const notifPreview = (notifs ?? []).slice(0, 3)
 
-  // 정산 당일
-  const { data: dueEarn } = await supabase
-    .from('earnings')
-    .select('id')
-    .eq('influencer_id', user.id)
-    .eq('due_date', todayStr)
-  const settlementDue = (dueEarn ?? []).length
+  // 정산 당일 — 결제 예정일이 오늘인 건
+  const settlementDue = earnRows.filter((e) => e.settlementDate === todayStr).length
 
   // 오픈 상태 파생
   const opensWithStatus = (opens ?? []).map((o) => {
@@ -287,6 +306,9 @@ export default async function InfluencerMyPage() {
         <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4">
           <div className="text-xs font-semibold text-[#7C7C88]">이번 달 매출</div>
           <div className="text-[22px] font-extrabold mt-1">{monthTotal.toLocaleString()}원</div>
+          {overdueCount > 0 && (
+            <div className="text-[11px] font-semibold text-[#DC2626] mt-0.5">미수 {overdueCount}건</div>
+          )}
         </div>
         <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4">
           <div className="text-xs font-semibold text-[#7C7C88]">블로그 등급</div>
@@ -477,6 +499,9 @@ export default async function InfluencerMyPage() {
                   )}
                   {settlementDue > 0 && (
                     <p className="text-xs text-red-500 mt-0.5">오늘 정산 예정 {settlementDue}건</p>
+                  )}
+                  {overdueCount > 0 && (
+                    <p className="text-xs font-semibold text-[#DC2626] mt-0.5">미수 {overdueCount}건</p>
                   )}
                 </div>
                 <span className="text-gray-300">상세 →</span>

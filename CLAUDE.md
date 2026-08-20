@@ -182,6 +182,14 @@ sql/migrations/              스키마 변경 이력(0001~). README 참고
 - ✅ **④ Screen 5** — 인플루언서 찾기 284px 필터 사이드바
 - ✅ **⑤ Screen 3** — 딜시트: 8단계 진행바, 채널 그룹 표, 하단 정산 바
 
+### D19 완료 — 인플루언서 매출 화면 proposals 기반 전환 (2026-08-20)
+- ✅ `influencer/earnings/page.tsx` 전체 재작성 — 죽은 `earnings` 테이블 참조 제거, `proposals`+`campaigns.settlement_date` 기반
+- ✅ 매출 귀속 기준 = **결제 예정일**(`campaigns.settlement_date`) 하나. 실제 입금일로 옮기지 않음(입금 확인돼도 원래 예정일 매출로 확정)
+- ✅ 스코프 분할: 기간(총매출·예정·확인대기 요약칸·목록·CSV) / 항상 전체(미수 카드·수금확인 배너·미수 요약칸)
+- ✅ 상태 4종(예정/미수/확인 대기/완료)+배지색, 목록 주라인=브랜드·부제=캠페인, CSV 헤더 날짜·브랜드·캠페인·금액·상태
+- ✅ `influencer/dashboard/page.tsx` 「이번 달 매출」·「정산 당일」 proposals화 + 「미수 N건」(#DC2626)
+- ⏳ `earnings` 테이블 자체는 유지 — 행 비었는지 확인 후 별도 마이그레이션으로 drop 예정
+
 ### 주의: 푸시 전 빌드 체크 필수
 ```bash
 npx tsc --noEmit   # 에러 0건 확인 후 git push

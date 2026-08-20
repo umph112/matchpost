@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Download } from 'lucide-react'
 import PaidConfirmModal from '@/components/PaidConfirmModal'
-import { kstDateString, dDayLabel, listDateLabel, listTime } from '@/lib/date'
+import { kstDateString, dDayLabel, listDateLabel } from '@/lib/date'
 
 type OverdueRow = {
   campaignId: string
@@ -20,7 +20,20 @@ type OverdueRow = {
   managerName: string | null
 }
 
-const STATUS_FILTERS = ['전체', '예정', '진행중', '완료', '결제완료']
+type EarningStatus = '예정' | '미수' | '확인 대기' | '완료'
+
+type EarningRow = {
+  id: string
+  budget: number | null
+  brandName: string | null
+  companyName: string | null
+  campaignTitle: string | null
+  settlementDate: string | null
+  status: EarningStatus
+  advertiserId: string
+}
+
+const STATUS_FILTERS = ['전체', '예정', '미수', '확인 대기', '완료']
 
 type PendingProposal = {
   id: string
@@ -33,7 +46,7 @@ type PendingProposal = {
 }
 
 export default function EarningsPage() {
-  const [earnings, setEarnings] = useState<any[]>([])
+  const [earnRows, setEarnRows] = useState<EarningRow[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('전체')
   const [period, setPeriod] = useState('이번달')
@@ -51,16 +64,59 @@ export default function EarningsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // 기존 earnings
-    const { data: earningsData } = await supabase
-      .from('earnings')
-      .select('*, proposals(collaboration_type)')
+    // ── 정산 목록/요약 원본: 양쪽 확정된 proposals (합의된 건) ──
+    // 귀속 기준 = campaigns.settlement_date (결제 예정일). 프로젝트 규칙.
+    const { data: props } = await supabase
+      .from('proposals')
+      .select('id, budget, settled_at, paid_confirmed_at, paid_disputed_at, settlement_status, advertiser_id, campaign_id')
       .eq('influencer_id', user.id)
-      .order('created_at', { ascending: false })
+      .eq('advertiser_confirmed', true)
+      .eq('influencer_confirmed', true)
 
-    setEarnings(earningsData ?? [])
+    const propRows = props ?? []
+    const cIds = [...new Set(propRows.map((p) => p.campaign_id).filter(Boolean))]
+    const aIds = [...new Set(propRows.map((p) => p.advertiser_id).filter(Boolean))]
 
-    // 수금 확인 대기: settled_at 있고 paid_confirmed_at/paid_disputed_at 없는 proposals
+    const campById: Record<string, { title: string; brand_name: string | null; settlement_date: string | null }> = {}
+    if (cIds.length > 0) {
+      const { data: camps } = await supabase
+        .from('campaigns')
+        .select('id, title, brand_name, settlement_date')
+        .in('id', cIds)
+      ;(camps ?? []).forEach((c) => { campById[c.id] = c })
+    }
+    const companyByAdv: Record<string, string | null> = {}
+    if (aIds.length > 0) {
+      const { data: aps } = await supabase
+        .from('advertiser_profiles')
+        .select('user_id, company_name')
+        .in('user_id', aIds)
+      ;(aps ?? []).forEach((a) => { companyByAdv[a.user_id] = a.company_name })
+    }
+
+    const today = kstDateString()
+    const list: EarningRow[] = propRows.map((p) => {
+      const c = p.campaign_id ? campById[p.campaign_id] : null
+      const settlementDate = c?.settlement_date ?? null
+      let status: EarningStatus
+      if (p.paid_confirmed_at || p.settlement_status === '완료') status = '완료'
+      else if (p.settled_at && !p.paid_confirmed_at && !p.paid_disputed_at) status = '확인 대기'
+      else if (settlementDate && settlementDate < today) status = '미수'
+      else status = '예정'
+      return {
+        id: p.id,
+        budget: p.budget,
+        brandName: c?.brand_name ?? null,
+        companyName: companyByAdv[p.advertiser_id] ?? null,
+        campaignTitle: c?.title ?? null,
+        settlementDate,
+        status,
+        advertiserId: p.advertiser_id,
+      }
+    })
+    setEarnRows(list)
+
+    // ── 수금 확인 대기 (배너+모달): 항상 전체. [기존 로직 그대로] ──
     const { data: pending } = await supabase
       .from('proposals')
       .select(`
@@ -86,7 +142,7 @@ export default function EarningsPage() {
 
     setPendingConfirm(rows)
 
-    // D6 A9/C6 — 미수(예정일 지났는데 미기록)를 인플루언서 화면에도 같은 기준으로 보여준다
+    // ── 미수 카드: 항상 전체. [기존 판정 기준 그대로 재사용] ──
     const { data: myProps } = await supabase
       .from('proposals')
       .select('id, campaign_id, advertiser_id, budget, settlement_status, advertiser_confirmed, influencer_confirmed')
@@ -135,6 +191,8 @@ export default function EarningsPage() {
           managerName: nameByAdv[p.advertiser_id] ?? null,
         }))
       setOverdue(overdueRows)
+    } else {
+      setOverdue([])
     }
 
     setLoading(false)
@@ -152,41 +210,44 @@ export default function EarningsPage() {
   }
 
   const now = new Date()
-  const thisMonth = now.getMonth()
+  const thisMonth = now.getMonth() + 1
   const thisYear = now.getFullYear()
 
-  const filteredByPeriod = earnings.filter(e => {
-    const date = new Date(e.created_at)
-    if (period === '이번달') return date.getMonth() === thisMonth && date.getFullYear() === thisYear
-    if (period === '올해') return date.getFullYear() === thisYear
+  // 기간 스코프 — settlement_date(결제 예정일) 기준
+  const inPeriod = earnRows.filter((r) => {
+    if (!r.settlementDate) return period === '전체'
+    const y = Number(r.settlementDate.slice(0, 4))
+    const m = Number(r.settlementDate.slice(5, 7))
+    if (period === '이번달') return y === thisYear && m === thisMonth
+    if (period === '올해') return y === thisYear
     return true
   })
 
-  const filteredEarnings = filteredByPeriod.filter(e =>
-    filter === '전체' || e.status === filter
-  )
+  const listRows = inPeriod
+    .filter((r) => filter === '전체' || r.status === filter)
+    .sort((a, b) => (b.settlementDate ?? '').localeCompare(a.settlementDate ?? ''))
 
-  const totalAmount = filteredByPeriod.reduce((sum, e) => sum + e.amount, 0)
-  const pendingAmount = filteredByPeriod.filter(e => e.status === '예정').reduce((sum, e) => sum + e.amount, 0)
-  const completedAmount = filteredByPeriod.filter(e => e.status === '결제완료').reduce((sum, e) => sum + e.amount, 0)
+  // 요약 — 총매출·예정·확인대기는 기간 스코프
+  const totalAmount = inPeriod.reduce((s, r) => s + (r.budget ?? 0), 0)
+  const pendingAmount = inPeriod.filter((r) => r.status === '예정').reduce((s, r) => s + (r.budget ?? 0), 0)
+  const awaitingAmount = inPeriod.filter((r) => r.status === '확인 대기').reduce((s, r) => s + (r.budget ?? 0), 0)
 
+  // 미수 요약칸 — 항상 전체(기간 무관). 미수 카드 합과 동일하게 overdue에서 계산.
+  const overdueTotal = overdue.reduce((s, r) => s + (r.budget ?? 0), 0)
+
+  // 수금 확인 대기 배너 — 항상 전체
   const pendingConfirmTotal = pendingConfirm.reduce((s, p) => s + (p.budget ?? 0), 0)
 
-  const categoryTotals = filteredByPeriod.reduce((acc: Record<string, number>, e) => {
-    acc[e.category] = (acc[e.category] ?? 0) + e.amount
-    return acc
-  }, {})
-
   const handleDownloadCSV = () => {
-    const headers = ['날짜', '카테고리', '금액', '상태', '세금계산서']
-    const rows = filteredEarnings.map(e => [
-      listTime(e.created_at),
-      e.category,
-      e.amount,
-      e.status,
-      e.tax_invoice_issued ? '발행' : '미발행'
+    const headers = ['날짜', '브랜드', '캠페인', '금액', '상태']
+    const rows = listRows.map((r) => [
+      r.settlementDate ?? '',
+      r.brandName ?? r.companyName ?? '',
+      r.campaignTitle ?? '',
+      r.budget ?? 0,
+      r.status,
     ])
-    const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
+    const csv = [headers, ...rows].map((row) => row.join(',')).join('\n')
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -195,12 +256,11 @@ export default function EarningsPage() {
     a.click()
   }
 
-  const statusColor = (status: string) => {
-    if (status === '예정') return 'bg-orange-100 text-orange-600'
-    if (status === '진행중') return 'bg-[#FEF3C7] text-[#B45309]'
-    if (status === '완료') return 'bg-gray-100 text-gray-600'
-    if (status === '결제완료') return 'bg-green-100 text-green-600'
-    return 'bg-gray-100 text-gray-500'
+  const statusBadge = (status: EarningStatus): { bg: string; fg: string } => {
+    if (status === '예정') return { bg: '#F1F1F4', fg: '#5C5C68' }
+    if (status === '미수') return { bg: '#FEE2E2', fg: '#DC2626' }
+    if (status === '확인 대기') return { bg: '#FEF3C7', fg: '#B45309' }
+    return { bg: '#DCFCE7', fg: '#15803D' } // 완료
   }
 
   return (
@@ -209,11 +269,9 @@ export default function EarningsPage() {
         <PaidConfirmModal
           proposals={pendingConfirm}
           onClose={() => setConfirmModal(false)}
-          onDone={(confirmedIds, disputedIds) => {
-            setPendingConfirm((prev) =>
-              prev.filter((p) => !confirmedIds.includes(p.id) && !disputedIds.includes(p.id))
-            )
+          onDone={() => {
             setConfirmModal(false)
+            fetchAll()
           }}
         />
       )}
@@ -234,7 +292,7 @@ export default function EarningsPage() {
         </button>
       </div>
 
-      {/* 수금 확인 대기 배너 */}
+      {/* 수금 확인 대기 배너 — 항상 전체 */}
       {pendingConfirm.length > 0 && (
         <button
           onClick={() => setConfirmModal(true)}
@@ -250,7 +308,7 @@ export default function EarningsPage() {
         </button>
       )}
 
-      {/* D6 A9/C1 — 미수 카드: 신고가 아니라 대시에서 문의하기 */}
+      {/* D6 A9/C1 — 미수 카드: 신고가 아니라 대시에서 문의하기. 항상 전체 */}
       {overdue.length > 0 && (
         <div className="mb-5 space-y-2">
           {overdue.map((r) => (
@@ -300,34 +358,31 @@ export default function EarningsPage() {
         ))}
       </div>
 
-      {/* 요약 카드 */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-white rounded-2xl p-5 shadow-sm col-span-2">
+      {/* 요약 카드 — 4칸 (PC 4열 / 모바일 2×2) */}
+      <div className="grid grid-cols-2 [.inf-pc_&]:grid-cols-4 gap-4 mb-3">
+        <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">총 매출</p>
-          <p className="text-3xl font-bold text-[#B45309]">{totalAmount.toLocaleString()}원</p>
+          <p className="text-xl font-bold text-[#B45309]">{totalAmount.toLocaleString()}원</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">예정 매출</p>
           <p className="text-xl font-bold text-orange-500">{pendingAmount.toLocaleString()}원</p>
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">결제 완료</p>
-          <p className="text-xl font-bold text-green-500">{completedAmount.toLocaleString()}원</p>
+          <p className="text-sm text-gray-500 mb-1">미수</p>
+          <p className={`text-xl font-bold ${overdueTotal > 0 ? 'text-[#DC2626]' : 'text-gray-400'}`}>{overdueTotal.toLocaleString()}원</p>
+          <p className="mt-0.5 text-[10.5px] text-[#9A9AA5]">기간 무관 · 받아야 할 전액</p>
+        </div>
+        <div className="bg-white rounded-2xl p-5 shadow-sm">
+          <p className="text-sm text-gray-500 mb-1">확인 대기</p>
+          <p className="text-xl font-bold text-[#B45309]">{awaitingAmount.toLocaleString()}원</p>
         </div>
       </div>
 
-      {/* 카테고리별 수입 */}
-      {Object.keys(categoryTotals).length > 0 && (
-        <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
-          <h2 className="font-semibold text-gray-800 mb-4">카테고리별 수입</h2>
-          {Object.entries(categoryTotals).map(([cat, amount]) => (
-            <div key={cat} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-              <span className="text-sm text-gray-600">{cat}</span>
-              <span className="text-sm font-semibold text-gray-800">{(amount as number).toLocaleString()}원</span>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* 기준선 */}
+      <p className="text-[11px] text-[#9A9AA5] leading-relaxed mb-6">
+        매출은 합의된 결제 예정일을 기준으로 잡힙니다. 입금이 늦으면 미수로 표시되고, 확인되면 원래 예정일의 매출로 확정됩니다.
+      </p>
 
       {/* 상태 필터 */}
       <div className="flex gap-2 mb-4 overflow-x-auto">
@@ -346,41 +401,45 @@ export default function EarningsPage() {
         ))}
       </div>
 
-      {/* 매출 목록 */}
+      {/* 매출 목록 — 기간 스코프 */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {loading && <p className="text-center text-gray-400 py-8">불러오는 중...</p>}
 
-        {!loading && filteredEarnings.length === 0 && (
+        {!loading && listRows.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-400">매출 내역이 없어요</p>
           </div>
         )}
 
-        {filteredEarnings.map((e, index) => (
-          <div
-            key={e.id}
-            className={`flex items-center justify-between p-4 ${
-              index !== filteredEarnings.length - 1 ? 'border-b border-gray-50' : ''
-            }`}
-          >
-            <div>
-              <p className="text-sm font-medium text-gray-800">{e.category}</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {listDateLabel(e.created_at)}
-                {e.due_date && ` · 지급예정 ${listDateLabel(e.due_date)}`}
-              </p>
-              {e.tax_invoice_issued && (
-                <span className="text-xs text-[#B45309]">세금계산서 발행</span>
-              )}
+        {listRows.map((r, index) => {
+          const badge = statusBadge(r.status)
+          return (
+            <div
+              key={r.id}
+              className={`flex items-center justify-between p-4 ${
+                index !== listRows.length - 1 ? 'border-b border-gray-50' : ''
+              }`}
+            >
+              <div className="min-w-0">
+                <p className="text-[12.5px] font-bold text-gray-800 truncate">{r.brandName ?? r.companyName ?? '광고주'}</p>
+                {r.campaignTitle && <p className="text-[11px] text-[#9A9AA5] mt-0.5 truncate">{r.campaignTitle}</p>}
+                <p className="text-[11px] text-gray-400 mt-0.5">
+                  {r.settlementDate ? listDateLabel(r.settlementDate + 'T00:00:00') : '예정일 미정'}
+                  {r.status === '미수' && r.settlementDate && ` · ${dDayLabel(r.settlementDate)}`}
+                </p>
+              </div>
+              <div className="text-right shrink-0 ml-3">
+                <p className="text-[13px] font-bold text-gray-800 tabular-nums">{(r.budget ?? 0).toLocaleString()}원</p>
+                <span
+                  className="inline-block mt-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: badge.bg, color: badge.fg }}
+                >
+                  {r.status}
+                </span>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm font-bold text-gray-800">{e.amount.toLocaleString()}원</p>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(e.status)}`}>
-                {e.status}
-              </span>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
