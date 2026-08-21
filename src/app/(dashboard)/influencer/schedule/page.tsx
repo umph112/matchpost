@@ -18,6 +18,7 @@ export default function SchedulePage() {
   const [freeTags, setFreeTags] = useState('')
   const [platforms, setPlatforms] = useState<string[]>([])
   const [isPublic, setIsPublic] = useState(true)
+  const [seoPublic, setSeoPublic] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -65,6 +66,7 @@ export default function SchedulePage() {
       free_tags: freeTagsArray,
       channels: platforms,
       is_public: isPublic,
+      seo_public: seoPublic,
       status: 'open',
     })
 
@@ -245,6 +247,28 @@ export default function SchedulePage() {
           >
             <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform mx-0.5 ${
               isPublic ? 'translate-x-6' : 'translate-x-0'
+            }`} />
+          </button>
+        </div>
+      </div>
+
+      {/* 검색 노출 (SEO) — is_public 과 별개의 명시적 opt-in. 기본 OFF */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-gray-700">네이버·구글 검색 노출</p>
+            <p className="text-[11.5px] text-[#7C7C88] mt-0.5 leading-relaxed">
+              네이버·구글에서 이 날짜를 찾을 수 있어요. 이름·채널 주소·연락처는 로그인한 사람에게만 보여요.
+            </p>
+          </div>
+          <button
+            onClick={() => setSeoPublic(!seoPublic)}
+            className={`shrink-0 w-12 h-6 rounded-full transition ${
+              seoPublic ? 'bg-[#F59E0B]' : 'bg-gray-300'
+            }`}
+          >
+            <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform mx-0.5 ${
+              seoPublic ? 'translate-x-6' : 'translate-x-0'
             }`} />
           </button>
         </div>
