@@ -1,16 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
 const PLATFORMS = ['블로그', '유튜브', '인스타그램', '틱톡']
 
+// 오픈 묶음 보기(D24)의 「여기 열어두기」가 ?date=&from=&to= 로 들어온다.
+// useSearchParams 는 Suspense 안에서만 쓸 수 있어 폼을 감싼다.
 export default function SchedulePage() {
-  const [selectedDate, setSelectedDate] = useState<string>('')
-  const [startTime, setStartTime] = useState('')
-  const [endTime, setEndTime] = useState('')
+  return (
+    <Suspense fallback={null}>
+      <ScheduleForm />
+    </Suspense>
+  )
+}
+
+function ScheduleForm() {
+  const sp = useSearchParams()
+  const [selectedDate, setSelectedDate] = useState<string>(() => sp.get('date') ?? '')
+  const [startTime, setStartTime] = useState(() => sp.get('from') ?? '')
+  const [endTime, setEndTime] = useState(() => sp.get('to') ?? '')
   const [locationCity, setLocationCity] = useState('')
   const [locationDistrict, setLocationDistrict] = useState('')
   const [title, setTitle] = useState('')

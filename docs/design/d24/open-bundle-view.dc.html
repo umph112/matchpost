@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  body { margin:0; background:#F6F6F7; font-family:'Pretendard Variable', Pretendard, -apple-system, sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#B45309; text-decoration:none; }
+  a:hover { color:#92400E; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px;max-width:1180px">
+
+  <div style="display:flex;align-items:flex-end;gap:16px">
+    <div style="min-width:0">
+      <div style="display:flex;align-items:center;gap:9px">
+        <span style="font-size:10px;font-weight:800;background:#DBEAFE;color:#1D4ED8;border-radius:5px;padding:3px 7px;flex-shrink:0">공개 오픈</span>
+        <h1 style="margin:0;font-size:23px;font-weight:800;letter-spacing:-0.03em">{{ openTitle }}</h1>
+      </div>
+      <p style="margin:5px 0 0;font-size:13px;color:#7C7C88">{{ openSub }}</p>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-shrink:0">
+      <div style="height:44px;padding:0 16px;border-radius:11px;border:1px solid #D4D4DC;background:#fff;font-size:13px;font-weight:700;color:#3C3C46;display:flex;align-items:center;cursor:pointer" style-hover="background:#FAFAFB">오픈 수정</div>
+      <div style="height:44px;padding:0 16px;border-radius:11px;background:#17171B;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;cursor:pointer" style-hover="background:#2A2A33">내 일정으로</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start">
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+
+      <sc-for list="{{ days }}" as="d" hint-placeholder-count="2">
+        <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="height:50px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:800;letter-spacing:-0.02em">{{ d.label }}</h2>
+            <span style="font-size:11.5px;color:#9A9AA5;margin-left:9px">{{ d.count }}</span>
+            <span style="margin-left:auto;font-size:11.5px;color:#9A9AA5">{{ d.free }}</span>
+          </div>
+
+          <div style="padding:16px 20px 4px;display:flex;flex-direction:column">
+            <sc-for list="{{ d.slots }}" as="s" hint-placeholder-count="4">
+
+              <sc-if value="{{ s.isJob }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;gap:14px">
+                  <div style="width:56px;flex-shrink:0;padding-top:2px">
+                    <div style="font-size:12.5px;font-weight:800;letter-spacing:-0.02em;color:#17171B;font-variant-numeric:tabular-nums">{{ s.from }}</div>
+                    <div style="font-size:10.5px;color:#B0B0BB;margin-top:2px;font-variant-numeric:tabular-nums">{{ s.to }}</div>
+                  </div>
+
+                  <div style="width:10px;flex-shrink:0;display:flex;flex-direction:column;align-items:center">
+                    <span style="{{ s.dotStyle }}"></span>
+                    <span style="width:1px;flex:1;background:#EAEAEE;display:block"></span>
+                  </div>
+
+                  <div style="flex:1;min-width:0;padding-bottom:16px">
+                    <div style="border:1px solid #EAEAEE;border-radius:12px;padding:14px 16px;background:#fff;cursor:pointer" style-hover="border-color:#D4D4DC">
+                      <div style="display:flex;align-items:center;gap:7px">
+                        <span style="font-size:13.5px;font-weight:700;letter-spacing:-0.015em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.brand }}</span>
+                        <sc-if value="{{ s.isStay }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size:10px;font-weight:700;background:#DBEAFE;color:#1D4ED8;border-radius:4px;padding:2px 6px;flex-shrink:0">숙박</span>
+                        </sc-if>
+                        <span style="{{ s.stStyle }}">{{ s.st }}</span>
+                      </div>
+                      <div style="font-size:11.5px;color:#7C7C88;margin-top:4px">{{ s.what }}</div>
+
+                      <sc-if value="{{ s.hasStops }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex;flex-direction:column;gap:5px;margin-top:9px">
+                        <sc-for list="{{ s.stops }}" as="p" hint-placeholder-count="2">
+                          <div style="display:flex;align-items:baseline;gap:8px">
+                            <span style="font-size:11px;font-weight:700;color:#3C3C46;width:42px;flex-shrink:0;font-variant-numeric:tabular-nums">{{ p.at }}</span>
+                            <span style="font-size:11.5px;color:#3C3C46;min-width:0">{{ p.name }}</span>
+                            <span style="font-size:10.5px;color:#B0B0BB;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.place }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                      </sc-if>
+
+                      <div style="font-size:10.5px;color:#B0B0BB;margin-top:7px">{{ s.spanNote }}</div>
+
+                      <div style="display:flex;align-items:center;gap:9px;margin-top:11px;padding-top:11px;border-top:1px solid #F5F5F7">
+                        <span style="{{ s.payStyle }}" title="{{ s.payHint }}">{{ s.pay }}</span>
+                        <sc-if value="{{ s.hasPerk }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size:11px;font-weight:700;color:#1D4ED8;flex-shrink:0;white-space:nowrap;border-bottom:1px dashed #93C5FD;cursor:pointer" style-hover="color:#1E40AF" title="눌러서 고칠 수 있어요">{{ s.perk }}</span>
+                        </sc-if>
+                        <span style="font-size:11px;color:#9A9AA5;flex-shrink:0;white-space:nowrap">{{ s.due }}</span>
+                        <span style="margin-left:auto;font-size:11.5px;font-weight:700;color:#B45309;cursor:pointer;flex-shrink:0;white-space:nowrap" style-hover="color:#92400E">딜시트 열기 →</span>
+                      </div>
+
+                      <sc-if value="{{ s.isStay }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size:10.5px;color:#1D4ED8;margin-top:7px">이 시간대에 다른 일정을 함께 넣을 수 있어요</div>
+                      </sc-if>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ s.isGap }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:14px">
+                  <div style="width:56px;flex-shrink:0"></div>
+                  <div style="width:10px;flex-shrink:0;display:flex;justify-content:center">
+                    <span style="width:1px;flex:1;background:#EAEAEE;display:block"></span>
+                  </div>
+                  <div style="flex:1;min-width:0;padding-bottom:16px">
+                    <div style="border:1px dashed #D4D4DC;border-radius:12px;padding:12px 16px;background:#FBFBFC;display:flex;align-items:center;gap:9px">
+                      <span style="font-size:11.5px;font-weight:700;color:#7C7C88;font-variant-numeric:tabular-nums;flex-shrink:0">{{ s.range }}</span>
+                      <span style="font-size:11.5px;color:#9A9AA5;min-width:0">{{ s.note }}</span>
+                      <sc-if value="{{ s.canAdd }}" hint-placeholder-val="{{ false }}">
+                        <span style="margin-left:auto;font-size:11.5px;font-weight:700;color:#B45309;cursor:pointer;flex-shrink:0" style-hover="color:#92400E">여기 열어두기</span>
+                      </sc-if>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+
+      <div style="background:#17171B;border-radius:14px;padding:18px 20px">
+        <div style="display:flex;align-items:center;gap:7px">
+          <span style="width:7px;height:7px;border-radius:50%;background:#F59E0B;display:block"></span>
+          <span style="font-size:11.5px;font-weight:700;color:rgba(255,255,255,0.62);letter-spacing:0.02em">이 일정에서 받을 돈</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:4px;margin-top:10px">
+          <span style="font-size:28px;font-weight:800;letter-spacing:-0.035em;color:#fff;line-height:1;font-variant-numeric:tabular-nums">{{ total }}</span>
+          <span style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.62)">원</span>
+        </div>
+        <div style="font-size:11.5px;color:rgba(255,255,255,0.42);line-height:1.7;margin-top:9px;text-wrap:pretty">{{ totalNote }}</div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+        <div style="height:46px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #F1F1F4">
+          <h2 style="margin:0;font-size:13.5px;font-weight:700;letter-spacing:-0.01em">받을 순서</h2>
+          <span style="margin-left:auto;font-size:11px;color:#9A9AA5">결제 예정일 순</span>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ pays }}" as="p" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid #F5F5F7">
+              <span style="width:6px;height:6px;border-radius:50%;background:#F59E0B;flex-shrink:0;display:block"></span>
+              <div style="min-width:0;flex:1">
+                <div style="font-size:12px;font-weight:700;color:#3C3C46;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.brand }}</div>
+                <div style="font-size:10.5px;color:#9A9AA5;margin-top:2px">{{ p.due }}</div>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:#17171B;flex-shrink:0;font-variant-numeric:tabular-nums">{{ p.pay }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding:12px 18px;font-size:11px;color:#9A9AA5;line-height:1.65;border-top:1px solid #F1F1F4">{{ payNote }}</div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:15px 18px">
+        <div style="font-size:12px;font-weight:800;color:#3C3C46">이 화면에 대해</div>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:11px">
+          <sc-for list="{{ notes }}" as="n" hint-placeholder-count="5">
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <span style="width:4px;height:4px;border-radius:50%;background:#C4C4CE;margin-top:7px;flex-shrink:0;display:block"></span>
+              <span style="font-size:11.5px;color:#5C5C68;line-height:1.65;min-width:0">{{ n }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:900}}">
+// 트래블룸 · 여수 1박 2일 (2026-08-28 ~ 29) — 실제 잡힌 일정
+//
+// ⚠️ 한 협업에 **방문지가 여러 곳**일 수 있다. 꼬북은 두 지점을 묶어 원고료 10만원 + 서비스,
+//    박람회장·돌산은 두 곳을 묶어 50만원이다. 그래서 단위는 「방문」이 아니라 「건(deal)」이고,
+//    건 안에 stops[] 를 둔다. 방문마다 금액을 붙이면 한 건이 두 건으로 세어진다.
+//
+// 시간대는 stops 에서 파생 — 첫 방문 1시간 전부터, 마지막 방문 + 본 1시간 + 여유 1시간까지.
+// 숙박은 시각이 아니라 날짜다 (20:00 → 익일 10:00).
+const DEALS = [
+  { day:'8/28', kind:'visit', brand:'꼬북', what:'두 지점 방문 리뷰',
+    // ⚠️ 간략 위치는 인플루언서가 직접 적는 값이다. 모르는 것을 추정해 채우지 않는다 —
+    //    본인 일정을 보면서 틀린 정보를 읽게 된다. 빈 값이 정상 상태다.
+    stops:[
+      { at:'16:00', name:'여서점', place:'' },
+      { at:'17:00', name:'본점', place:'' },
+    ],
+    pay:100000, perk:'서비스 제공', due:null, st:'확정' },
+
+  { day:'8/28', kind:'stay', brand:'JCS여수', what:'숙박 체험',
+    // 숙박은 방문지가 없다 — 시각은 좌측 열에, 성격은 「체크인 · 체크아웃 기본」에 이미 있다
+    stops:[],
+    pay:0, perk:'1박 제공', due:null, st:'확정' },
+
+  { day:'8/29', kind:'visit', brand:'여수섬박람회 · 돌산', what:'두 곳 방문 리뷰',
+    stops:[
+      { at:'10:00', name:'여수섬박람회장', place:'박람회길 1 · 여수엑스포' },
+      { at:'13:00', name:'돌산 진모지구', place:'돌산읍 강남해안로 196' },
+    ],
+    pay:500000, perk:null, due:null, st:'확정' },
+];
+
+const DAYS = [['8/28', '8월 28일 (금)'], ['8/29', '8월 29일 (토)']];
+const TRIP = (DAYS.length - 1) + '박 ' + DAYS.length + '일';
+const STAY_FROM = '20:00', STAY_TO = '10:00';
+const OPEN_FROM = '09:00', OPEN_TO = '19:00';
+
+const mins = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const hhmm = (n) => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+const won = (n) => n.toLocaleString();
+const dur = (n) => (n >= 60 ? Math.floor(n / 60) + '시간' + (n % 60 ? ' ' + (n % 60) + '분' : '') : n + '분');
+
+class Component extends DCLogic {
+  renderVals() {
+    // 건의 시간대 = 첫 방문 −1시간 ~ 마지막 방문 +2시간(본 1 + 여유 1).
+    // 방문마다 3시간을 따로 잡으면 연속 방문이 서로 겹친다.
+    const span = (j) => {
+      if (j.edited) return { from: j.from, to: j.to };
+      if (j.kind === 'stay') return { from: STAY_FROM, to: STAY_TO };
+      const ats = j.stops.map(s => mins(s.at));
+      return { from: hhmm(Math.max(0, Math.min(...ats) - 60)), to: hhmm(Math.max(...ats) + 120) };
+    };
+
+    const days = DAYS.map(([key, label]) => {
+      const raw = DEALS.filter(j => j.day === key).map(j => ({ ...j, ...span(j) }));
+      // 숙박은 자는 시간이라 빈 칸 계산에서 뺀다 — 같이 세면 저녁 이후가 통째로 막힌다
+      const stays = raw.filter(j => j.kind === 'stay');
+      const list = raw.filter(j => j.kind !== 'stay').sort((a, b) => mins(a.from) - mins(b.from));
+      const slots = [];
+      let cursor = mins(OPEN_FROM);
+
+      const pushGap = (from, to) => {
+        const gap = to - from;
+        if (gap < 30) return;
+        slots.push({
+          isJob: false, isGap: true,
+          range: hhmm(from) + ' – ' + hhmm(to),
+          note: dur(gap) + ' 비어 있어요',
+          canAdd: gap >= 90,
+        });
+      };
+
+      const card = (j) => {
+        const isStay = j.kind === 'stay';
+        return {
+          isJob: true, isGap: false,
+          from: j.from, to: isStay ? j.to + ' 익일' : j.to,
+          isStay,
+          brand: j.brand, what: j.what,
+          stops: j.stops,
+          hasStops: j.stops.length > 0,
+          spanNote: isStay ? '체크인 · 체크아웃 기본'
+            : j.stops.length > 1 ? j.stops.length + '곳 · 앞뒤 여유 포함'
+            : '앞뒤 여유 포함',
+          // 보수는 세 가지 — 원고료만 / 제공만 / 둘 다. 0원이라 쓰면 손해로 읽힌다
+          pay: j.pay ? won(j.pay) + '원' : (j.perk ?? '제공'),
+          // ⚠️ 돈 줄의 항목은 전부 flex-shrink:0 · nowrap 이어야 한다.
+          //    하나라도 줄어들 수 있으면 트랙이 꽉 찰 때 그 항목만 안에서 줄바꿈되어
+          //    「100,000 / 원」처럼 숫자가 쪼개진다. 시간 정보(spanNote)는 이 줄에서 뺐다.
+          payStyle: 'flex-shrink:0;white-space:nowrap;font-size:13px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:'
+            + (j.pay ? '#17171B' : '#1D4ED8')
+            + (j.pay ? '' : ';border-bottom:1px dashed #93C5FD;cursor:pointer'),
+          // ⚠️ 제공받는 것의 표현은 **인플루언서가 고친다.** 광고주가 「식사 제공」이라 적어도
+          //    실제로 무엇을 받았는지는 본인이 안다 (「저녁 2인 · 음료 포함」처럼).
+          //    금액은 합의된 값이라 못 고치고, 제공 표현만 열어둔다 — 점선 밑줄로 구분한다.
+          hasPerk: !!(j.pay && j.perk),
+          perk: '+ ' + (j.perk ?? ''),
+          payHint: j.pay ? '합의된 금액이에요' : '눌러서 고칠 수 있어요',
+          payStyle2: !j.pay ? ';border-bottom:1px dashed #93C5FD;cursor:pointer' : '',
+          // ⚠️ 제공만 받는 건에 「결제일 미정」을 붙이면 정할 결제일이 남은 것으로 읽혀
+          //    인플루언서가 협의하러 간다. 현금이 없으면 「결제 없음」이다.
+          due: j.pay ? (j.due ? '결제 ' + j.due : '결제일 미정') : '결제 없음',
+          st: j.st,
+          stStyle: 'font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;flex-shrink:0;background:#DCFCE7;color:#15803D',
+          dotStyle: 'width:9px;height:9px;border-radius:' + (isStay ? '3px' : '50%')
+            + ';background:' + (isStay ? '#3B82F6' : '#F59E0B') + ';flex-shrink:0;margin-top:5px;display:block',
+        };
+      };
+
+      list.forEach(j => {
+        pushGap(cursor, mins(j.from));
+        slots.push(card(j));
+        cursor = mins(j.to);
+      });
+      pushGap(cursor, mins(OPEN_TO));
+      stays.forEach(j => slots.push(card(j)));
+
+      const busy = list.reduce((a, j) => a + (mins(j.to) - mins(j.from)), 0);
+      const free = (mins(OPEN_TO) - mins(OPEN_FROM)) - busy;
+
+      return {
+        label, slots,
+        count: '협업 ' + raw.length + '건',
+        free: free > 0 ? '빈 시간 ' + dur(free) : '빈 시간 없음',
+      };
+    });
+
+    const cash = DEALS.reduce((a, j) => a + (j.pay ?? 0), 0);
+    const perks = DEALS.filter(j => j.perk);
+
+    return {
+      days,
+      openTitle: '여수 ' + TRIP,
+      openSub: '8월 28일 – 29일 · 협업 ' + DEALS.length + '건 확정 · 방문 '
+        + DEALS.filter(d => d.kind !== 'stay').reduce((a, d) => a + d.stops.length, 0) + '곳',
+
+      total: won(cash),
+      totalNote: '광고주마다 따로 계약한 건이라 각각 입금됩니다.'
+        + (perks.length ? ' 이 밖에 ' + perks.map(p => p.brand + ' ' + p.perk).join(' · ') + '을 받아요.' : ''),
+
+      // 헤더가 「결제 예정일 순」이라 적혀 있으니 실제로 정렬한다. 미정은 뒤로.
+      pays: DEALS.filter(j => j.pay)
+        .sort((a, b) => (a.due ?? '9999').localeCompare(b.due ?? '9999'))
+        .map(j => ({
+        brand: j.brand, due: j.due ? j.due + ' 예정' : '결제일 미정', pay: won(j.pay) + '원',
+      })),
+      payNote: '결제일이 아직 정해지지 않은 건은 대시에서 협의해 정해주세요.',
+
+      notes: [
+        '한 건에 방문지가 여러 곳일 수 있어요. 꼬북 두 지점, 박람회장·돌산처럼 묶인 건은 카드 하나에 방문 시각을 나란히 보여줍니다.',
+        '시간대는 첫 방문 1시간 전부터 마지막 방문 2시간 뒤까지 잡혀요. 「딜시트 열기」에서 조정할 수 있습니다.',
+        '숙박은 오후 8시부터 다음날 오전 10시까지가 기본이에요. 자는 시간이라 다른 일정과 겹쳐도 되고 빈 시간 계산에서 빠집니다.',
+        '보수는 건마다 달라요 — 원고료만, 제공만, 둘 다. 제공은 합계에 넣지 않고 아래에 따로 적습니다.',
+        '파란 점선이 그어진 「제공」 표현은 눌러서 고칠 수 있어요. 「서비스 제공」을 「저녁 2인 · 음료 포함」처럼 실제 받은 대로 적어두면 나중에 찾기 쉽습니다. 금액은 합의된 값이라 대시에서만 바꿉니다.',
+        '빈 시간이 1시간 30분 넘게 남으면 「여기 열어두기」로 그 시간대만 다시 열 수 있어요. 다른 광고주가 그 시간대와 위치를 보고 대시합니다.',
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

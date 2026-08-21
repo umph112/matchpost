@@ -29,8 +29,12 @@ export default async function ScheduleListPage() {
 
   const ScheduleCard = ({ schedule }: { schedule: any }) => {
     const { label, color } = statusLabel(schedule.status)
+    // 일정을 누르면 그날의 묶음 보기로 — D24
     return (
-      <div className="bg-white rounded-2xl p-5 shadow-sm mb-3">
+      <Link
+        href={`/influencer/schedule/${schedule.id}`}
+        className="block bg-white rounded-2xl p-5 shadow-sm mb-3 hover:shadow-md transition"
+      >
         <div className="flex items-start justify-between mb-3">
           <div>
             <h3 className="font-semibold text-gray-800">{schedule.title}</h3>
@@ -74,7 +78,7 @@ export default async function ScheduleListPage() {
               : <span className="flex items-center gap-1"><Lock size={16} strokeWidth={1.75} /> 비공개</span>}
           </span>
         </div>
-      </div>
+      </Link>
     )
   }
 

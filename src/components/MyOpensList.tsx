@@ -61,34 +61,30 @@ export default function MyOpensList({ opens }: { opens: Open[] }) {
         <div className="space-y-2">
           {list.map((o) => (
             <div key={o.id} className="bg-white rounded-2xl p-4 shadow-sm">
-              {/* 대시가 온 오픈만 대화로 연결(0건은 커서 없음) — C4 */}
-              {o.dashHref ? (
-                <Link href={o.dashHref} className="flex items-start justify-between gap-2 -m-1 p-1 rounded-xl hover:bg-gray-50 transition">
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{o.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 flex items-center flex-wrap gap-x-2 gap-y-0.5">
-                      <span className="inline-flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {o.date}</span>
-                      <span className="inline-flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {o.location_city} {o.location_district}</span>
-                    </p>
-                    <p className="text-[11px] text-[#B45309] font-medium mt-1 flex items-center gap-1"><MessageSquare size={16} strokeWidth={1.75} /> 대시 열기 →</p>
-                  </div>
-                  <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[o.derivedStatus]}`}>
-                    {o.derivedStatus}
-                  </span>
-                </Link>
-              ) : (
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{o.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 flex items-center flex-wrap gap-x-2 gap-y-0.5">
-                      <span className="inline-flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {o.date}</span>
-                      <span className="inline-flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {o.location_city} {o.location_district}</span>
-                    </p>
-                  </div>
-                  <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[o.derivedStatus]}`}>
-                    {o.derivedStatus}
-                  </span>
+              {/* 오픈을 누르면 그날의 묶음 보기로 — D24 */}
+              <Link
+                href={`/influencer/schedule/${o.id}`}
+                className="flex items-start justify-between gap-2 -m-1 p-1 rounded-xl hover:bg-gray-50 transition"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-900 truncate">{o.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 flex items-center flex-wrap gap-x-2 gap-y-0.5">
+                    <span className="inline-flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {o.date}</span>
+                    <span className="inline-flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {o.location_city} {o.location_district}</span>
+                  </p>
                 </div>
+                <span className={`shrink-0 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLE[o.derivedStatus]}`}>
+                  {o.derivedStatus}
+                </span>
+              </Link>
+              {/* 대시가 온 오픈만 대화로 연결(0건은 커서 없음) — C4 */}
+              {o.dashHref && (
+                <Link
+                  href={o.dashHref}
+                  className="text-[11px] text-[#B45309] hover:text-[#92400E] font-medium mt-1 inline-flex items-center gap-1"
+                >
+                  <MessageSquare size={16} strokeWidth={1.75} /> 대시 열기 →
+                </Link>
               )}
               {o.derivedStatus === '진행중' && (
                 <div className="flex justify-end mt-2">
