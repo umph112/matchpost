@@ -121,7 +121,7 @@ export default function MessageBubble({
                 <span className="text-[9.5px] font-bold bg-[#DBEAFE] text-[#1D4ED8] rounded-full px-1.5 py-0.5">
                   {targetedName}님에게만
                 </span>
-                <span className="text-[10px] text-[#93A3B8]">다른 참여자에게는 가지 않았어요</span>
+                <span className="w-full text-[11.5px] text-[#7C7C88]">다른 참여자에게는 가지 않았어요</span>
               </>
             )}
             {groupSentBadge && (
@@ -129,7 +129,7 @@ export default function MessageBubble({
                 <span className="text-[9.5px] font-bold bg-[#DBEAFE] text-[#1E3A8A] rounded-full px-1.5 py-0.5">
                   단체 발송
                 </span>
-                <span className="text-[10px] text-[#93A3B8]">참여자 모두에게 같은 내용이 갔어요</span>
+                <span className="w-full text-[11.5px] text-[#7C7C88]">참여자 모두에게 같은 내용이 갔어요</span>
               </>
             )}
           </div>

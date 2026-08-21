@@ -146,7 +146,7 @@ function PostRow({ post }: { post: PostKeywordRanking }) {
         <RankBadge rank={bestKwRank} />
         {/* 펼치기 화살표 */}
         {hasKeywords && (
-          <span className="text-[10px] text-[#C4C4CE] shrink-0 ml-1">
+          <span className="text-[10px] text-[#9A9AA5] shrink-0 ml-1">
             {open ? '▲' : '▼'}
           </span>
         )}
@@ -157,7 +157,7 @@ function PostRow({ post }: { post: PostKeywordRanking }) {
         <div className="border-t border-[#F1F1F4] bg-[#FAFAFA] px-3 py-2 space-y-1.5">
           {(post.keywords ?? []).map((kw) => (
             <div key={kw.keyword} className="flex items-center gap-2">
-              <span className={`text-[9px] font-bold rounded px-1 py-[1px] shrink-0 ${
+              <span className={`text-[9.5px] font-bold rounded px-1 py-[1px] shrink-0 ${
                 kw.found ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#F1F1F4] text-[#9A9AA5]'}`}>
                 {kw.found ? '노출' : '미노출'}
               </span>
@@ -227,7 +227,7 @@ export function BlogAnalyticsFull({ data }: { data: BlogAnalytics | null }) {
             <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em]">
               최근 포스팅 검색 노출
             </p>
-            <span className="text-[10.5px] text-[#C4C4CE]">
+            <span className="text-[11.5px] text-[#9A9AA5]">
               {exposedCount}/{allKws.length}키워드 · 제목 클릭 시 상세
             </span>
           </div>
@@ -244,7 +244,7 @@ export function BlogAnalyticsFull({ data }: { data: BlogAnalytics | null }) {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em]">카테고리 키워드</p>
-            <span className="text-[10.5px] text-[#C4C4CE]">
+            <span className="text-[11.5px] text-[#9A9AA5]">
               TOP10 {data.top10_count ?? 0} / TOP30 {data.top30_count ?? 0}
             </span>
           </div>
@@ -254,14 +254,14 @@ export function BlogAnalyticsFull({ data }: { data: BlogAnalytics | null }) {
                 <span className="text-[#5C5C68] truncate flex-1">{kr.keyword}</span>
                 {kr.found && kr.rank != null
                   ? <RankBadge rank={kr.rank} />
-                  : <span className="text-[#C4C4CE] shrink-0 text-[11px]">미노출</span>}
+                  : <span className="text-[#9A9AA5] shrink-0 text-[11px]">미노출</span>}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <p className="text-[10.5px] text-[#C4C4CE] mt-4">
+      <p className="text-[11.5px] text-[#9A9AA5] mt-4">
         자동 수집 데이터 · 매일 갱신 · 광고주에게도 공개됩니다
       </p>
     </div>
@@ -321,7 +321,7 @@ export function BlogAnalyticsSummaryCard({ data }: { data: BlogAnalytics | null 
           <span className="text-[11.5px] text-[#9A9AA5]">네이버 블로그</span>
         </div>
         {data.crawled_at && (
-          <span className="text-[10.5px] text-[#C4C4CE]">
+          <span className="text-[11.5px] text-[#9A9AA5]">
             {new Date(data.crawled_at).toLocaleDateString('ko-KR')} 기준
           </span>
         )}
@@ -361,7 +361,7 @@ export function BlogAnalyticsSummaryCard({ data }: { data: BlogAnalytics | null 
         </div>
       )}
 
-      <p className="text-[10.5px] text-[#C4C4CE] mt-2.5 text-right">상세 분석 보기 →</p>
+      <p className="text-[12px] text-[#B45309] min-h-[44px] flex items-center justify-end mt-2.5">상세 분석 보기 →</p>
     </Link>
   )
 }
