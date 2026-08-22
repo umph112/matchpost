@@ -360,5 +360,4 @@ Grade S       bg #FEF3C7 / text #B45309
 ```
 
 ## 테스트 계정
-- 인플루언서: umph112 / pun0406 / merry9849 (비번 동일)
-- 광고주: advertiser@test.com
+없다. 이전 세션의 테스트 계정(umph112@gmail.com · pun0406 · merry9849 · advertiser@test.com · influencer@test.com 등)은 2026-08-22 전부 삭제됐다 → 그 UUID로 seed 하면 FK 오류가 난다. PC·모바일에서 직접 가입하며 테스트한다. 관리자 계정(admin@matchpost.com)만 남아 있다. 자세한 내용은 `docs/REPO-STATUS-CHECK.md`의 「계정 상태」 참고.
