@@ -52,6 +52,21 @@ npx vercel env pull .env.local
 - 출력의 `not found in the ... Environment` 줄 = Vercel에 미등록이라는 뜻. 배포판에서 그 기능이 안 된다는 신호
 - 새 키는 **로컬이 아니라 Vercel에 먼저** 넣어야 원본이 유지된다 (`npx vercel env add KEY`)
 
+**⭐ 누락 감사(監査) — 코드가 요구하는 키 vs Vercel에 있는 키.** `env pull`은 "로컬에 없는 것"만 알려주므로
+**로컬·Vercel 양쪽에 다 없는 키는 영영 안 드러난다**(`NEXT_PUBLIC_SITE_URL`이 이렇게 숨어 있었다). 코드를 원본으로 삼는다:
+
+```bash
+grep -rhoE "process\.env\.[A-Z0-9_]+" src/ | sed 's/process\.env\.//' | sort -u   # 코드가 요구하는 전체
+npx vercel env ls                                                                 # Vercel에 실제 있는 것
+```
+> 2026-08-22 기준 코드 요구 **7종** — Supabase 3 + `NAVER_API_CLIENT_ID`/`SECRET` + `CRON_SECRET` + `NEXT_PUBLIC_SITE_URL`.
+> 당시 Vercel엔 Supabase 3종뿐이었다. 새 기능이 env를 추가하면 이 숫자가 늘어난다.
+
+비대화형으로 등록할 때(환경마다 따로 실행해야 한다 — 한 번에 여러 환경 지정 불가):
+```bash
+npx vercel env add KEY production --value "값" --yes
+```
+
 확인만 할 때:
 ```powershell
 Get-Content .env.local | Select-String '^\s*[A-Z_]+\s*=' | ForEach-Object { ($_ -split '=')[0].Trim() }
@@ -115,8 +130,11 @@ Supabase는 **클라우드 한 곳을 두 기기가 공유**한다. 아래가 "�
 해결하면 이 절을 지운다. **반대로 새로 발견하면 여기에 추가한다.**
 
 1. ~~**Storage `campaign-images` 버킷 없음**~~ → **2026-08-22 해결.** `0091_campaign_images_bucket.sql`로 버킷(public=true) + 정책 4개 생성. 클라우드 공유라 양쪽 기기 모두 적용됨
-2. **Vercel에 `NAVER_API_CLIENT_ID` / `NAVER_API_CLIENT_SECRET` 미등록**(development 기준) — 배포판 장소검색·오픈 조인 영향. 로컬엔 둘 다 값 있음
-3. **`CRON_SECRET` 등록 여부 미확인** — `vercel.json` 크론 7개가 이 키로 인증한다. 미등록이면 배포판 크론이 전부 401. 로컬 개발엔 불필요
+2. ~~**Vercel에 `NAVER_API_CLIENT_ID` / `NAVER_API_CLIENT_SECRET` 미등록**~~ → **2026-08-22 해결.** 아래 3번과 함께 CLI로 등록·재배포·실동작 검증 완료
+3. ~~**`CRON_SECRET` 등록 여부 미확인**~~ → **2026-08-22 해결.** 조회 결과 **실제로 없었다** — 그동안 `vercel.json` 크론 9개가 전부 401로 튕기고 있었다(문서엔 "7개"로 적혀 있었으나 실제 9개). 신규 생성해 등록. **값은 Vercel에서만 관리한다 — 레포·대화 기록에 남기지 않는다.** 잃어버리면 `npx vercel env pull`로 회수
+   - 같이 발견: **`NEXT_PUBLIC_SITE_URL`은 Vercel·`.env.local` 어디에도 없었다.** `siteUrl.ts`가 `http://localhost:3000`으로 폴백해 배포판 OG·공유링크가 localhost를 가리키던 상태. 환경별로 다르게 등록했다(Production·Preview=배포주소 / Development=`localhost:3000`)
+   - ⚠️ `NEXT_PUBLIC_` 접두사 변수는 Vercel이 Production·Preview에서 Sensitive 저장을 거부한다(`invalid_visibility`). `--visibility config --no-sensitive`를 붙여야 등록된다
+   - ⚠️ **로컬 `.env.local`엔 `CRON_SECRET`·`NEXT_PUBLIC_SITE_URL`이 아직 없다.** 다른 기기에서는 `npx vercel env pull .env.local`로 받아야 로컬·배포판이 같아진다
 4. **배치 라우트 11개 중 4개가 `vercel.json`에 미등록** — `cancellation-autoconfirm`, `cancellation-count-reset`, `report-autoclose`, `sanction-recalc`. 의도인지 누락인지 미확인
 
 ## CLAUDE.md 신뢰도 경고
