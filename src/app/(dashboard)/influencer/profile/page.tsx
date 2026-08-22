@@ -7,6 +7,7 @@ import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
 import { CircleCheck, BarChart3 } from 'lucide-react'
 import { unregisterConnection } from '@/lib/connections/actions'
+import { firstReportLabel } from '@/lib/blogAnalyzer/schedule'
 
 const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
 const PLATFORMS = ['인스타그램', '유튜브', '블로그', '틱톡']
@@ -23,6 +24,10 @@ export default function InfluencerProfilePage() {
   const [instagramUrl, setInstagramUrl] = useState('')
   const [youtubeUrl, setYoutubeUrl] = useState('')
   const [blogUrl, setBlogUrl] = useState('')
+  // D25 §2 — 입력칸의 값(blogUrl)과 "저장된 값"을 나눠 둔다.
+  // 타이핑만 한 상태에서 「채널을 등록했어요」가 뜨면 등록된 줄 알고 나가버린다.
+  const [savedBlogUrl, setSavedBlogUrl] = useState('')
+  const [hasReport, setHasReport] = useState(false)
   const [portfolioUrl, setPortfolioUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -102,8 +107,17 @@ export default function InfluencerProfilePage() {
         setInstagramUrl(ip.instagram_url ?? '')
         setYoutubeUrl(ip.youtube_url ?? '')
         setBlogUrl(ip.blog_url ?? '')
+        setSavedBlogUrl(ip.blog_url ?? '')
         setPortfolioUrl(ip.portfolio_url ?? '')
       }
+
+      // 이미 리포트가 한 번이라도 나온 사람에게 「첫 리포트」 안내를 띄우지 않기 위해
+      const { data: ba } = await supabase
+        .from('blog_analytics')
+        .select('blog_id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      setHasReport(!!ba?.blog_id)
     }
     fetchProfile()
   }, [])
@@ -158,6 +172,7 @@ export default function InfluencerProfilePage() {
 
     setSuccess(true)
     setTimeout(() => setSuccess(false), 2000)
+    setSavedBlogUrl(blogUrl) // D25 §2 — 저장이 끝난 뒤에만 안내 카드가 뜨도록
     setLoading(false)
   }
 
@@ -244,6 +259,19 @@ export default function InfluencerProfilePage() {
           <input type="text" value={blogUrl} onChange={(e) => setBlogUrl(e.target.value)}
             className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
             placeholder="블로그 URL" />
+
+          {/* D25 §2 — 등록해도 화면이 그대로면 "안 된 건가" 싶다.
+              분석은 밤 10시 배치가 한 번 돌아야 생기므로, 등록한 그 자리에서 언제부터 볼 수 있는지 알려준다. */}
+          {savedBlogUrl.trim() !== '' && !hasReport && (
+            <div className="rounded-[11px] border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3.5">
+              <p className="text-[13px] font-bold text-[#92400E]">채널을 등록했어요</p>
+              <p className="mt-1 text-[11.5px] text-[#B45309] leading-[1.65]">
+                {firstReportLabel()}에 첫 리포트가 만들어져요.
+                <br />
+                방문자 · 이웃 수 · 발행 주기를 모아 등급을 계산합니다.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
