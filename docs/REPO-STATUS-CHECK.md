@@ -100,11 +100,21 @@ curl -s -H "apikey: $KEY" -H "Authorization: Bearer $KEY" "$URL/storage/v1/bucke
 
 ---
 
-## 알려진 미완료 항목 (2026-08-10 확인, 미해결)
+## SQL 실행 기록
+
+Supabase는 **클라우드 한 곳을 두 기기가 공유**한다. 아래가 "실행 완료"면 노트북·데스크톱 어디서든
+이미 적용된 상태이므로 **다시 실행할 필요가 없다.** (파일은 새 환경 재현·이력 보존용)
+
+| 마이그레이션 | 실행 |
+|---|---|
+| `0090_proposal_stops_and_perk.sql` | ✅ 완료 (2026-08-21 DB 대조 확인 — 테이블·컬럼·함수 전부 존재) |
+| `0091_campaign_images_bucket.sql` | ✅ 완료 (2026-08-22 SQL Editor에서 실행, 버킷 생성 REST 검증) |
+
+## 알려진 미완료 항목 (2026-08-10 확인)
 
 해결하면 이 절을 지운다. **반대로 새로 발견하면 여기에 추가한다.**
 
-1. **Storage `campaign-images` 버킷 없음** — 현재 `chat-files`, `campaign-guides` 둘뿐. migration 0011로 컬럼은 있으므로 캠페인 이미지 업로드가 버킷 단계에서 실패 가능
+1. ~~**Storage `campaign-images` 버킷 없음**~~ → **2026-08-22 해결.** `0091_campaign_images_bucket.sql`로 버킷(public=true) + 정책 4개 생성. 클라우드 공유라 양쪽 기기 모두 적용됨
 2. **Vercel에 `NAVER_API_CLIENT_ID` / `NAVER_API_CLIENT_SECRET` 미등록**(development 기준) — 배포판 장소검색·오픈 조인 영향. 로컬엔 둘 다 값 있음
 3. **`CRON_SECRET` 등록 여부 미확인** — `vercel.json` 크론 7개가 이 키로 인증한다. 미등록이면 배포판 크론이 전부 401. 로컬 개발엔 불필요
 4. **배치 라우트 11개 중 4개가 `vercel.json`에 미등록** — `cancellation-autoconfirm`, `cancellation-count-reset`, `report-autoclose`, `sanction-recalc`. 의도인지 누락인지 미확인
@@ -114,8 +124,20 @@ curl -s -H "apikey: $KEY" -H "Authorization: Bearer $KEY" "$URL/storage/v1/bucke
 `CLAUDE.md`의 "Supabase 미실행 SQL(순서대로) 0058~0064" 및 0010/0011/0018/0019 "실행 필요" 표기는
 **실제로는 전부 실행 완료** 상태다(2026-08-10 DB 대조). SQL은 돌리고 문서 줄만 안 지운 것.
 
-그러나 같은 문단의 `campaign-images` 버킷·Vercel 네이버키는 **진짜 미완료**다.
+그러나 같은 문단의 Vercel 네이버키는 **진짜 미완료**다(`campaign-images` 버킷은 2026-08-22 해결).
 → **"⚠️ 표시 일괄 정리"는 위험하다.** 반드시 DB와 1:1 대조 후 개별 판단할 것.
+
+## 계정 상태 (2026-08-22)
+
+사용자 지시로 **`admin@matchpost.com`(role=admin) 하나만 남기고 전 계정을 삭제**했다.
+연관 데이터도 전부 0건(campaigns·proposals·schedules·messages·conversations·notifications·earnings 등).
+과거 문서에 나오는 테스트 계정(`umph112@gmail.com`, `advertiser@test.com`, `influencer@test.com`)은
+**존재하지 않는다** — 그 UUID로 seed 하면 FK 오류가 난다. PC·모바일에서 직접 가입하며 테스트하는 중.
+
+계정 삭제가 막힐 때: ① `credit_ledger`의 append-only 트리거 ② `connections_b_id_fkey` 등 cascade 없는 FK.
+`alter table … disable trigger user` → 참조 FK 컬럼 전수 삭제 → 계정 삭제 → 트리거 원복 순서로 푼다.
+🚨 **SQL Editor는 문(statement)마다 세션이 달라** 임시 테이블과 `begin;`/`commit;`이 문 사이로 이어지지 않는다
+(실제로 `relation "_victims" does not exist`로 실패). 전체를 단일 `do $$ … $$;` 블록 한 문장으로 써야 원자성이 보장된다.
 
 ## 세션 마감 시 (다음 사람이 헤매지 않도록)
 
