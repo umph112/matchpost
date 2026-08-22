@@ -1,0 +1,2400 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@900&display=swap" rel="stylesheet" />
+<style>
+  body { margin:0; background:#F4F4F6; color:#17171B; font-family:"Pretendard Variable", -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#B45309; text-decoration:none; }
+  a:hover { color:#92400E; }
+</style>
+</helmet>
+
+<div style="min-width:1360px;display:flex">
+
+  <aside style="width:236px;flex-shrink:0;background:#fff;border-right:1px solid #EAEAEE;position:sticky;top:0;height:100vh;display:flex;flex-direction:column">
+    <div style="height:64px;display:flex;align-items:center;gap:10px;padding:0 20px;border-bottom:1px solid #F1F1F4;cursor:pointer" onClick="{{ goToday }}" title="오늘로">
+      <svg viewBox="0 0 64 64" width="24" height="24" style="flex-shrink:0"><rect width="64" height="64" rx="16.6" fill="#17171B"></rect><rect y="37.1" width="64" height="1.9" fill="#fff" opacity="0.28"></rect><rect x="24.3" width="1.9" height="64" fill="#fff" opacity="0.28"></rect><circle cx="25.3" cy="38.1" r="8.3" fill="#F59E0B"></circle></svg>
+      <div style="min-width:0">
+        <div style="display:flex;align-items:center;font-family:Archivo, 'Pretendard Variable', sans-serif;font-size:14px;font-weight:900;letter-spacing:0.05em;line-height:1">MATCH<span style="width:4px;height:4px;border-radius:50%;background:#F59E0B;margin:0 3px;flex-shrink:0"></span>POST</div>
+        <div style="font-size:10px;font-weight:700;color:#B0B0BB;margin-top:3px;letter-spacing:0.02em">운영 콘솔</div>
+      </div>
+    </div>
+
+    <div style="padding:10px 12px 0;flex:1;min-height:0;overflow-y:auto">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="9">
+          <sc-if value="{{ n.isDiv }}" hint-placeholder-val="{{ false }}">
+            <div style="height:1px;background:#F1F1F4;margin:9px 10px"></div>
+          </sc-if>
+          <sc-if value="{{ n.isItem }}" hint-placeholder-val="{{ true }}">
+            <div style="{{ n.style }}" style-hover="background:#F6F6F7" onClick="{{ n.onClick }}">
+              <span style="width:16px;text-align:center;opacity:0.75;flex-shrink:0">{{ n.icon }}</span>
+              <span>{{ n.label }}</span>
+              <sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}">
+                <span style="{{ n.badgeStyle }}">{{ n.badge }}</span>
+              </sc-if>
+            </div>
+          </sc-if>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding:12px 14px;border-top:1px solid #F1F1F4">
+      <div style="background:#FBFBFC;border:1px solid #EFEFF2;border-radius:11px;padding:11px 12px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="{{ healthDot }}"></span>
+          <span style="font-size:11.5px;font-weight:700;color:#3C3C46">{{ healthLabel }}</span>
+        </div>
+        <div style="font-size:10.5px;color:#9A9AA5;line-height:1.55;margin-top:5px">{{ healthNote }}</div>
+      </div>
+    </div>
+  </aside>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <header style="height:64px;flex-shrink:0;background:#fff;border-bottom:1px solid #EAEAEE;display:flex;align-items:center;padding:0 28px;position:sticky;top:0;z-index:20">
+      <span style="font-size:14px;font-weight:800;letter-spacing:-0.02em">{{ pageTitle }}</span>
+      <span style="margin-left:10px;font-size:11.5px;color:#9A9AA5">{{ pageSub }}</span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:9px">
+        <div style="display:flex;align-items:center;gap:7px;height:36px;padding:0 13px;border-radius:9px;border:1px solid #E2E2E8;font-size:12.5px;color:#B0B0BB;min-width:210px;cursor:text">
+          <span style="opacity:0.55">🔍</span><span>회원 · 캠페인 · 딜 검색</span>
+        </div>
+        <div onClick="{{ goToday }}" style="display:flex;align-items:center;gap:9px;height:42px;padding:0 10px 0 12px;border-radius:21px;cursor:pointer" style-hover="background:#F6F6F7">
+          <span style="font-size:12.5px;font-weight:700;color:#3C3C46">운영 정원일</span>
+          <span style="width:34px;height:34px;border-radius:50%;background:#17171B;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">일</span>
+        </div>
+      </div>
+    </header>
+
+    <main style="padding:20px 28px 40px;display:flex;flex-direction:column;gap:14px">
+
+      <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+          <sc-for list="{{ queue }}" as="q" hint-placeholder-count="4">
+            <div style="{{ q.cardStyle }}" onClick="{{ q.onClick }}">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="{{ q.dotStyle }}"></span>
+                <span style="font-size:11.5px;font-weight:700;color:#5C5C68">{{ q.k }}</span>
+              </div>
+              <sc-if value="{{ q.notSysCard }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;align-items:baseline;gap:5px;margin-top:9px">
+                  <span style="{{ q.nStyle }}">{{ q.n }}</span>
+                  <span style="font-size:12px;font-weight:700;color:#9A9AA5">건</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ q.isSysCard }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:baseline;gap:6px;margin-top:9px">
+                  <span style="font-size:19px;font-weight:800;letter-spacing:-0.03em;color:#DC2626">{{ q.sysWord }}</span>
+                  <span style="font-size:12px;font-weight:700;color:#9A9AA5">발생</span>
+                </div>
+              </sc-if>
+              <div style="font-size:11px;color:#9A9AA5;line-height:1.5;margin-top:6px">{{ q.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700;letter-spacing:-0.01em">회원 현황</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">{{ todayLabel }}</span>
+
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);align-items:stretch">
+            <sc-for list="{{ memberStat }}" as="m" hint-placeholder-count="2">
+              <div style="padding:16px 20px 17px;border-right:1px solid #F1F1F4">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <span style="{{ m.dotStyle }}"></span>
+                  <span style="font-size:12px;font-weight:700;color:#5C5C68">{{ m.role }}</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-top:10px">
+                  <span style="font-size:26px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;color:#F59E0B">{{ m.todayLabel }}</span>
+                  <span style="font-size:11.5px;font-weight:700;color:#9A9AA5">오늘</span>
+                  <span style="{{ m.diffStyle }}">{{ m.diffLabel }}</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:6px;margin-top:11px;padding-top:11px;border-top:1px solid #F5F5F7">
+                  <span style="font-size:11.5px;color:#9A9AA5">누적</span>
+                  <span style="font-size:16px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums">{{ m.totalLabel }}</span>
+                  <span style="font-size:11.5px;color:#9A9AA5">명</span>
+                </div>
+              </div>
+            </sc-for>
+            <div style="padding:16px 20px 17px;background:#FBFBFC">
+              <div style="font-size:12px;font-weight:700;color:#5C5C68">전체</div>
+              <div style="display:flex;align-items:baseline;gap:8px;margin-top:10px">
+                <span style="font-size:26px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">{{ memberTotal }}</span>
+                <span style="font-size:11.5px;font-weight:700;color:#9A9AA5">명</span>
+              </div>
+              <div style="font-size:11.5px;color:#B45309;font-weight:700;margin-top:11px;padding-top:11px;border-top:1px solid #EFEFF2">{{ memberToday }}</div>
+            </div>
+          </div>
+        </section>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700;letter-spacing:-0.01em">트래픽</h2>
+            <span style="margin-left:9px;font-size:11.5px;color:#9A9AA5">{{ trafficWhen }}</span>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#B0B0BB">{{ trafficPeak }}</span>
+
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;align-items:stretch">
+            <div style="padding:16px 20px 14px;border-right:1px solid #F1F1F4">
+              <div style="display:flex;align-items:flex-end;gap:2px;height:76px">
+                <sc-for list="{{ bars }}" as="b" hint-placeholder-count="24">
+                  <div style="{{ b.style }}"></div>
+                </sc-for>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:7px;font-size:10px;color:#B0B0BB">
+                <span>0시</span><span>6시</span><span>12시</span><span>18시</span><span>23시</span>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr">
+              <sc-for list="{{ traffic }}" as="t" hint-placeholder-count="4">
+                <div style="padding:13px 18px;border-bottom:1px solid #F5F5F7;border-right:1px solid #F5F5F7">
+                  <div style="font-size:11px;color:#9A9AA5">{{ t.k }}</div>
+                  <div style="font-size:18px;font-weight:800;letter-spacing:-0.025em;font-variant-numeric:tabular-nums;margin-top:4px">{{ t.v }}</div>
+                  <div style="font-size:10.5px;color:#B0B0BB;margin-top:3px">{{ t.s }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </section>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700;letter-spacing:-0.01em">진행중인 오픈</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">{{ openNote }}</span>
+
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #F1F1F4">
+            <sc-for list="{{ openToday }}" as="o" hint-placeholder-count="3">
+              <div style="padding:14px 20px 15px;border-right:1px solid #F1F1F4">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <span style="{{ o.dotStyle }}"></span>
+                  <span style="font-size:11.5px;font-weight:700;color:#5C5C68">{{ o.kind }}</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:5px;margin-top:8px">
+                  <span style="{{ o.nStyle }}">{{ o.n }}</span>
+                  <span style="font-size:11.5px;font-weight:700;color:#9A9AA5">건</span>
+                </div>
+                <div style="font-size:10.5px;color:#9A9AA5;margin-top:4px">{{ o.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+        </section>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700;letter-spacing:-0.01em">진행중인 캠페인</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">{{ runningNote }}</span>
+
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #F1F1F4">
+            <sc-for list="{{ todayWork }}" as="w" hint-placeholder-count="3">
+              <div style="padding:14px 20px 15px;border-right:1px solid #F1F1F4">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <span style="{{ w.dotStyle }}"></span>
+                  <span style="font-size:11.5px;font-weight:700;color:#5C5C68">{{ w.kind }}</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:5px;margin-top:8px">
+                  <span style="{{ w.nStyle }}">{{ w.n }}</span>
+                  <span style="font-size:11.5px;font-weight:700;color:#9A9AA5">{{ w.unit }}</span>
+                </div>
+                <div style="font-size:10.5px;color:#9A9AA5;margin-top:4px">{{ w.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+        </section>
+
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:stretch">
+          <div style="display:flex;flex-direction:column;gap:14px;min-width:0;min-height:0">
+            <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0">
+              <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4;flex-shrink:0">
+                <h2 style="margin:0;font-size:14px;font-weight:700;letter-spacing:-0.01em">지금 처리할 것</h2>
+                <span style="margin-left:9px;font-size:11.5px;color:#9A9AA5">오래된 순</span>
+
+              </div>
+              <sc-for list="{{ todos }}" as="t" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 20px;border-bottom:1px solid #F5F5F7;cursor:pointer" style-hover="background:#FAFAFB" onClick="{{ t.onClick }}">
+                  <span style="{{ t.tagStyle }}">{{ t.tag }}</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:12.5px;font-weight:700;color:#2A2A33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.title }}</div>
+                    <div style="font-size:11px;color:#9A9AA5;margin-top:3px">{{ t.sub }}</div>
+                  </div>
+                  <span style="{{ t.ageStyle }}">{{ t.age }}</span>
+                </div>
+              </sc-for>
+            </section>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;min-width:0;min-height:0">
+            <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid #F1F1F4">
+                <span style="{{ healthBigDot }}"></span>
+                <h2 style="{{ healthTitleStyle }}">{{ healthTitle }}</h2>
+                <span style="margin-left:auto;font-size:11px;font-weight:700;color:#B45309;cursor:pointer" onClick="{{ goSys }}">알림 설정</span>
+              </div>
+              <sc-if value="{{ hasBad }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ badHealth }}" as="h" hint-placeholder-count="2">
+                  <div style="padding:13px 18px;border-bottom:1px solid #F5F5F7">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="{{ h.lvStyle }}">{{ h.lvLabel }}</span>
+                      <span style="font-size:12.5px;font-weight:700;color:#2A2A33;flex:1;min-width:0">{{ h.k }}</span>
+                      <sc-if value="{{ h.hasAction }}" hint-placeholder-val="{{ false }}">
+                        <span style="{{ h.actionStyle }}" onClick="{{ h.onAction }}">{{ h.action }}</span>
+                      </sc-if>
+                    </div>
+                    <div style="font-size:11.5px;color:#3C3C46;margin-top:6px;line-height:1.5">{{ h.v }}</div>
+                    <sc-if value="{{ h.hasSub }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:10.5px;color:#9A9AA5;margin-top:3px">{{ h.sub }}</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <div style="padding:12px 18px;border-bottom:1px solid #F5F5F7">
+                <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:8px">
+                  <span style="font-size:11px;font-weight:700;color:#5C5C68">오류 추이</span>
+                  <span style="font-size:10.5px;color:#B0B0BB">{{ errNote }}</span>
+                </div>
+                <div style="display:flex;align-items:flex-end;gap:2px;height:34px">
+                  <sc-for list="{{ errBars }}" as="b" hint-placeholder-count="24">
+                    <div style="{{ b.style }}"></div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:11px 18px;border-bottom:1px solid #F5F5F7">
+                <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:#22C55E"></span>
+                <span style="font-size:11.5px;color:#7C7C88;flex:1;min-width:0">{{ okCount }}</span>
+                <span style="font-size:11px;color:#B0B0BB;cursor:pointer;flex-shrink:0" style-hover="color:#7C7C88" onClick="{{ toggleOk }}">{{ okToggleLabel }}</span>
+              </div>
+            </section>
+
+            <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;flex:1;min-height:0;display:flex;flex-direction:column">
+              <div style="display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid #F1F1F4;flex-shrink:0">
+                <h2 style="margin:0;font-size:13.5px;font-weight:700">오늘 지표</h2>
+                <span style="margin-left:auto;font-size:11px;color:#B0B0BB">어제 대비</span>
+              </div>
+              <div style="padding:6px 18px 14px;flex:1;min-height:0">
+                <sc-for list="{{ stats }}" as="s" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F5F5F7">
+                    <span style="font-size:12px;color:#5C5C68;flex:1;min-width:0">{{ s.k }}</span>
+                    <span style="font-size:13px;font-weight:800;font-variant-numeric:tabular-nums">{{ s.v }}</span>
+                    <span style="{{ s.dStyle }}">{{ s.d }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isDispute }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:15px 20px;display:flex;gap:24px;align-items:flex-start">
+          <div style="min-width:0;flex:1">
+            <div style="font-size:12.5px;font-weight:800;color:#15803D;margin-bottom:8px">우리가 할 수 있는 것</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <sc-for list="{{ roleCan }}" as="r" hint-placeholder-count="4">
+                <div style="font-size:11.5px;color:#3C3C46;line-height:1.55">· {{ r }}</div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="width:1px;align-self:stretch;background:#F1F1F4"></div>
+          <div style="min-width:0;flex:1">
+            <div style="font-size:12.5px;font-weight:800;color:#DC2626;margin-bottom:8px">할 수 없는 것</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <sc-for list="{{ roleCant }}" as="r" hint-placeholder-count="4">
+                <div style="font-size:11.5px;color:#7C7C88;line-height:1.55">· {{ r }}</div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="width:1px;align-self:stretch;background:#F1F1F4"></div>
+          <div style="width:268px;flex-shrink:0">
+            <div style="font-size:12.5px;font-weight:800;color:#3C3C46;margin-bottom:8px">해결되지 않으면</div>
+            <div style="font-size:11.5px;color:#7C7C88;line-height:1.65">전자문서·전자거래분쟁조정위원회(ecmc.or.kr) 또는 콘텐츠분쟁조정위원회를 안내합니다. 매치포스트는 <strong style="font-weight:700;color:#3C3C46">당사자가 요청할 때 기록 사본을 제공</strong>하는 것까지입니다.</div>
+          </div>
+        </div>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">유형별 집계</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">8월 · 신고자별 · 막대를 누르면 아래 목록이 그 유형만 남습니다</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+            <sc-for list="{{ typeGroups }}" as="g" hint-placeholder-count="3">
+              <div style="padding:15px 16px 16px;border-right:1px solid #F1F1F4">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="{{ g.byStyle }}">{{ g.by }}</span>
+                  <span style="font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums">{{ g.total }}</span>
+                  <span style="margin-left:auto;font-size:10.5px;font-weight:700;color:#DC2626">{{ g.openLabel }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+                  <sc-for list="{{ g.rows }}" as="t" hint-placeholder-count="3">
+                    <div style="{{ t.rowStyle }}" style-hover="border-color:#E2E2E8" onClick="{{ t.onClick }}">
+                      <div style="display:flex;align-items:baseline;gap:9px">
+                        <span style="{{ t.kStyle }}">{{ t.k }}</span>
+                        <span style="{{ t.monStyle }}">{{ t.monLabel }}</span>
+                      </div>
+                      <div style="{{ t.trackStyle }}">
+                        <sc-if value="{{ t.hasOpen }}" hint-placeholder-val="{{ false }}">
+                          <div style="{{ t.openStyle }}"></div>
+                        </sc-if>
+                        <div style="{{ t.doneStyle }}"></div>
+                      </div>
+                      <div style="{{ t.metaStyle }}">{{ t.metaLabel }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;padding:11px 20px;background:#FBFBFC;border-top:1px solid #F1F1F4">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="width:11px;height:11px;border-radius:3px;background:#F59E0B"></span>
+              <span style="font-size:10.5px;color:#7C7C88">진행중</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="width:11px;height:11px;border-radius:3px;background:#D4D4DC"></span>
+              <span style="font-size:10.5px;color:#7C7C88">해결됨</span>
+            </div>
+            <span style="margin-left:auto;font-size:11.5px;color:#9A9AA5">{{ typeSelNote }}</span>
+            <sc-if value="{{ hasTypeSel }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px;font-weight:700;color:#B45309;cursor:pointer;flex-shrink:0" onClick="{{ clearType }}">필터 해제</span>
+            </sc-if>
+          </div>
+        </section>
+
+        <div style="display:flex;gap:6px">
+          <sc-for list="{{ dTabs }}" as="t" hint-placeholder-count="4">
+            <div style="{{ t.style }}" onClick="{{ t.onClick }}">{{ t.label }}</div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:352px minmax(0,1fr);gap:14px;align-items:stretch">
+          <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:0">
+            <sc-if value="{{ dEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:52px 24px;text-align:center">
+                <div style="font-size:12.5px;font-weight:700;color:#3C3C46">{{ dEmptyMsg }}</div>
+                <div style="font-size:11.5px;font-weight:700;color:#B45309;margin-top:9px;cursor:pointer" onClick="{{ clearType }}">전체 보기 →</div>
+              </div>
+            </sc-if>
+            <sc-for list="{{ disputes }}" as="d" hint-placeholder-count="4">
+              <div style="{{ d.rowStyle }}" onClick="{{ d.onClick }}">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <span style="{{ d.tagStyle }}">{{ d.tag }}</span>
+                  <span style="margin-left:auto;font-size:10.5px;font-weight:700;color:#DC2626">{{ d.age }}</span>
+                </div>
+                <div style="font-size:12.5px;font-weight:700;color:#2A2A33;margin-top:8px;line-height:1.4">{{ d.title }}</div>
+                <div style="font-size:11px;color:#9A9AA5;margin-top:4px">{{ d.sub }}</div>
+              </div>
+            </sc-for>
+          </section>
+
+          <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;padding:15px 20px;border-bottom:1px solid #F1F1F4;flex-shrink:0">
+              <div style="min-width:0">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <h2 style="margin:0;font-size:15px;font-weight:800;letter-spacing:-0.02em">{{ cur.title }}</h2>
+                  <span style="{{ cur.tagStyle }}">{{ cur.tag }}</span>
+                </div>
+                <div style="font-size:11.5px;color:#9A9AA5;margin-top:4px">{{ cur.sub }} · 접수 {{ cur.at }}</div>
+              </div>
+              <div style="margin-left:auto;display:flex;gap:7px">
+                <div style="height:34px;padding:0 13px;border-radius:8px;border:1px solid #E2E2E8;font-size:12px;font-weight:600;color:#3C3C46;display:flex;align-items:center;cursor:pointer" style-hover="background:#F6F6F7" onClick="{{ goCamps }}">딜시트 열기</div>
+                <div style="height:34px;padding:0 13px;border-radius:8px;border:1px solid #E2E2E8;font-size:12px;font-weight:600;color:#3C3C46;display:flex;align-items:center;cursor:pointer" style-hover="background:#F6F6F7" onClick="{{ actConvoAll.onClick }}">{{ actConvoAll.label }}</div>
+              </div>
+            </div>
+
+            <div style="flex:1;min-height:0;overflow-y:auto">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#F1F1F4">
+                <sc-for list="{{ cur.sides }}" as="s" hint-placeholder-count="2">
+                  <div style="background:#fff;padding:15px 18px">
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <span style="{{ s.avStyle }}">{{ s.initial }}</span>
+                      <div style="min-width:0">
+                        <div style="font-size:12.5px;font-weight:700">{{ s.name }}</div>
+                        <div style="font-size:10.5px;color:#9A9AA5;margin-top:2px">{{ s.role }}</div>
+                      </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:7px;margin-top:13px">
+                      <sc-for list="{{ s.facts }}" as="f" hint-placeholder-count="3">
+                        <div style="display:flex;gap:9px">
+                          <span style="font-size:11px;color:#9A9AA5;width:74px;flex-shrink:0">{{ f.k }}</span>
+                          <span style="{{ f.vStyle }}">{{ f.v }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="margin-top:12px;padding:11px 12px;background:#FBFBFC;border:1px solid #EFEFF2;border-radius:9px;font-size:11.5px;color:#3C3C46;line-height:1.65">{{ s.says }}</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{ cur.hasSanction }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:16px 20px;border-top:1px solid #F1F1F4">
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+                  <span style="font-size:12px;font-weight:700;color:#3C3C46">이용 제한 단계</span>
+                  <span style="font-size:11.5px;color:#9A9AA5">{{ cur.sanctionWho }}</span>
+                  <span style="margin-left:auto;font-size:11px;color:#B0B0BB">계약 이행을 강제하는 것이 아니라, 다음 사람이 또 물리지 않게 하는 조치입니다</span>
+                </div>
+                <div style="font-size:11px;color:#B45309;margin-bottom:10px">근거 · {{ cur.sanctionWhy }}</div>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <sc-for list="{{ cur.sanction }}" as="s" hint-placeholder-count="5">
+                    <div style="{{ s.rowStyle }}">
+                      <span style="{{ s.dotStyle }}"></span>
+                      <span style="{{ s.kStyle }}">{{ s.k }}</span>
+                      <span style="{{ s.effStyle }}">{{ s.eff }}</span>
+                      <sc-if value="{{ s.isNow }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:10px;font-weight:800;background:#F59E0B;color:#17171B;border-radius:4px;padding:2px 7px;flex-shrink:0">{{ s.nowLabel }}</span>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:11px;padding:12px 14px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <span style="font-size:12px;font-weight:800;color:#DC2626">다음 단계 「{{ cur.sanctionNext }}」으로 올리기</span>
+                    <span style="margin-left:auto;font-size:11px;font-weight:700;color:#DC2626;border:1px solid #FECACA;background:#fff;border-radius:8px;padding:7px 12px;cursor:pointer;flex-shrink:0" style-hover="background:#FEF2F2" onClick="{{ actSanction.onClick }}">{{ actSanction.label }}</span>
+                  </div>
+                  <div style="font-size:11px;color:#B45309;line-height:1.6;margin-top:7px">{{ cur.sanctionNextEff }} · 광고주에게 사유와 해제 조건이 함께 통지됩니다.</div>
+                </div>
+                <div style="font-size:10.5px;color:#B0B0BB;line-height:1.6;margin-top:9px">해제 조건 — 미수 건 정산 완료 + 이후 3건 연속 정시 결제. 조건을 채우면 자동으로 한 단계 내려갑니다.</div>
+              </div>
+              </sc-if>
+
+              <div style="padding:16px 20px;border-top:1px solid #F1F1F4">
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
+                  <span style="font-size:12px;font-weight:700;color:#3C3C46">시스템 기록</span>
+                  <span style="font-size:11px;color:#B0B0BB">사실만 — 해석은 담지 않습니다</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ cur.log }}" as="l" hint-placeholder-count="4">
+                    <div style="display:flex;gap:11px;align-items:baseline">
+                      <span style="font-size:10.5px;color:#B0B0BB;width:74px;flex-shrink:0;font-variant-numeric:tabular-nums">{{ l.at }}</span>
+                      <span style="font-size:12px;color:#3C3C46;line-height:1.5">{{ l.t }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;font-size:11.5px;color:#92400E;line-height:1.65">{{ cur.hint }}</div>
+              </div>
+            </div>
+
+            <div style="flex-shrink:0;border-top:1px solid #F1F1F4;padding:14px 20px">
+              <div style="font-size:12px;font-weight:700;color:#3C3C46;margin-bottom:8px">조치</div>
+              <div style="display:flex;gap:7px;flex-wrap:wrap">
+                <sc-for list="{{ cur.actions }}" as="a" hint-placeholder-count="3">
+                  <div style="{{ a.style }}" onClick="{{ a.onClick }}">{{ a.k }}</div>
+                </sc-for>
+              </div>
+              <div style="font-size:10.5px;color:#B0B0BB;line-height:1.6;margin-top:10px">조치하면 양쪽에 같은 내용이 전달되고 기록에 남아요. <strong style="font-weight:700;color:#7C7C88">한쪽에만 다른 말을 하지 않습니다.</strong><br />신고를 닫는 것은 <strong style="font-weight:700;color:#7C7C88">신고자와 운영자만</strong> 할 수 있어요. 14일간 진전이 없으면 자동 종결됩니다 (7일차 양쪽 리마인드).</div>
+            </div>
+          </section>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isPolicy }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:stretch">
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:0">
+          <div style="display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1px solid #F1F1F4;flex-shrink:0">
+            <h2 style="margin:0;font-size:14px;font-weight:700">액션 카탈로그</h2>
+            <span style="font-size:11.5px;color:#9A9AA5">크레딧이 오가는 모든 사건이 여기 있어요</span>
+          </div>
+          <div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px 18px;display:flex;flex-direction:column;gap:16px">
+            <sc-for list="{{ polGroups }}" as="g" hint-placeholder-count="3">
+              <div>
+                <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:8px">
+                  <span style="font-size:11.5px;font-weight:800;color:#3C3C46">{{ g.g }}</span>
+                  <span style="font-size:11px;color:#B0B0BB">{{ g.n }}개</span>
+                </div>
+                <div style="border:1px solid #EFEFF2;border-radius:11px;overflow:hidden">
+                  <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+                    <div style="display:grid;grid-template-columns:minmax(0,1fr) 92px 104px 160px;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #F6F6F7">
+                      <div style="min-width:0">
+                        <div style="display:flex;align-items:center;gap:7px">
+                          <span style="{{ r.dirStyle }}">{{ r.dir }}</span>
+                          <span style="font-size:12.5px;font-weight:700;color:#17171B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.k }}</span>
+                        </div>
+                        <sc-if value="{{ r.hasCap }}" hint-placeholder-val="{{ false }}">
+                          <div style="font-size:11px;color:#9A9AA5;margin-top:3px">{{ r.cap }}</div>
+                        </sc-if>
+                      </div>
+                      <div style="text-align:right;font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-0.01em">{{ r.nowLabel }}</div>
+                      <div style="display:flex;justify-content:center">
+                        <div style="{{ r.stateStyle }}" onClick="{{ r.onToggle }}">{{ r.stateLabel }}</div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                        <sc-if value="{{ r.hasNext }}" hint-placeholder-val="{{ false }}">
+                          <div style="{{ r.planStyle }}">
+                            <span>→ {{ r.nextLabel }}</span>
+                            <span style="font-size:11px;font-weight:600;color:#7C7C88">{{ r.atLabel }} · {{ r.ddayLabel }}</span>
+                          </div>
+                        </sc-if>
+                        <div style="{{ r.planCtaStyle }}" onClick="{{ r.onPlan }}">{{ r.planCta }}</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0;min-height:0">
+          <section style="background:#17171B;border-radius:14px;padding:16px 18px 18px;flex-shrink:0">
+            <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.55)">지금 무료로 열어둔 항목</div>
+            <div style="display:flex;align-items:baseline;gap:4px;margin-top:6px">
+              <span style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.035em;line-height:1">{{ polFreeCount }}</span>
+              <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.45)">개</span>
+            </div>
+            <div style="font-size:11.5px;color:rgba(255,255,255,0.5);line-height:1.65;margin-top:9px;text-wrap:pretty">{{ polNote }}</div>
+          </section>
+
+          <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;flex-shrink:0">
+            <div style="display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid #F1F1F4">
+              <h2 style="margin:0;font-size:13px;font-weight:700">예정된 변경</h2>
+              <span style="margin-left:auto;font-size:11px;font-weight:700;color:#1D4ED8;background:#EFF6FF;border-radius:5px;padding:2px 7px">{{ polPlannedCount }}건</span>
+            </div>
+            <sc-if value="{{ polHasPlanned }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ polPlanned }}" as="p" hint-placeholder-count="1">
+                  <div style="background:#EFF6FF;border:1px solid #DBEAFE;border-radius:10px;padding:11px 13px">
+                    <div style="font-size:12.5px;font-weight:700;color:#17171B">{{ p.k }}</div>
+                    <div style="display:flex;align-items:baseline;gap:6px;margin-top:5px">
+                      <span style="font-size:12px;font-weight:700;color:#7C7C88">{{ p.nowLabel }}</span>
+                      <span style="font-size:12px;color:#93A3B8">→</span>
+                      <span style="font-size:14px;font-weight:800;color:#1D4ED8">{{ p.nextLabel }}</span>
+                      <span style="margin-left:auto;font-size:11px;font-weight:700;color:#1D4ED8">{{ p.atLabel }} · {{ p.ddayLabel }}</span>
+                    </div>
+                    <div style="font-size:11px;color:#5C7BA8;line-height:1.6;margin-top:7px">적용일까지는 지금 값으로 청구돼요. 양쪽 콘솔에도 이 예고가 함께 보입니다.</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </section>
+
+          <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;flex:1;min-height:0;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;padding:13px 16px;border-bottom:1px solid #F1F1F4;flex-shrink:0">
+              <h2 style="margin:0;font-size:13px;font-weight:700">변경 이력</h2>
+            </div>
+            <div style="flex:1;min-height:0;overflow-y:auto;padding:6px 16px 14px">
+              <sc-for list="{{ polLog }}" as="l" hint-placeholder-count="3">
+                <div style="padding:11px 0;border-bottom:1px solid #F6F6F7">
+                  <div style="display:flex;align-items:baseline;gap:7px">
+                    <span style="font-size:11px;font-weight:700;color:#B0B0BB;font-variant-numeric:tabular-nums;flex-shrink:0">{{ l.at }}</span>
+                    <span style="font-size:12px;font-weight:600;color:#17171B;line-height:1.55;min-width:0">{{ l.what }}</span>
+                  </div>
+                  <div style="font-size:11px;color:#9A9AA5;margin-top:4px;padding-left:30px">{{ l.who }} · {{ l.note }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <sc-if value="{{ polEditOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(17,17,21,0.42);display:flex;align-items:center;justify-content:center;padding:24px;z-index:60" onClick="{{ closePolEdit }}">
+          <div onClick="{{ stopClick }}" style="width:440px;max-width:100%;background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,0.28);padding:22px 22px 20px">
+            <div style="font-size:16px;font-weight:800;letter-spacing:-0.03em">{{ polEditKey }} · 값 바꾸기</div>
+            <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:11px 13px;font-size:11.5px;color:#92400E;line-height:1.7;margin-top:12px;text-wrap:pretty">바꾼 값은 <strong style="font-weight:800">바로 적용되지 않습니다.</strong> 예정 값으로 들어가고, 적용일까지 양쪽 콘솔에 예고가 보입니다. 그때까지는 지금 값으로 청구돼요.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#3C3C46;margin-bottom:7px">바꿀 값 (C)</div>
+                <input value="{{ polVal }}" onChange="{{ onPolVal }}" style="width:100%;box-sizing:border-box;height:40px;padding:0 12px;border:1px solid #E2E2E8;border-radius:9px;font-size:13.5px;font-weight:700;font-family:inherit;color:#17171B;outline:none" />
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#3C3C46;margin-bottom:7px">적용일</div>
+                <input type="date" value="{{ polAt }}" onChange="{{ onPolAt }}" style="width:100%;box-sizing:border-box;height:40px;padding:0 11px;border:1px solid #E2E2E8;border-radius:9px;font-size:12.5px;font-family:inherit;color:#17171B;outline:none" />
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:16px">
+              <div style="min-width:92px;min-height:44px;padding:0 14px;border-radius:11px;border:1px solid #E2E2E8;color:#5C5C68;font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:#F6F6F7" onClick="{{ clearPol }}">예정 취소</div>
+              <div style="{{ polSaveStyle }}" style-hover="opacity:0.9" onClick="{{ savePol }}">예정 변경으로 등록</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isCredit }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:14px;align-items:stretch">
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:0">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4;flex-shrink:0">
+            <h2 style="margin:0;font-size:14px;font-weight:700">지급 내역</h2>
+            <span style="margin-left:9px;font-size:11.5px;color:#9A9AA5">최근 지급 순</span>
+          </div>
+          <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 110px 96px 88px;padding:9px 20px;background:#FBFBFC;border-bottom:1px solid #F1F1F4;font-size:11px;font-weight:700;color:#9A9AA5;flex-shrink:0">
+            <span>일시</span><span>대상</span><span>사유</span><span style="text-align:right">금액</span><span style="text-align:right">처리자</span>
+          </div>
+          <div style="flex:1;min-height:0;overflow-y:auto">
+            <sc-for list="{{ grants }}" as="g" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 110px 96px 88px;align-items:center;padding:12px 20px;border-bottom:1px solid #F5F5F7">
+                <span style="font-size:11.5px;color:#9A9AA5;font-variant-numeric:tabular-nums">{{ g.at }}</span>
+                <span style="font-size:12.5px;font-weight:600;color:#2A2A33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ g.who }}</span>
+                <span style="{{ g.reasonStyle }}">{{ g.reason }}</span>
+                <span style="{{ g.amtStyle }}">{{ g.amt }}</span>
+                <span style="font-size:11px;color:#9A9AA5;text-align:right">{{ g.by }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:0">
+          <div style="display:flex;padding:5px;margin:14px 16px 0;background:#F1F1F4;border-radius:9px;flex-shrink:0">
+            <sc-for list="{{ grantTabs }}" as="t" hint-placeholder-count="2">
+              <div style="{{ t.style }}" onClick="{{ t.onClick }}">{{ t.label }}</div>
+            </sc-for>
+          </div>
+
+          <div style="padding:16px;display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;overflow-y:auto">
+            <sc-if value="{{ isOne }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#3C3C46;margin-bottom:7px">받는 사람</div>
+                <div style="height:40px;border:1px solid #E2E2E8;border-radius:9px;display:flex;align-items:center;gap:8px;padding:0 12px">
+                  <span style="font-size:12px;opacity:0.5">🔍</span>
+                  <span style="font-size:12.5px;color:#B0B0BB">별명 · 이메일 · 사업자번호</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-top:9px;padding:11px 12px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:9px">
+                  <span style="width:32px;height:32px;border-radius:50%;background:#FEF3C7;color:#B45309;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">지</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:12.5px;font-weight:700">뷰티하는 지연</div>
+                    <div style="font-size:10.5px;color:#B45309;margin-top:2px">인플루언서 · 잔액 109,200C</div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isBulk }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#3C3C46;margin-bottom:7px">대상 조건</div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <sc-for list="{{ bulkConds }}" as="c" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #EFEFF2;border-radius:9px;cursor:pointer" style-hover="border-color:#E2E2E8" onClick="{{ c.onClick }}">
+                      <span style="{{ c.boxStyle }}">✓</span>
+                      <span style="font-size:12.5px;font-weight:600;color:#3C3C46;flex:1;min-width:0">{{ c.k }}</span>
+                      <span style="font-size:11.5px;font-weight:700;color:#9A9AA5;flex-shrink:0">{{ c.n }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:center;height:38px;border:1px dashed #E2E2E8;border-radius:9px;margin-top:9px;font-size:12px;font-weight:600;color:#B45309;cursor:pointer" style-hover="background:#FFFBEB;border-color:#FDE68A">CSV로 명단 올리기</div>
+              </div>
+            </sc-if>
+
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#3C3C46;margin-bottom:7px">지급 사유</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="5">
+                  <div style="{{ r.style }}" onClick="{{ r.onClick }}">{{ r.k }}</div>
+                </sc-for>
+              </div>
+              <div style="min-height:38px;border:1px solid #E2E2E8;border-radius:9px;display:flex;align-items:center;padding:0 12px;margin-top:8px;font-size:12px;color:#B0B0BB">메모 (내역에 함께 남아요)</div>
+            </div>
+
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#3C3C46;margin-bottom:7px">금액</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <sc-for list="{{ amounts }}" as="a" hint-placeholder-count="4">
+                  <div style="{{ a.style }}" onClick="{{ a.onClick }}">{{ a.k }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="margin-top:auto;padding-top:4px">
+              <div style="background:#17171B;border-radius:11px;padding:14px 15px">
+                <div style="display:flex;align-items:baseline;gap:6px">
+                  <span style="font-size:11.5px;font-weight:700;color:rgba(255,255,255,0.6)">{{ grantSummary }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;margin-top:8px">
+                  <span style="font-size:22px;font-weight:800;letter-spacing:-0.03em;color:#fff;font-variant-numeric:tabular-nums">{{ grantTotal }}</span>
+                  <span style="width:19px;height:19px;border-radius:50%;background:#F59E0B;color:#17171B;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">C</span>
+                </div>
+              </div>
+              <div style="height:44px;border-radius:11px;background:#F59E0B;color:#17171B;font-size:13.5px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:10px" style-hover="background:#D97706" onClick="{{ actGrant.onClick }}">{{ actGrant.label }}</div>
+              <div style="font-size:10.5px;color:#B0B0BB;line-height:1.6;margin-top:9px">지급은 즉시 반영되고 되돌릴 수 없어요. 사유는 받는 사람에게도 보입니다.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSettle }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+          <sc-for list="{{ settleKpis }}" as="k" hint-placeholder-count="4">
+            <a href="{{ k.href }}" style="{{ k.cardStyle }}">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-size:11.5px;font-weight:700;color:#5C5C68">{{ k.k }}</span>
+                <sc-if value="{{ k.isLink }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:11px;color:#B45309;font-weight:700">↓</span>
+                </sc-if>
+              </div>
+              <div style="{{ k.vStyle }}">{{ k.v }}</div>
+            </a>
+          </sc-for>
+        </div>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">오늘 정산 예정</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">{{ dueNote }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr) 168px 68px 116px 84px;padding:9px 20px;background:#FBFBFC;border-bottom:1px solid #F1F1F4;font-size:11px;font-weight:700;color:#9A9AA5">
+            <span>경로</span><span>협업</span><span>광고주</span><span style="text-align:right">대상</span><span style="text-align:right">금액</span><span style="text-align:right">기록</span>
+          </div>
+          <sc-for list="{{ dueToday }}" as="d" hint-placeholder-count="3">
+            <div style="{{ d.rowStyle }}">
+              <div><span style="{{ d.viaStyle }}">{{ d.via }}</span></div>
+              <span style="font-size:12.5px;font-weight:700;color:#2A2A33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.name }}</span>
+              <span style="font-size:11.5px;color:#7C7C88;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.adv }}</span>
+              <span style="font-size:12px;color:#3C3C46;text-align:right;font-variant-numeric:tabular-nums">{{ d.pplLabel }}</span>
+              <span style="font-size:12.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">{{ d.amtLabel }}</span>
+              <span style="{{ d.stStyle }}">{{ d.stLabel }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:12px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.6">
+            <strong style="font-weight:700;color:#3C3C46">캠페인은 일괄, 오픈은 건별</strong>로 정산됩니다. 기록은 광고주가 직접 눌러야 하고, 우리는 재촉만 할 수 있어요.
+          </div>
+        </section>
+
+        <section id="overdue" style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden;scroll-margin-top:84px">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">미수 건</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">{{ overdueNote }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr) 150px 120px 74px 116px 84px;padding:9px 20px;background:#FBFBFC;border-bottom:1px solid #F1F1F4;font-size:11px;font-weight:700;color:#9A9AA5">
+            <span>경로</span><span>협업</span><span>광고주</span><span>받을 사람</span><span style="text-align:right">예정일</span><span style="text-align:right">금액</span><span style="text-align:right">지연</span>
+          </div>
+          <sc-for list="{{ overdueList }}" as="o" hint-placeholder-count="4">
+            <div style="{{ o.rowStyle }}" style-hover="background:#FAFAFB">
+              <div><span style="{{ o.viaStyle }}">{{ o.via }}</span></div>
+              <div style="min-width:0">
+                <div style="font-size:12.5px;font-weight:700;color:#2A2A33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.name }}</div>
+                <sc-if value="{{ o.hasRep }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:10.5px;font-weight:700;color:#DC2626;margin-top:3px">{{ o.repLabel }}</div>
+                </sc-if>
+              </div>
+              <span style="font-size:11.5px;color:#7C7C88;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.adv }}</span>
+              <span style="font-size:11.5px;color:#3C3C46;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.who }}</span>
+              <span style="font-size:11.5px;color:#9A9AA5;text-align:right;font-variant-numeric:tabular-nums">{{ o.due }}</span>
+              <span style="font-size:12.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">{{ o.amtLabel }}</span>
+              <span style="{{ o.overStyle }}">{{ o.overLabel }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:12px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.6">
+            <strong style="font-weight:700;color:#3C3C46">7일 넘게 밀린 건은 붉게</strong> 표시됩니다. 신고가 없어도 우리가 먼저 알아채고 재촉할 수 있어야 해요 — 인플루언서가 말을 못 꺼내는 경우가 많습니다.
+          </div>
+        </section>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">광고주별 결제 성실도</h2>
+            <span style="margin-left:9px;font-size:11.5px;color:#9A9AA5">지연 비율 높은 순</span>
+            <span style="margin-left:auto;font-size:11.5px;color:#B0B0BB">주의 20% · 표시 30% · 제한 50%</span>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 132px 108px 128px 96px 84px;padding:9px 20px;background:#FBFBFC;border-bottom:1px solid #F1F1F4;font-size:11px;font-weight:700;color:#9A9AA5">
+            <span>광고주</span><span>정시 비율</span><span style="text-align:right">지연률</span><span style="text-align:right">평균 지연</span><span style="text-align:right">미수</span><span style="text-align:right">단계</span>
+          </div>
+          <sc-for list="{{ advs }}" as="a" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 132px 108px 128px 96px 84px;align-items:center;padding:13px 20px;border-bottom:1px solid #F5F5F7">
+              <span style="font-size:12.5px;font-weight:700;color:#2A2A33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.n }}</span>
+              <div>
+                <div style="height:5px;background:#F1F1F4;border-radius:3px;overflow:hidden"><div style="{{ a.barStyle }}"></div></div>
+                <div style="font-size:10.5px;color:#9A9AA5;margin-top:4px">{{ a.rate }}</div>
+              </div>
+              <span style="font-size:12.5px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums">{{ a.pctLabel }}</span>
+              <span style="font-size:11.5px;color:#7C7C88;text-align:right">{{ a.avgLabel }}</span>
+              <span style="{{ a.openStyle }}">{{ a.openLabel }}</span>
+              <div style="text-align:right"><span style="{{ a.lvStyle }}">{{ a.lv }}</span></div>
+            </div>
+          </sc-for>
+          <div style="padding:13px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.65">
+            <strong style="font-weight:700;color:#3C3C46">계정 정지는 하지 않습니다.</strong> 막으면 광고주가 플랫폼 밖에서 거래하고, 그러면 인플루언서 보호가 아예 불가능해져요. 「제한」은 <strong style="font-weight:700;color:#3C3C46">미결제 건수를 프로필에 공개</strong>하고 상단 노출 광고 구매를 막는 것까지입니다. 금액은 공개하지 않아요 — 거래 규모가 드러나면 다른 문제가 됩니다.
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isMembers }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:6px">
+          <sc-for list="{{ mTabs }}" as="t" hint-placeholder-count="4">
+            <div style="{{ t.style }}" onClick="{{ t.onClick }}">{{ t.label }}</div>
+          </sc-for>
+        </div>
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <sc-for list="{{ members }}" as="m" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:13px;padding:14px 20px;border-bottom:1px solid #F5F5F7">
+              <span style="{{ m.avStyle }}">{{ m.initial }}</span>
+              <div style="min-width:0;width:210px">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <span style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.n }}</span>
+                </div>
+                <div style="font-size:11px;color:#9A9AA5;margin-top:3px">{{ m.type }} · {{ m.at }}</div>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:600;color:#3C3C46">{{ m.doc }}</div>
+                <div style="font-size:11px;color:#9A9AA5;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.memo }}</div>
+              </div>
+              <span style="{{ m.stStyle }}">{{ m.st }}</span>
+              <sc-if value="{{ m.isOk }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:11px;font-weight:700;color:#15803D;background:#F0FDF4;border:1px solid #DCFCE7;border-radius:6px;padding:5px 10px;flex-shrink:0;white-space:nowrap">{{ m.okNote }}</span>
+              </sc-if>
+              <sc-if value="{{ m.waiting }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
+                  <span style="font-size:11px;color:#B0B0BB;white-space:nowrap">{{ m.bonusNote }}</span>
+                  <div style="{{ m.okStyle }}" onClick="{{ m.onOk }}">{{ m.okLabel }}</div>
+                  <div style="height:34px;padding:0 13px;border-radius:8px;background:#17171B;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;cursor:pointer" onClick="{{ m.onDoc }}">서류 보기</div>
+                  <div style="{{ m.reaskStyle }}" onClick="{{ m.onReask }}">{{ m.reaskLabel }}</div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <div style="padding:13px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.65">
+            승인 전에는 캠페인을 열 수 없어요. <strong style="font-weight:700;color:#3C3C46">가입 당일 처리를 목표로</strong> 합니다 — 승인이 늦으면 첫 캠페인이 밀리고, 그대로 이탈합니다.
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSys }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:14px;align-items:stretch">
+          <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:18px 20px 20px">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="{{ healthBigDot }}"></span>
+              <h2 style="{{ healthTitleStyle }}">{{ healthTitle }}</h2>
+            </div>
+            <sc-for list="{{ badHealth }}" as="h" hint-placeholder-count="2">
+              <div style="display:flex;align-items:flex-start;gap:10px;margin-top:13px;padding:13px 15px;background:#FBFBFC;border:1px solid #EFEFF2;border-radius:11px">
+                <span style="{{ h.lvStyle }}">{{ h.lvLabel }}</span>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:12.5px;font-weight:700;color:#2A2A33">{{ h.k }}</div>
+                  <div style="font-size:11.5px;color:#3C3C46;margin-top:4px;line-height:1.5">{{ h.v }}</div>
+                  <sc-if value="{{ h.hasSub }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10.5px;color:#9A9AA5;margin-top:3px">{{ h.sub }}</div>
+                  </sc-if>
+                </div>
+                <sc-if value="{{ h.hasAction }}" hint-placeholder-val="{{ false }}">
+                  <span style="{{ h.actionStyle }}" onClick="{{ h.onAction }}">{{ h.action }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+            <div style="margin-top:15px">
+              <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
+                <span style="font-size:11.5px;font-weight:700;color:#5C5C68">오류 추이</span>
+                <span style="font-size:10.5px;color:#B0B0BB">{{ errNote }} · 21시 급증은 직전 배포 직후</span>
+              </div>
+              <div style="display:flex;align-items:flex-end;gap:2px;height:56px">
+                <sc-for list="{{ errBars }}" as="b" hint-placeholder-count="24">
+                  <div style="{{ b.style }}"></div>
+                </sc-for>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:7px;font-size:10px;color:#B0B0BB">
+                <span>0시</span><span>6시</span><span>12시</span><span>18시</span><span>23시</span>
+              </div>
+            </div>
+          </section>
+
+          <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:18px 20px 20px">
+            <h2 style="margin:0;font-size:13.5px;font-weight:700">사용자 화면 안내</h2>
+            <p style="margin:7px 0 0;font-size:11.5px;color:#9A9AA5;line-height:1.6">장애를 숨기면 문의가 폭증합니다. 먼저 알리는 편이 항상 쌉니다.</p>
+            <div style="display:flex;gap:7px;margin-top:13px">
+              <sc-for list="{{ noticeOpts }}" as="o" hint-placeholder-count="3">
+                <div style="{{ o.style }}" onClick="{{ o.onClick }}">{{ o.k }}</div>
+              </sc-for>
+            </div>
+            <div style="{{ noticeBoxStyle }}">{{ noticeText }}</div>
+            <div style="font-size:10.5px;color:#B0B0BB;line-height:1.6;margin-top:11px">켜면 광고주·인플루언서 앱과 웹 상단에 즉시 표시됩니다. 원인이 밝혀지지 않아도 <strong style="font-weight:700;color:#7C7C88">「확인 중」이라고 먼저 알리세요.</strong></div>
+            <div style="height:1px;background:#F1F1F4;margin:16px 0 14px"></div>
+            <h3 style="margin:0;font-size:12.5px;font-weight:700">최근 배포</h3>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:10px">
+              <sc-for list="{{ deploys }}" as="d" hint-placeholder-count="3">
+                <div style="display:flex;align-items:baseline;gap:9px">
+                  <span style="font-size:10.5px;color:#B0B0BB;width:66px;flex-shrink:0;font-variant-numeric:tabular-nums">{{ d.at }}</span>
+                  <span style="{{ d.vStyle }}">{{ d.v }}</span>
+                  <span style="font-size:11px;color:#9A9AA5;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.note }}</span>
+                  <sc-if value="{{ d.isBad }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10px;font-weight:800;color:#DC2626;flex-shrink:0">{{ d.badLabel }}</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+        </div>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">감시 항목</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">임계값을 넘을 때만 알립니다 — 1건마다 울리면 곧 무시하게 됩니다</span>
+          </div>
+          <div style="display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,190px) 170px 190px 66px;padding:9px 20px;background:#FBFBFC;border-bottom:1px solid #F1F1F4;font-size:11px;font-weight:700;color:#9A9AA5">
+            <span>갈래</span><span>항목</span><span>점검 방법</span><span style="text-align:right">최근 값</span><span style="padding-left:20px">알림 기준</span><span style="text-align:right">상태</span>
+          </div>
+          <sc-for list="{{ watch }}" as="w" hint-placeholder-count="10">
+            <div style="display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,190px) 170px 190px 66px;align-items:center;padding:11px 20px;border-bottom:1px solid #F5F5F7">
+              <span style="font-size:11px;color:#B0B0BB">{{ w.g }}</span>
+              <span style="font-size:12.5px;font-weight:700;color:#2A2A33">{{ w.k }}</span>
+              <span style="font-size:11.5px;color:#7C7C88">{{ w.how }}</span>
+              <span style="{{ w.lastStyle }}">{{ w.last }}</span>
+              <span style="font-size:11px;color:#9A9AA5;padding-left:20px">{{ w.th }}</span>
+              <div style="text-align:right"><span style="{{ w.lvStyle }}">{{ w.lvLabel }}</span></div>
+            </div>
+          </sc-for>
+          <div style="padding:13px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.65">
+            <strong style="font-weight:700;color:#3C3C46">③ 사용자 기기 오류가 제일 중요합니다.</strong> 서버 로그에는 안 남고 사용자에게만 보이는 오류가 실제로 가장 많아요. 이게 없으면 「앱이 안 돼요」 문의를 받고서야 알게 됩니다.
+          </div>
+        </section>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">최근 오류</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">같은 오류는 묶어서 셉니다</span>
+          </div>
+          <sc-for list="{{ errLog }}" as="e" hint-placeholder-count="4">
+            <div style="display:flex;gap:12px;padding:13px 20px;border-bottom:1px solid #F5F5F7">
+              <span style="{{ e.lvStyle }}"></span>
+              <span style="font-size:11px;color:#B0B0BB;width:62px;flex-shrink:0;font-variant-numeric:tabular-nums">{{ e.at }}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:700;color:#3C3C46">{{ e.where }}</div>
+                <div style="font-size:11.5px;color:#7C7C88;margin-top:3px;line-height:1.5;font-family:ui-monospace,SFMono-Regular,monospace">{{ e.msg }}</div>
+              </div>
+              <span style="font-size:11.5px;font-weight:700;color:#9A9AA5;flex-shrink:0;font-variant-numeric:tabular-nums">{{ e.nLabel }}</span>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isOpens }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+          <sc-for list="{{ openToday }}" as="o" hint-placeholder-count="3">
+            <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:15px 17px 16px">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="{{ o.dotStyle }}"></span>
+                <span style="font-size:11.5px;font-weight:700;color:#5C5C68">{{ o.kind }}</span>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:5px;margin-top:8px">
+                <span style="{{ o.nStyle }}">{{ o.n }}</span>
+                <span style="font-size:11.5px;font-weight:700;color:#9A9AA5">건</span>
+              </div>
+              <div style="font-size:10.5px;color:#9A9AA5;margin-top:4px">{{ o.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">구분별 재고</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">오늘 협업 가능한 오픈 기준</span>
+          </div>
+          <div style="padding:16px 20px 18px;display:flex;flex-direction:column;gap:11px">
+            <sc-for list="{{ openKind }}" as="o" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="{{ o.chipStyle }}">{{ o.k }}</span>
+                <span style="font-size:12px;color:#9A9AA5;width:110px;flex-shrink:0">{{ o.sub }}</span>
+                <div style="flex:1;min-width:0"><div style="{{ o.barStyle }}"></div></div>
+                <span style="font-size:12.5px;font-weight:800;width:48px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums">{{ o.n }}건</span>
+                <span style="font-size:11px;color:#B0B0BB;width:92px;text-align:right;flex-shrink:0">{{ o.pct }}</span>
+                <span style="{{ o.idleStyle }}">{{ o.idleLabel }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:13px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.65">
+            <strong style="font-weight:700;color:#3C3C46">「대기」가 많으면 재고가 남는 것</strong>입니다. 광고주가 못 찾고 있다는 뜻이니 검색 노출이나 추천을 손봐야 해요.
+          </div>
+        </section>
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">지역 분포</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">지역 구분 오픈만</span>
+          </div>
+          <div style="padding:16px 20px 18px;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ openRegions }}" as="r" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:12px;color:#3C3C46;width:160px;flex-shrink:0">{{ r.k }}</span>
+                <div style="flex:1;min-width:0"><div style="{{ r.barStyle }}"></div></div>
+                <span style="font-size:11.5px;font-weight:700;color:#7C7C88;width:44px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums">{{ r.nLabel }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isCamps }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">구분별 · 모집 충원율</h2>
+            <span style="margin:0 9px;font-size:11.5px;color:#E2E2E8">|</span>
+            <span style="font-size:11.5px;color:#9A9AA5">진행중 캠페인 기준</span>
+          </div>
+          <div style="padding:16px 20px 18px;display:flex;flex-direction:column;gap:11px">
+            <sc-for list="{{ campKind }}" as="c" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="{{ c.chipStyle }}">{{ c.k }}</span>
+                <span style="font-size:12px;color:#9A9AA5;width:110px;flex-shrink:0">캠페인 {{ c.n }}건</span>
+                <div style="flex:1;min-width:0"><div style="{{ c.barStyle }}"></div></div>
+                <span style="font-size:12.5px;font-weight:800;width:56px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums">{{ c.fill }}</span>
+                <span style="font-size:11px;color:#B0B0BB;width:48px;text-align:right;flex-shrink:0">{{ c.pct }}</span>
+                <span style="{{ c.shortStyle }}">{{ c.shortLabel }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+          <sc-for list="{{ campKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:15px 17px 16px">
+              <div style="font-size:11.5px;font-weight:700;color:#5C5C68">{{ k.k }}</div>
+              <div style="{{ k.vStyle }}">{{ k.v }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">전체 캠페인</h2>
+            <span style="margin-left:9px;font-size:11.5px;color:#9A9AA5">지연이 있는 것부터</span>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 92px 76px 128px minmax(0,200px) 88px;padding:9px 20px;background:#FBFBFC;border-bottom:1px solid #F1F1F4;font-size:11px;font-weight:700;color:#9A9AA5">
+            <span>캠페인</span><span>구분</span><span>상태</span><span style="text-align:right">대시 / 확정</span><span style="padding-left:16px">메모</span><span style="text-align:right">막힘</span>
+          </div>
+          <sc-for list="{{ camps }}" as="c" hint-placeholder-count="5">
+            <div style="{{ c.rowStyle }}" style-hover="background:#FAFAFB" onClick="{{ c.onClick }}">
+              <div style="min-width:0">
+                <div style="font-size:12.5px;font-weight:700;color:#2A2A33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.n }}</div>
+                <div style="font-size:11px;color:#9A9AA5;margin-top:3px">{{ c.adv }}</div>
+              </div>
+              <span style="{{ c.kindStyle }}">{{ c.kind }}</span>
+              <div><span style="{{ c.stStyle }}">{{ c.st }}</span></div>
+              <div style="text-align:right">
+                <div style="font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums">{{ c.dashLabel }}</div>
+                <div style="font-size:10.5px;color:#9A9AA5;margin-top:2px">확정 {{ c.ratio }} · {{ c.convLabel }}</div>
+                <div style="height:4px;background:#F1F1F4;border-radius:2px;overflow:hidden;margin-top:5px"><div style="{{ c.barStyle }}"></div></div>
+              </div>
+              <span style="font-size:11.5px;color:#7C7C88;padding-left:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.note }}</span>
+              <span style="{{ c.stuckStyle }}">{{ c.stuckLabel }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:13px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.65">
+행을 누르면 <strong style="font-weight:700;color:#3C3C46">딜시트</strong>에서 대시한 인플루언서별 진행 단계를 볼 수 있어요. 다만 <strong style="font-weight:700;color:#3C3C46">단계를 대신 눌러주지는 않습니다</strong> — 관리자가 딜시트를 움직이면 양쪽 기록이 사실과 어긋납니다.
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isData }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:14px;align-items:start">
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">블로그 수집 배치</h2>
+            <span style="margin-left:9px;font-size:11.5px;color:#9A9AA5">매일 22:00</span>
+            <span style="margin-left:auto;{{ actBatchRun.style }}" onClick="{{ actBatchRun.onClick }}">{{ actBatchRun.label }}</span>
+          </div>
+          <sc-for list="{{ batch }}" as="b" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 20px;border-bottom:1px solid #F5F5F7">
+              <div style="width:96px;flex-shrink:0">
+                <div style="font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums">{{ b.d }}</div>
+                <div style="font-size:10.5px;color:#9A9AA5;margin-top:2px">{{ b.at }} · {{ b.dur }}</div>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;color:#3C3C46">{{ b.okLabel }}</div>
+                <div style="font-size:11px;color:#9A9AA5;margin-top:3px">{{ b.note }}</div>
+              </div>
+              <span style="{{ b.failStyle }}">{{ b.failLabel }}</span>
+              <sc-if value="{{ b.hasFail }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ b.retryStyle }}" onClick="{{ b.onRetry }}">{{ b.retryLabel }}</div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <div style="padding:13px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.65">
+            자정을 넘겨 끝나도 <strong style="font-weight:700;color:#3C3C46">수집일은 배치 시작일로 고정</strong>합니다. 늦게 처리된 사람만 다음 날 초기값이 저장되면 그 사람만 0점이 됩니다.
+          </div>
+        </section>
+
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:13.5px;font-weight:700">등급 산식 버전</h2>
+            <span style="margin-left:auto;font-size:11px;font-weight:800;background:#FEF3C7;color:#B45309;border-radius:5px;padding:3px 8px">베타</span>
+          </div>
+          <sc-for list="{{ versions }}" as="v" hint-placeholder-count="3">
+            <div style="display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid #F5F5F7">
+              <span style="{{ v.vStyle }}">{{ v.v }}</span>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:baseline;gap:7px">
+                  <span style="font-size:11px;color:#9A9AA5">{{ v.at }} · {{ v.by }}</span>
+                  <sc-if value="{{ v.isNow }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10px;font-weight:800;color:#15803D">{{ v.nowLabel }}</span>
+                  </sc-if>
+                </div>
+                <div style="font-size:12px;color:#3C3C46;line-height:1.6;margin-top:5px;text-wrap:pretty">{{ v.what }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="padding:14px 18px;background:#FFFBEB;border-top:1px solid #FDE68A;font-size:11.5px;color:#92400E;line-height:1.65">
+            산식을 바꿀 때는 <strong style="font-weight:700">반드시 새 버전으로</strong> 기록하세요. 버전 없이 바꾸면 「왜 등급이 떨어졌는지」를 설명할 수 없습니다.
+          </div>
+          <div style="padding:14px 18px">
+            <div style="height:40px;border-radius:10px;background:#17171B;color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:#2A2A33" onClick="{{ actNewVer.onClick }}">{{ actNewVer.label }}</div>
+            <div style="font-size:10.5px;color:#B0B0BB;line-height:1.6;margin-top:9px">적용하면 다음 배치부터 반영됩니다. 과거 이력은 그대로 남아요.</div>
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isAds }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+          <sc-for list="{{ adKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:15px 17px 16px">
+              <div style="font-size:11.5px;font-weight:700;color:#5C5C68">{{ k.k }}</div>
+              <div style="{{ k.vStyle }}">{{ k.v }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">슬롯</h2>
+            <span style="margin-left:9px;font-size:11.5px;color:#9A9AA5">위치는 고정 · 파트너만 바뀝니다</span>
+            <span style="margin-left:auto;{{ actSlotAdd.style }}" onClick="{{ actSlotAdd.onClick }}">{{ actSlotAdd.label }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 96px minmax(0,180px) 130px 88px 76px 72px 84px;padding:9px 20px;background:#FBFBFC;border-bottom:1px solid #F1F1F4;font-size:11px;font-weight:700;color:#9A9AA5">
+            <span>위치</span><span>형태</span><span>파트너</span><span>기간</span><span style="text-align:right">노출</span><span style="text-align:right">클릭</span><span style="text-align:right">CTR</span><span style="text-align:right">상태</span>
+          </div>
+          <sc-for list="{{ adSlots }}" as="s" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 96px minmax(0,180px) 130px 88px 76px 72px 84px;align-items:center;padding:13px 20px;border-bottom:1px solid #F5F5F7">
+              <span style="font-size:12.5px;font-weight:700;color:#2A2A33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.pos }}</span>
+              <span style="font-size:11px;color:#9A9AA5">{{ s.size }}</span>
+              <span style="{{ s.partnerStyle }}">{{ s.partner }}</span>
+              <span style="font-size:11.5px;color:#7C7C88;font-variant-numeric:tabular-nums">{{ s.run }}</span>
+              <span style="font-size:12px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">{{ s.impLabel }}</span>
+              <span style="font-size:12px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">{{ s.clkLabel }}</span>
+              <span style="font-size:12px;font-weight:700;text-align:right;color:#7C7C88;font-variant-numeric:tabular-nums">{{ s.ctr }}</span>
+              <div style="text-align:right"><span style="{{ s.stStyle }}">{{ s.stLabel }}</span></div>
+            </div>
+          </sc-for>
+          <div style="padding:13px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.65">
+            <strong style="font-weight:700;color:#3C3C46">대화창 안에는 슬롯을 만들지 않습니다.</strong> 협상 중에 광고가 끼면 신뢰가 깨져요. 대시는 대화 목록 사이까지만 허용합니다.
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isStats }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+          <sc-for list="{{ coreKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:15px 17px 16px">
+              <div style="font-size:11.5px;font-weight:700;color:#5C5C68">{{ k.k }}</div>
+              <div style="font-size:24px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;margin-top:7px">{{ k.v }}</div>
+              <div style="font-size:10.5px;color:#9A9AA5;margin-top:4px">{{ k.s }}</div>
+              <div style="{{ k.dStyle }}">{{ k.d }} · 지난달 대비</div>
+            </div>
+          </sc-for>
+        </div>
+        <section style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;overflow:hidden">
+          <div style="display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #F1F1F4">
+            <h2 style="margin:0;font-size:14px;font-weight:700">전환 흐름</h2>
+            <span style="margin-left:9px;font-size:11.5px;color:#9A9AA5">최근 30일 · 앞 단계 대비</span>
+          </div>
+          <div style="padding:18px 20px 20px;display:flex;flex-direction:column;gap:13px">
+            <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:13px">
+                <div style="width:196px;flex-shrink:0">
+                  <div style="font-size:12.5px;font-weight:700;color:#2A2A33">{{ f.k }}</div>
+                  <div style="font-size:10.5px;color:#9A9AA5;margin-top:2px">{{ f.note }}</div>
+                </div>
+                <div style="flex:1;min-width:0"><div style="{{ f.barStyle }}"></div></div>
+                <span style="font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;width:64px;text-align:right;flex-shrink:0">{{ f.vLabel }}</span>
+                <sc-if value="{{ f.hasConv }}" hint-placeholder-val="{{ true }}">
+                  <span style="{{ f.convStyle }}">{{ f.convLabel }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:13px 20px;background:#FBFBFC;font-size:11.5px;color:#7C7C88;line-height:1.65">
+            <strong style="font-weight:700;color:#3C3C46">가입자 수는 지표가 아닙니다.</strong> 올려야 하는 건 「대시 → 수락」과 「수락 → 게재」예요. 가입만 늘고 여기가 안 움직이면 서비스가 작동하지 않는 것입니다.
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isStub }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:64px 40px;text-align:center">
+        <div style="font-size:26px;opacity:0.28">{{ stub.icon }}</div>
+        <div style="font-size:15px;font-weight:800;letter-spacing:-0.02em;margin-top:13px">{{ stub.title }}</div>
+        <div style="font-size:12.5px;color:#9A9AA5;line-height:1.75;margin-top:8px;white-space:pre-line">{{ stub.desc }}</div>
+      </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const won = (n) => n.toLocaleString();
+const initialOf = (name) => (name.trim().split(/\s+/).pop() ?? name)[0];
+
+// 회원 원본 — 「사업자 확인」 대기 수는 여기서 파생시킨다. 카드와 목록이 어긋나면 안 된다.
+const MEMBERS_SRC = [
+  { n:'브런치랩 성수', type:'광고주', at:'8/2 09:12', doc:'사업자등록증', st:'확인 대기', memo:'요식업 · 서울 성동구' },
+  { n:'키즈랜드 인천', type:'광고주', at:'8/2 08:40', doc:'사업자등록증', st:'확인 대기', memo:'서류 흐림 — 재요청 검토' },
+  { n:'오도이촌 스테이', type:'광고주', at:'8/2 08:05', doc:'사업자등록증', st:'확인 대기', memo:'숙박업 · 강원 양양' },
+  { n:'주말미식가 태오', type:'인플루언서', at:'8/1 22:10', doc:'채널 소유 확인', st:'확인 대기', memo:'블로그 · 소유 확인 코드 미게시' },
+  { n:'헬스로그 정우', type:'인플루언서', at:'8/1 21:35', doc:'채널 소유 확인', st:'확인 대기', memo:'유튜브 · 채널 URL 확인 필요' },
+  { n:'플랜테리어 소민', type:'인플루언서', at:'8/1 20:50', doc:'채널 소유 확인', st:'확인 대기', memo:'블로그 · 확인 코드 게시됨' },
+  { n:'디저트공방 라온', type:'광고주', at:'8/1 18:20', doc:'사업자등록증', st:'확인 대기', memo:'제과업 · 경기 성남' },
+  { n:'카페러버 세아', type:'인플루언서', at:'8/1 19:30', doc:'채널 소유 확인', st:'승인', memo:'블로그 · 확인 완료' },
+  { n:'지역맘카페', type:'광고주', at:'7/28 11:00', doc:'사업자등록증', st:'제재', memo:'결제 지연 33% · 표시 단계' },
+];
+
+// 처리 대기 큐 — 모든 숫자는 이 배열에서 파생시킨다. 하드코딩 금지.
+const QUEUE = [
+  { key:'dispute', k:'미입금 신고', n:3, sub:'3일 초과 · 운영 확인 단계', hot:true },
+  { key:'members', k:'사업자 확인', n:MEMBERS_SRC.filter(m => m.st === '확인 대기').length,
+    sub:'가입 승인 대기', hot:false },
+  { key:'settle',  k:'결제 지연',   n:5, sub:'예정일 지난 미수 건', hot:true },
+  // 4번째 칸은 건수가 아니라 **시스템 현황** — 장애를 문의로 알게 되면 늦다
+  { key:'sys', k:'시스템 현황', n:1, sub:'긴급 1건 · 앱 오류', hot:true, sys:true },
+];
+
+// 분쟁 — 접수 순. 오래된 것이 위로 온다.
+const DISPUTES = [
+  { id:'d1', tag:'미입금', title:'지역맘카페 협찬료 미입금', sub:'뷰티하는 지연 ↔ 지역맘카페', age:'6일째', at:'7/28',
+    sides:[
+      { name:'뷰티하는 지연', role:'인플루언서 · 신고자', facts:[
+        { k:'계약 금액', v:'150,000원 (세후 145,050원)' },
+        { k:'게재', v:'7/24 완료 · 확인됨', ok:true },
+        { k:'입금', v:'확인 안 됨', warn:true },
+      ], says:'7월 31일이 결제일이었는데 아직 입금이 없습니다. 대시로 두 번 여쭤봤지만 답이 없어요.' },
+      { name:'지역맘카페', role:'광고주', facts:[
+        { k:'정산 기록', v:'8/1 「정산 완료로 기록」 누름' },
+        { k:'결제 성실도', v:'6건 중 2건 지연 · 평균 6일', warn:true },
+        { k:'응답', v:'3일째 무응답', warn:true },
+      ], says:'— 아직 답변이 없습니다.' },
+    ],
+    log:[
+      { at:'7/31', t:'결제 예정일 도래 · 미기록 상태' },
+      { at:'8/01', t:'광고주가 「정산 완료로 기록」 실행' },
+      { at:'8/01', t:'인플루언서에게 입금 확인 요청 발송' },
+      { at:'8/02', t:'인플루언서가 「입금된 게 없어요」 신고 → 재정산 대기' },
+      { at:'8/05', t:'3일 경과 · 운영팀 확인 단계로 이관' },
+    ],
+    hint:'기록상 「정산 완료」는 눌렸으나 인플루언서는 입금을 확인하지 못했습니다. 지연 비율이 33%로 「표시」 구간입니다.',
+    actions:[
+      // 제재는 위의 「이용 제한 단계」 블록에서만 올린다 — 두 곳에 두면 어긋난다
+      // 제재는 위의 「이용 제한 단계」 블록에서만 올린다 — 두 곳에 두면 어긋난다
+      { k:'양쪽에 기록 요약 보내기', kind:'primary' },
+      { k:'외부 조정 안내 후 이관', kind:'ghost' },
+      { k:'운영 종결 (사유 입력)', kind:'ghost' },
+    ] },
+  { id:'d2', tag:'취소 분쟁', title:'방문 당일 취소 · 부분 정산 미합의', sub:'맛집탐험 도윤 ↔ 브런치랩 성수', age:'2일째', at:'8/01',
+    sides:[
+      { name:'맛집탐험 도윤', role:'인플루언서', facts:[
+        { k:'계약 금액', v:'180,000원' },
+        { k:'단계', v:'4단계 방문 · 당일 취소', warn:true },
+        { k:'취소 요청', v:'누적 1회 (90일)' },
+      ], says:'전날 밤에 아이가 아파서 못 갔습니다. 아침에 바로 알렸어요. 다음에 꼭 하고 싶습니다.' },
+      { name:'브런치랩 성수', role:'광고주', facts:[
+        { k:'준비 비용', v:'식재료 · 인력 4만원 주장' },
+        { k:'결제 성실도', v:'9건 100%', ok:true },
+        { k:'요청', v:'전액 취소 · 페널티 부과' },
+      ], says:'당일 취소라 재료를 버렸습니다. 최소한 준비 비용은 보전받고 싶습니다.' },
+    ],
+    log:[
+      { at:'7/30', t:'양쪽 수락 · 딜시트 생성' },
+      { at:'8/01', t:'방문일 08:12 인플루언서 취소 요청 (사유: 건강 문제)' },
+      { at:'8/01', t:'광고주 「취소 요청 수락」 하지 않음 · 부분 정산 요구' },
+      { at:'8/03', t:'양쪽 합의 실패 · 운영팀 요청' },
+    ],
+    hint:'기록상 방문 전 취소이며 사전 통지가 있었습니다. 준비 비용 보전은 매치포스트가 정할 수 없는 사안 — 양쪽 합의가 필요합니다.',
+    actions:[
+      { k:'양쪽에 기록 요약 보내기', kind:'primary' },
+      { k:'취소 정책 안내 발송', kind:'ghost' },
+      { k:'외부 조정 안내 후 이관', kind:'ghost' },
+      { k:'운영 종결 (사유 입력)', kind:'ghost' },
+    ] },
+  { id:'d3', tag:'신고', title:'가이드와 다른 내용 게재', sub:'스타일리스트 예린 ↔ 여름 콜드브루', age:'1일째', at:'8/02',
+    sides:[
+      { name:'여름 콜드브루', role:'광고주 · 신고자', facts:[
+        { k:'단계', v:'7단계 게재 완료' },
+        { k:'요구', v:'수정 또는 정산 조정' },
+        { k:'가이드', v:'8/1 전달 · 확인됨' },
+      ], says:'필수 키워드 3개 중 1개만 들어갔고 제품 사진이 1장뿐입니다. 가이드에는 5장이었어요.' },
+      { name:'스타일리스트 예린', role:'인플루언서', facts:[
+        { k:'게재', v:'8/2 완료' },
+        { k:'일정 준수', v:'12건 100%', ok:true },
+        { k:'응답', v:'수정 의사 있음', ok:true },
+      ], says:'확인했습니다. 오늘 중으로 사진 추가하고 키워드 넣어서 수정하겠습니다.' },
+    ],
+    log:[
+      { at:'8/01', t:'가이드 전달 · 인플루언서 확인' },
+      { at:'8/02', t:'게재 완료 등록' },
+      { at:'8/02', t:'광고주 신고 접수 (가이드 불일치)' },
+      { at:'8/02', t:'인플루언서 수정 의사 회신' },
+    ],
+    hint:'양쪽 다 협조적입니다. 인플루언서가 수정 의사를 밝혔으니 대화로 자체 해결될 가능성이 높습니다.',
+    actions:[
+      { k:'양쪽에 기록 요약 보내기', kind:'primary' },
+      { k:'운영 종결 (사유 입력)', kind:'ghost' },
+    ] },
+];
+
+const GRANTS = [
+  { at:'8/02 14:20', who:'뷰티하는 지연', reason:'운영 보상', amt:5000, by:'정원일' },
+  { at:'8/02 11:05', who:'신규 가입자 12명', reason:'웰컴', amt:100000, by:'시스템' },
+  { at:'8/01 17:40', who:'맛집탐험 도윤', reason:'오류 보상', amt:1000, by:'정원일' },
+  { at:'8/01 09:30', who:'B등급 이상 34명', reason:'이벤트', amt:3000, by:'정원일' },
+  { at:'7/31 16:12', who:'성수 델리카페', reason:'환불', amt:-5000, by:'정원일' },
+  { at:'7/31 10:00', who:'신규 가입자 8명', reason:'웰컴', amt:100000, by:'시스템' },
+  { at:'7/30 15:22', who:'리빙로그 아영', reason:'운영 보상', amt:2000, by:'정원일' },
+  { at:'7/29 13:40', who:'전체 인플루언서 214명', reason:'이벤트', amt:2000, by:'정원일' },
+];
+
+class Component extends DCLogic {
+  // ── 크레딧 정책 ──────────────────────────────────────────
+  // ⚠️ 크레딧이 오가는 **모든 사건**이 여기 한 표에 있다. 화면마다 값을 적어두면 인상·인하 때 어긋난다.
+  //    「무료(베타)」는 값을 0으로 만드는 것이 아니라 **청구만 끄는 것** — 값은 그대로 두고
+  //    유저 화면에 「지금은 들지 않아요 (원래 500C)」로 보여준다. 나중에 스위치만 켜면 된다.
+  //    값 변경은 즉시 적용되지 않는다. **예정 값 + 적용일**로 들어가고, 공지 · 유예기간을 지나야 바뀐다.
+  policyVals() {
+    const TODAY = new Date(2026, 7, 10);
+    const DAY = 86400000;
+    const won = (n) => n.toLocaleString();
+    const BASE = [
+      { g:'광고주', k:'대시 보내기', dir:'차감', v:500, free:true, next:700, at:new Date(2026,8,1), cap:'' },
+      { g:'광고주', k:'캠페인 개설', dir:'차감', v:5000, free:true, next:null, at:null, cap:'' },
+      { g:'광고주', k:'딜시트 인원 추가', dir:'차감', v:300, free:true, next:null, at:null, cap:'' },
+      { g:'인플루언서', k:'오픈 등록', dir:'차감', v:1000, free:true, next:null, at:null, cap:'날짜 수 무관' },
+      { g:'인플루언서', k:'캠페인 지원', dir:'차감', v:200, free:true, next:null, at:null, cap:'' },
+      // 가입·초대 축하금 — 첫 경험과 확산을 크레딧으로 산다. 값은 정책이라 여기서 조절한다.
+      { g:'보상', k:'광고주 가입 축하금', dir:'지급', v:20000, free:false, next:null, at:null, cap:'계정당 1회 · 사업자 확인 후' },
+      { g:'보상', k:'인플루언서 가입 축하금', dir:'지급', v:10000, free:false, next:null, at:null, cap:'계정당 1회 · 채널 인증 후' },
+      { g:'보상', k:'친구 초대 (초대한 사람)', dir:'지급', v:5000, free:false, next:null, at:null, cap:'1일 5명 · 상대 첫 협업 후 지급' },
+      { g:'보상', k:'친구 초대 (초대받은 사람)', dir:'지급', v:3000, free:false, next:null, at:null, cap:'계정당 1회' },
+      { g:'보상', k:'협업 성사', dir:'지급', v:10000, free:false, next:null, at:null, cap:'1일 3건' },
+      { g:'보상', k:'게재 완료', dir:'지급', v:2000, free:false, next:null, at:null, cap:'1일 3건' },
+      { g:'보상', k:'상호 평가 완료', dir:'지급', v:500, free:false, next:null, at:null, cap:'협업당 1회' },
+      { g:'보상', k:'첫 프로필 완성', dir:'지급', v:3000, free:false, next:null, at:null, cap:'계정당 1회' },
+      { g:'보상', k:'친구 등록 수락', dir:'지급', v:300, free:false, next:null, at:null, cap:'1일 5건' },
+    ];
+    const ov = this.state.polOv ?? {};
+    const rows = BASE.map((r, i) => {
+      const o = ov[r.k] ?? {};
+      const free = o.free !== undefined ? o.free : r.free;
+      const next = o.next !== undefined ? o.next : r.next;
+      const at = o.at !== undefined ? o.at : r.at;
+      const dLeft = at ? Math.round((at - TODAY) / DAY) : null;
+      const isGive = r.dir === '지급';
+      return {
+        g: r.g, k: r.k, cap: r.cap, hasCap: !!r.cap,
+        dir: r.dir,
+        dirStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:2px 7px;flex-shrink:0;'
+          + (isGive ? 'background:#DCFCE7;color:#15803D' : 'background:#F1F1F4;color:#5C5C68'),
+        nowLabel: won(r.v) + 'C',
+        // 무료여도 값은 남는다 — 지금 끄는 것은 청구뿐이다
+        stateLabel: isGive ? '활성' : free ? '무료 (베타)' : '청구중',
+        stateStyle: 'font-size:11px;font-weight:700;border-radius:6px;padding:4px 9px;cursor:pointer;white-space:nowrap;border:1px solid '
+          + (isGive ? '#DCFCE7;background:#F0FDF4;color:#15803D'
+             : free ? '#FDE68A;background:#FFFBEB;color:#B45309'
+             : '#17171B;background:#17171B;color:#fff'),
+        onToggle: isGive ? undefined : () => this.setState({
+          polOv: { ...ov, [r.k]: { ...o, free: !free } } }),
+        hasNext: next !== null,
+        nextLabel: next !== null ? won(next) + 'C' : '',
+        atLabel: at ? (at.getMonth() + 1) + '/' + at.getDate() : '',
+        ddayLabel: dLeft !== null ? 'D-' + dLeft : '',
+        // 예정 값은 적용일 전에는 **어디서도 청구에 쓰이지 않는다** — 소급 금지가 구조가 된다
+        planStyle: 'display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:#1D4ED8',
+        onPlan: () => this.setState({ polEdit: r.k, polVal: String(next ?? r.v), polAt: at ? at.toISOString().slice(0,10) : '2026-09-01' }),
+        planCta: next !== null ? '변경 예정' : '값 바꾸기',
+        planCtaStyle: 'font-size:11.5px;font-weight:600;border-radius:7px;padding:5px 10px;cursor:pointer;white-space:nowrap;border:1px solid '
+          + (next !== null ? '#DBEAFE;background:#EFF6FF;color:#1D4ED8' : '#E2E2E8;background:#fff;color:#5C5C68'),
+      };
+    });
+    const groups = ['광고주', '인플루언서', '보상'].map(g => ({
+      g, rows: rows.filter(r => r.g === g), n: rows.filter(r => r.g === g).length,
+    }));
+    const planned = rows.filter(r => r.hasNext);
+    const editKey = this.state.polEdit ?? null;
+    return {
+      polGroups: groups,
+      polPlannedCount: planned.length,
+      polPlanned: planned,
+      polHasPlanned: planned.length > 0,
+      polFreeCount: rows.filter(r => r.stateLabel === '무료 (베타)').length,
+      polNote: '지금은 차감 항목이 모두 무료예요. 값은 그대로 두고 청구만 꺼 둔 상태라, 스위치를 켜면 그날부터 그 값으로 청구됩니다.',
+      polEditOpen: !!editKey,
+      polEditKey: editKey ?? '',
+      polVal: this.state.polVal ?? '',
+      polAt: this.state.polAt ?? '',
+      onPolVal: (e) => this.setState({ polVal: e.target.value }),
+      onPolAt: (e) => this.setState({ polAt: e.target.value }),
+      closePolEdit: () => this.setState({ polEdit: null }),
+      polSaveStyle: 'flex:1;min-height:44px;border-radius:11px;font-size:13.5px;font-weight:700;display:flex;align-items:center;justify-content:center;'
+        + ((this.state.polVal ?? '').trim() && (this.state.polAt ?? '')
+           ? 'background:#17171B;color:#fff;cursor:pointer' : 'background:#EAEAEE;color:#B0B0BB'),
+      savePol: ((this.state.polVal ?? '').trim() && (this.state.polAt ?? ''))
+        ? () => this.setState({
+            polEdit: null,
+            polOv: { ...ov, [editKey]: { ...(ov[editKey] ?? {}),
+              next: Number(this.state.polVal), at: new Date(this.state.polAt + 'T00:00:00') } },
+          })
+        : undefined,
+      clearPol: () => this.setState({ polEdit: null,
+        polOv: { ...ov, [editKey]: { ...(ov[editKey] ?? {}), next: null, at: null } } }),
+      polLog: [
+        { at:'8/01', who:'정원일', what:'오픈 등록 1,500C → 1,000C', note:'공지 7/18 · 유예 14일' },
+        { at:'7/12', who:'정원일', what:'협업 성사 지급 8,000C → 10,000C', note:'지급은 공지 없이 상향 가능' },
+        { at:'6/30', who:'한지우', what:'대시 보내기 청구 끔 (베타)', note:'값 500C는 유지' },
+      ],
+    };
+  }
+
+  state = { page:'today', dSel:'d1', grantMode:'one', reason:'운영 보상', amount:5000,
+    bulk:['신규 가입 7일 이내'] };
+  go = (k) => () => this.setState({ page: k });
+
+  // 운영 조치는 눌린 결과가 남아야 한다 — 눌러도 아무 표시가 없으면 두 번 누르게 된다
+  isActed = (k) => !!(this.state.acted ?? {})[k];
+  doAct = (k) => () => this.setState(s => ({ acted: { ...(s.acted ?? {}), [k]: true } }));
+  act = (k, before, after) => ({
+    label: this.isActed(k) ? after : before,
+    onClick: this.isActed(k) ? undefined : this.doAct(k),
+    style: 'font-size:11.5px;font-weight:700;' + (this.isActed(k) ? 'color:#15803D' : 'color:#B45309;cursor:pointer'),
+  });
+
+  renderVals() {
+    const page = this.state.page;
+    const qOf = (k) => QUEUE.find(q => q.key === k).n;
+
+    // ── 사이드바 ──────────────────────────────────────────
+    const item = (icon, label, key, badge) => ({ icon, label, key, badge });
+    const nav = [
+      item('◧', '오늘', 'today', 0),
+      { div:true },
+      item('⚠', '신고 접수', 'dispute', DISPUTES.length),
+      item('▽', '정산 모니터', 'settle', qOf('settle')),
+      item('◎', '크레딧', 'credit', 0),
+      item('◐', '크레딧 정책', 'policy', 0),
+      { div:true },
+      item('◫', '회원', 'members', qOf('members')),
+      item('▤', '캠페인 · 딜시트', 'camps', 0),
+      item('▥', '오픈', 'opens', 0),
+      { div:true },
+      item('◈', '시스템 상태', 'sys', 1),
+      item('▦', '데이터 운영', 'data', 2),
+      item('◇', '지면 · 제휴', 'ads', 0),
+      item('△', '지표', 'stats', 0),
+    ].map(n => ({
+      ...n,
+      isDiv: !!n.div,
+      isItem: !n.div,
+      hasBadge: n.badge > 0,
+      onClick: n.key ? this.go(n.key) : undefined,
+      badgeStyle: 'margin-left:auto;font-size:10.5px;font-weight:700;border-radius:20px;padding:1px 6px;'
+        + (n.key === 'dispute' ? 'background:#FEE2E2;color:#DC2626' : 'background:#F1F1F4;color:#7C7C88'),
+      style: 'display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:13.5px;cursor:pointer;'
+        + (n.key === page ? 'background:#FEF3C7;color:#B45309;font-weight:700' : 'color:#5C5C68;font-weight:600'),
+    }));
+
+    // ── 오늘 ────────────────────────────────────────────
+    const queue = QUEUE.map(q => ({
+      ...q,
+      onClick: this.go(q.key),
+      cardStyle: 'background:#fff;border-radius:14px;padding:15px 17px 16px;cursor:pointer;border:1px solid '
+        + (q.hot ? '#FECACA' : '#EAEAEE'),
+      dotStyle: 'width:7px;height:7px;border-radius:50%;display:block;background:' + (q.hot ? '#EF4444' : '#D4D4DC'),
+      isSysCard: !!q.sys,
+      notSysCard: !q.sys,
+      sysWord: '장애',
+      nStyle: 'font-size:26px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;color:'
+        + (q.hot ? '#DC2626' : '#17171B'),
+    }));
+
+    const TAG_C = { 미입금:['#FEE2E2','#DC2626'], '취소 분쟁':['#FEF3C7','#B45309'], 신고:['#F1F1F4','#5C5C68'],
+      확인:['#F1F1F4','#5C5C68'], 수집:['#F1F1F4','#5C5C68'], 장애:['#FEE2E2','#DC2626'] };
+    const tagStyle = (t) => 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;flex-shrink:0;background:'
+      + TAG_C[t][0] + ';color:' + TAG_C[t][1];
+
+    const todos = [
+      ...DISPUTES.map(d => ({ tag:d.tag, title:d.title, sub:d.sub, age:d.age, hot:true,
+        onClick: () => this.setState({ page:'dispute', dSel:d.id }) })),
+      { tag:'확인', title:'사업자등록증 확인 대기 ' + qOf('members') + '건', sub:'가입 승인이 늦으면 첫 캠페인이 밀립니다', age:'2일째', hot:false,
+        onClick: this.go('members') },
+      { tag:'장애', title:'iOS 결제 화면 오류 14건', sub:'8/2 21:40 배포 직후 · 사용자 안내 미발행', age:'1시간', hot:true,
+        onClick: this.go('sys') },
+      { tag:'수집', title:'블로그 수집 실패 2건', sub:'어제 22시 배치 · 재시도 필요', age:'어제', hot:false,
+        onClick: this.go('data') },
+    ].map(t => ({ ...t,
+      tagStyle: tagStyle(t.tag),
+      ageStyle: 'font-size:11.5px;font-weight:700;flex-shrink:0;color:' + (t.hot ? '#DC2626' : '#9A9AA5') }));
+
+    // 회원 현황 — 오늘 유입과 누적을 한 줄에. 누적만 보면 오늘이 안 보이고, 오늘만 보면 규모가 안 보인다.
+    const MEMBER_STAT = [
+      { role:'인플루언서', today:11, total:268, prev:7 },
+      { role:'광고주',    today:7,  total:144, prev:9 },
+    ].map(m => {
+      const diff = m.today - m.prev;
+      return { ...m,
+        todayLabel: '+' + m.today,
+        totalLabel: won(m.total),
+        diffLabel: (diff > 0 ? '▲ ' : diff < 0 ? '▼ ' : '– ') + Math.abs(diff),
+        diffStyle: 'font-size:11px;font-weight:700;flex-shrink:0;color:'
+          + (diff > 0 ? '#15803D' : diff < 0 ? '#DC2626' : '#B0B0BB'),
+        dotStyle: 'width:8px;height:8px;border-radius:' + (m.role === '광고주' ? '2px' : '50%')
+          + ';flex-shrink:0;background:' + (m.role === '광고주' ? '#17171B' : '#F59E0B'),
+      };
+    });
+    const memberTotal = MEMBER_STAT.reduce((s, m) => s + m.total, 0);
+    const memberToday = MEMBER_STAT.reduce((s, m) => s + m.today, 0);
+
+    // 오늘 트래픽 — 여기서는 「지금 사람이 들어와 있나」만 본다. 상세 추이는 지표 화면.
+    const HOURS = [12, 9, 6, 4, 5, 11, 24, 38, 46, 52, 61, 74, 68, 71, 83, 92, 88, 79, 96, 118, 134, 121, 86, 0];
+    const NOW_H = 22;
+    const trafficMax = Math.max(...HOURS);
+    const bars = HOURS.map((v, h) => ({
+      style: 'flex:1;min-width:0;border-radius:2px 2px 0 0;background:'
+        + (h === NOW_H ? '#F59E0B' : h > NOW_H ? '#F1F1F4' : '#D4D4DC')
+        + ';height:' + Math.max(Math.round(v / trafficMax * 100), 2) + '%',
+    }));
+    const visitsToday = HOURS.reduce((s, v) => s + v, 0);
+    const traffic = [
+      { k:'방문', v: won(visitsToday), s:'어제 이 시각 1,043' },
+      { k:'대시 발송', v:'142', s:'어제 111' },
+      // 두 검색을 한 칸에 — 쓰는 사람이 달라 나란히 놓아야 비율이 읽힌다
+      { k:'검색', v:'316 / 482', s:'인플 찾기 / 캠페인 찾기', split:true },
+      { k:'앱 / 웹', v:'71 : 29', s:'앱 비중 ↑' },
+    ];
+
+    // 오늘 움직이는 협업 — 오늘이 일정에 포함된 건만. 기간형은 시작~종료 사이면 모두 오늘이다.
+    // ⚠️ 캠페인 숫자의 **유일한 원본**. 오늘 카드 · 구분별 표 · 캠페인 목록이 모두 여기서 나온다.
+    // dash = 이 캠페인에 대시한 인플루언서 수. conf = 그중 확정된 인원.
+    const CAMPS_SRC = [
+      { n:'성수 델리카페 신메뉴 방문 리뷰', adv:'성수 델리카페', kind:'지역', st:'진행중',
+        dash:19, conf:8, target:10, stuck:0, note:'8/20 정산 예정' },
+      { n:'여름 콜드브루 제품 협찬', adv:'여름 콜드브루', kind:'제품', st:'진행중',
+        dash:14, conf:5, target:8, stuck:2, note:'원고 마감 3일 초과 2명' },
+      { n:'오도이촌 스테이 가을 프로모션', adv:'오도이촌 스테이', kind:'지역', st:'모집중',
+        dash:3, conf:1, target:5, stuck:0, note:'모집 부진 — 마감 D-4' },
+      { n:'디저트 신제품 기자단 배포', adv:'디저트랩', kind:'기자단', st:'완료',
+        dash:21, conf:6, target:6, stuck:0, note:'정산 완료' },
+      { n:'지역맘카페 여름 협찬', adv:'지역맘카페', kind:'제품', st:'진행중',
+        dash:7, conf:3, target:3, stuck:1, note:'미입금 신고 1건 — 분쟁 진행중', hot:true },
+    ];
+    const runRows = CAMPS_SRC.filter(c => c.st === '진행중');
+
+    // 오픈 카드와 같은 꼴 — 「오늘 진행 가능 / 참여 확정 / 오늘 등록됨」 3칸.
+    // 세부 단계(방문·원고·게재·결제)는 캠페인 상세로 넘긴다.
+    const TODAY_WORK = [
+      { kind:'오늘 진행중', n: runRows.length, sub:'오늘이 일정에 포함된 캠페인', hot:false },
+      { kind:'대시 / 확정',
+        n: runRows.reduce((s, c) => s + c.dash, 0) + ' / ' + runRows.reduce((s, c) => s + c.conf, 0),
+        sub:'지원한 인플루언서 · 확정된 인원', hot:false, unit:'명' },
+      { kind:'오늘 등록됨', n:3, sub:'오늘 새로 열린 캠페인', hot:false },
+    ].map(w => ({ ...w,
+      unit: w.unit ?? '건',
+      nStyle: 'font-size:22px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;color:'
+        + (w.hot ? '#DC2626' : '#17171B'),
+      dotStyle: 'width:7px;height:7px;border-radius:50%;flex-shrink:0;background:' + (w.hot ? '#EF4444' : '#D4D4DC') }));
+
+    // 오늘 열려 있는 오픈 — 캠페인과 같은 기준(오늘이 일정에 포함). 재고가 얼마나 있는지를 본다.
+    // 네 칸은 모두 **같은 모집단**(오늘 협업 가능한 오픈)을 쪼갠 것이다.
+    // 서로 다른 축을 섞으면 34 옆에 38이 놓여 이상해 보인다. OPEN_TODAY 는 OPEN_KIND 아래에서 파생한다.
+
+    // 구분별로 나눠 본다 — 재고가 어느 쪽에 쏠려 있는지가 매칭 실패의 원인이 된다
+    const KIND_C = { 지역:['#FEF3C7','#B45309','#F59E0B'], 제품:['#F1F1F4','#5C5C68','#9A9AA5'], 기자단:['#F1F1F4','#5C5C68','#C4C4CE'] };
+    const OPEN_KIND = [
+      { k:'지역', n:19, dash:14, sub:'현장 방문 가능' },
+      { k:'제품', n:11, dash:8, sub:'배송 리뷰' },
+      { k:'기자단', n:4, dash:1, sub:'자료 기반' },
+    ].map(o => ({ ...o,
+      pct: Math.round(o.dash / o.n * 100) + '% 대시 받음',
+      chipStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;background:' + KIND_C[o.k][0] + ';color:' + KIND_C[o.k][1],
+      barStyle: 'height:5px;border-radius:3px;background:' + KIND_C[o.k][2] + ';width:' + Math.round(o.n / 19 * 100) + '%',
+      idle: o.n - o.dash,
+      idleLabel: (o.n - o.dash) + '건 대기',
+      idleStyle: 'font-size:11.5px;font-weight:700;flex-shrink:0;text-align:right;color:' + (o.n - o.dash >= 3 ? '#B45309' : '#9A9AA5'),
+    }));
+
+    // OPEN_KIND 합계에서 파생 — 카드 숫자와 구분별 표가 절대 어긋나지 않는다
+    const oTotal = OPEN_KIND.reduce((s, o) => s + o.n, 0);
+    const oDashed = OPEN_KIND.reduce((s, o) => s + o.dash, 0);
+    const OPEN_TODAY = [
+      { kind:'오늘 협업 가능', n:oTotal, sub:'오늘이 일정에 포함된 오픈', hot:false },
+      { kind:'대시 받음', n:oDashed, sub:'광고주가 말을 건 오픈', hot:false },
+      { kind:'오늘 등록됨', n:38, sub:'오늘 새로 열린 오픈', hot:false },
+    ].map(o => ({ ...o,
+      nStyle: 'font-size:22px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;color:'
+        + (o.hot ? '#B45309' : '#17171B'),
+      dotStyle: 'width:7px;height:7px;border-radius:50%;flex-shrink:0;background:' + (o.hot ? '#F59E0B' : '#D4D4DC') }));
+
+    // ⚠️ CAMPS 가 유일한 원본. 구분별·오늘 카드 모두 여기서 파생시킨다.
+    //    리터럴로 두면 같은 화면 안에서 숫자가 어긋난다.
+    const CAMP_KIND = ['지역','제품','기자단'].map(k => {
+      const rows = runRows.filter(c => c.kind === k);
+      return { k,
+        n: rows.length,
+        conf: rows.reduce((s, c) => s + c.conf, 0),
+        need: rows.reduce((s, c) => s + c.target, 0),
+        dash: rows.reduce((s, c) => s + c.dash, 0) };
+    }).filter(c => c.n > 0).map(c => ({ ...c,
+      chipStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;background:' + KIND_C[c.k][0] + ';color:' + KIND_C[c.k][1],
+      fill: c.conf + '/' + c.need,
+      pct: Math.round(c.conf / c.need * 100) + '%',
+      barStyle: 'height:5px;border-radius:3px;background:' + KIND_C[c.k][2] + ';width:' + Math.round(c.conf / c.need * 100) + '%',
+      short: c.need - c.conf,
+      shortLabel: c.need - c.conf ? (c.need - c.conf) + '명 부족' : '충원 완료',
+      shortStyle: 'font-size:11.5px;font-weight:700;flex-shrink:0;text-align:right;color:' + (c.need - c.conf ? '#DC2626' : '#15803D'),
+    }));
+
+    const RUNNING = [
+      { n:'성수 델리카페 신메뉴 방문 리뷰', adv:'성수 델리카페', span:'8/2 – 8/20', today:'방문 3명 · 원고 2명', risk:0 },
+      { n:'여름 콜드브루 제품 협찬', adv:'여름 콜드브루', span:'7/24 – 8/10', today:'원고 마감 2명', risk:2 },
+      { n:'시흥 아울렛 여름 세일', adv:'시흥 프리미엄 아울렛', span:'8/1 – 8/23', today:'방문 3명', risk:0 },
+      { n:'지역맘카페 여름 협찬', adv:'지역맘카페', span:'7/20 – 8/2', today:'결제 예정 1명', risk:1 },
+    ].map(r => ({ ...r,
+      riskLabel: r.risk ? r.risk + '건 지연' : '정상',
+      riskStyle: 'font-size:11px;font-weight:700;flex-shrink:0;text-align:right;color:' + (r.risk ? '#DC2626' : '#15803D'),
+      rowStyle: 'display:grid;grid-template-columns:minmax(0,1fr) 128px minmax(0,168px) 74px;align-items:center;padding:12px 20px;border-bottom:1px solid #F5F5F7;cursor:pointer;'
+        + (r.risk ? 'background:#FEF2F2' : '') }));
+
+    // 정상 항목을 나열하면 이상이 묻힌다. 심각도로 정렬하고 정상은 한 줄로 접는다.
+    // lv: 2 긴급(사용자가 못 씀) · 1 주의(일부 기능) · 0 정상
+    const HEALTH = [
+      { k:'앱 오류', lv:2, v:'iOS 결제 화면 · 최근 1시간 14건', sub:'8/2 21:40부터 · 직전 배포 이후', action:'로그 보기', go:'sys' },
+      { k:'블로그 수집 배치', lv:1, v:'어제 22:00 · 실패 2건', sub:'네이버 응답 지연', action:'재시도', ack:'retry-batch', done:'재시도 요청됨' },
+      { k:'서버 응답', lv:0, v:'평균 240ms · 5xx 0.02%', sub:'' },
+      { k:'네이버 검색 API', lv:0, v:'일 할당 34% 사용', sub:'' },
+      { k:'결제 알림 발송', lv:0, v:'오늘 09:00 정상', sub:'' },
+      { k:'푸시 발송', lv:0, v:'성공률 99.1%', sub:'' },
+    ];
+    const LV_C = { 2:['#FEE2E2','#DC2626','#EF4444'], 1:['#FEF3C7','#B45309','#F59E0B'], 0:['#DCFCE7','#15803D','#22C55E'] };
+    const badHealth = HEALTH.filter(h => h.lv > 0).sort((a, b) => b.lv - a.lv).map(h => ({ ...h,
+      hasAction: !!h.action,
+      // 「로그 보기」는 화면으로, 「재시도」는 눌린 사실을 남긴다
+      action: h.ack && this.isActed(h.ack) ? h.done : h.action,
+      onAction: h.go ? this.go(h.go) : h.ack && !this.isActed(h.ack) ? this.doAct(h.ack) : undefined,
+      actionStyle: 'font-size:11.5px;font-weight:700;flex-shrink:0;'
+        + (h.ack && this.isActed(h.ack) ? 'color:#15803D' : 'color:#B45309;cursor:pointer'),
+      lvLabel: h.lv === 2 ? '긴급' : '주의',
+      lvStyle: 'font-size:10px;font-weight:800;border-radius:4px;padding:2px 6px;flex-shrink:0;background:' + LV_C[h.lv][0] + ';color:' + LV_C[h.lv][1],
+      dot: 'width:8px;height:8px;border-radius:50%;flex-shrink:0;background:' + LV_C[h.lv][2],
+      hasSub: !!h.sub }));
+    const okHealth = HEALTH.filter(h => h.lv === 0);
+    const worst = Math.max(...HEALTH.map(h => h.lv));
+    // 최근 24시간 오류 건수 — 배포 시점 이후 튀는 것이 보여야 한다
+    const ERR_H = [0,0,1,0,0,0,2,1,0,3,1,0,2,0,1,0,0,2,1,0,4,14,0,0];
+    const errMax = Math.max(...ERR_H);
+    const errBars = ERR_H.map((v, i) => ({
+      style: 'flex:1;min-width:0;border-radius:2px 2px 0 0;background:'
+        + (v >= 10 ? '#EF4444' : v >= 3 ? '#F59E0B' : v > 0 ? '#D4D4DC' : '#F1F1F4')
+        + ';height:' + Math.max(Math.round(v / errMax * 100), 4) + '%' }));
+
+    const stats = [
+      { k:'신규 가입', v:'18', d:'+4' },
+      { k:'대시 발송', v:'142', d:'+31' },
+      { k:'양쪽 수락', v:'26', d:'+7' },
+      { k:'성사율', v:'18.3%', d:'-1.2%p', down:true },
+      { k:'크레딧 소진', v:'86,400', d:'+12,000' },
+    ].map(s => ({ ...s,
+      dStyle: 'font-size:11px;font-weight:700;width:64px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;color:'
+        + (s.down ? '#DC2626' : '#15803D') }));
+
+    // ── 분쟁 ────────────────────────────────────────────
+    // 신고 유형 — 분류를 받으면 우리가 개입하지 않고도 자동 처리할 수 있는 것이 늘어난다.
+    // 유형마다 필요한 증거와 다음 행동이 정해져 있기 때문이다.
+    const REPORT_TYPES = [
+      // 집계표 — 진행중은 DISPUTES 에서 파생, 이번 달·해결·평균은 집계값.
+      // 참고 설명(증거·처리 규칙)은 매뉴얼로 뺀다. 관리자 화면에는 숫자만 둔다.
+      { by:'인플루언서', k:'대금 미지급', tag:'미입금', mon:5, done:2, days:4.2 },
+      { by:'인플루언서', k:'일방적 취소 · 조건 변경', tag:'취소 분쟁', mon:3, done:2, days:2.1 },
+      { by:'인플루언서', k:'가이드와 다른 요구', tag:null, mon:1, done:1, days:1.4 },
+      { by:'광고주', k:'원고 미제출 · 게재 지연', tag:null, mon:4, done:4, days:1.8 },
+      { by:'광고주', k:'가이드 불이행', tag:'신고', mon:2, done:1, days:1.2 },
+      { by:'광고주', k:'무단 불참', tag:null, mon:1, done:1, days:3.0 },
+      { by:'양쪽', k:'욕설 · 부적절한 요구', tag:null, mon:1, done:1, days:0.4 },
+      { by:'양쪽', k:'기타', tag:null, mon:2, done:2, days:2.6 },
+    ].map(t => {
+      const n = t.tag ? DISPUTES.filter(d => d.tag === t.tag).length : 0;
+      return { ...t, n,
+        byStyle: 'font-size:10px;font-weight:800;border-radius:4px;padding:2px 7px;flex-shrink:0;'
+          + (t.by === '인플루언서' ? 'background:#FEF3C7;color:#B45309'
+             : t.by === '광고주' ? 'background:#F1F1F4;color:#5C5C68' : 'background:#EFEFF2;color:#7C7C88'),
+        nStyle: 'font-size:12.5px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums;color:'
+          + (n ? '#DC2626' : '#C4C4CE'),
+        nLabel: n ? n + '건' : '—',
+        monLabel: t.mon + '건',
+        doneLabel: t.done + '건',
+        rateLabel: Math.round(t.done / t.mon * 100) + '%',
+        rateStyle: 'font-size:11.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:'
+          + (t.done / t.mon < 0.6 ? '#B45309' : '#15803D'),
+        daysLabel: t.days.toFixed(1) + '일',
+        daysStyle: 'font-size:11.5px;text-align:right;font-variant-numeric:tabular-nums;color:'
+          + (t.days >= 4 ? '#B45309' : '#7C7C88') };
+    });
+
+    // 신고자별로 나눠 본다 — 「누가 무엇으로 힘들어하나」가 한눈에 보인다.
+    // 막대를 누르면 그 유형만 아래 목록에 걸러진다.
+    const typeSel = this.state.typeSel ?? null;
+    const monMax = Math.max(...REPORT_TYPES.map(t => t.mon));
+    const barOf = (t) => {
+      const on = typeSel === t.k;
+      const slow = t.days >= 4 || t.done / t.mon < 0.6;
+      return { ...t,
+        onClick: () => this.setState({ typeSel: on ? null : t.k, dTab: on ? '전체' : (t.tag ?? '전체') }),
+        // 막대 하나에 「진행중(앰버)+해결(회색)」을 쌓는다. 두 줄로 나누면 눈이 두 번 움직인다.
+        rowStyle: 'padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid '
+          + (on ? '#17171B;background:#17171B' : 'transparent'),
+        kStyle: 'font-size:12px;font-weight:' + (on ? '800' : '600') + ';flex:1;min-width:0;line-height:1.35;color:'
+          + (on ? '#fff' : '#3C3C46'),
+        monStyle: 'font-size:13px;font-weight:800;flex-shrink:0;font-variant-numeric:tabular-nums;color:'
+          + (on ? '#fff' : '#17171B'),
+        trackStyle: 'height:22px;border-radius:6px;background:' + (on ? 'rgba(255,255,255,0.12)' : '#F4F4F6')
+          + ';margin-top:8px;display:flex;overflow:hidden',
+        openStyle: 'background:#F59E0B;width:' + Math.round(t.n / monMax * 100) + '%',
+        doneStyle: 'background:' + (on ? 'rgba(255,255,255,0.3)' : '#D4D4DC')
+          + ';width:' + Math.round(t.done / monMax * 100) + '%',
+        hasOpen: t.n > 0,
+        metaStyle: 'font-size:10.5px;margin-top:6px;font-variant-numeric:tabular-nums;color:'
+          + (on ? 'rgba(255,255,255,0.55)' : slow ? '#B45309' : '#9A9AA5'),
+        metaLabel: (t.n ? '진행중 ' + t.n + '건 · ' : '') + '해결률 ' + t.rateLabel + ' · 평균 ' + t.daysLabel };
+    };
+    const typeGroups = [
+      { by:'인플루언서', sub:'주로 돈과 약속이 안 지켜질 때' },
+      { by:'광고주', sub:'주로 콘텐츠가 안 나올 때' },
+      { by:'양쪽', sub:'' },
+    ].map(g => {
+      const rows = REPORT_TYPES.filter(t => t.by === g.by);
+      return { ...g,
+        rows: rows.map(barOf),
+        total: rows.reduce((s, t) => s + t.mon, 0) + '건',
+        open: rows.reduce((s, t) => s + t.n, 0),
+        openLabel: rows.reduce((s, t) => s + t.n, 0) + '건 진행중',
+        byStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;flex-shrink:0;'
+          + (g.by === '인플루언서' ? 'background:#FEF3C7;color:#B45309'
+             : g.by === '광고주' ? 'background:#F1F1F4;color:#5C5C68' : 'background:#EFEFF2;color:#7C7C88') };
+    });
+    const selType = typeSel ? REPORT_TYPES.find(t => t.k === typeSel) : null;
+
+    const dTab = this.state.dTab ?? '전체';
+    const chip = (label, on, onClick) => ({ label, onClick,
+      style: 'font-size:12px;font-weight:700;border-radius:16px;padding:0 14px;height:34px;display:flex;align-items:center;cursor:pointer;'
+        + (on ? 'background:#17171B;color:#fff' : 'background:#fff;border:1px solid #EAEAEE;color:#5C5C68') });
+    const dCount = { 전체:DISPUTES.length };
+    ['미입금','취소 분쟁','신고'].forEach(t => { dCount[t] = DISPUTES.filter(d => d.tag === t).length; });
+    const dTabs = ['전체','미입금','취소 분쟁','신고'].map(t =>
+      chip(t + ' ' + dCount[t], t === dTab, () => this.setState({ dTab: t })));
+
+    // 유형 막대를 고르면 그 유형만 남는다. 태그가 없는 유형은 아직 접수 건이 없다는 뜻.
+    const dList = selType
+      ? DISPUTES.filter(d => selType.tag && d.tag === selType.tag)
+      : DISPUTES.filter(d => dTab === '전체' || d.tag === dTab);
+    const dSel = dList.some(d => d.id === this.state.dSel) ? this.state.dSel : (dList[0] ?? DISPUTES[0]).id;
+    const dEmpty = dList.length === 0;
+    const disputes = dList.map(d => ({
+      ...d,
+      onClick: () => this.setState({ dSel: d.id }),
+      tagStyle: tagStyle(d.tag),
+      rowStyle: 'padding:14px 17px;border-bottom:1px solid #F5F5F7;cursor:pointer;'
+        + (d.id === dSel ? 'background:#FFFBEB;box-shadow:inset 3px 0 0 #F59E0B' : ''),
+    }));
+
+    const c = DISPUTES.find(d => d.id === dSel);
+    const ACT_S = {
+      primary: 'height:38px;padding:0 15px;border-radius:9px;background:#17171B;color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;cursor:pointer',
+      warn: 'height:38px;padding:0 15px;border-radius:9px;background:#fff;border:1px solid #FECACA;color:#DC2626;font-size:12.5px;font-weight:700;display:flex;align-items:center;cursor:pointer',
+      ghost: 'height:38px;padding:0 15px;border-radius:9px;background:#fff;border:1px solid #E2E2E8;color:#5C5C68;font-size:12.5px;font-weight:600;display:flex;align-items:center;cursor:pointer',
+    };
+    // 제재는 **우리 서비스 이용에 대한 것**이다. 계약 이행을 강제하는 것이 아니라
+    // 「이런 상대와 다음 사람이 또 물리지 않게」 하는 조치 — 그래서 정당하고, 그래서 근거가 필요하다.
+    const SANCTION = [
+      { lv:0, k:'정상', eff:'제한 없음' },
+      { lv:1, k:'주의', eff:'광고주에게만 안내 · 외부 노출 없음' },
+      { lv:2, k:'표시', eff:'인플루언서가 수락 전에 지연 이력을 봄' },
+      // 선입금 권장은 또 다른 리스크를 부른다(선입금 사기·환불 분쟁).
+      // 가장 확실한 건 **미결제 건이 있다는 사실 자체를 보여주는 것**이다.
+      // 금액은 빼고 **건수만** 공개한다 — 거래 규모가 드러나면 그건 다른 문제가 된다.
+      { lv:3, k:'제한', eff:'미결제 건수 공개 · 상단 노출 광고 구매 불가' },
+      { lv:4, k:'정지', eff:'신규 캠페인 개설 불가 · 진행 건은 유지' },
+      // 최종 수단. 진행 건까지 끝난 뒤에만 — 남은 인플루언서가 돈을 못 받으면 안 된다.
+      { lv:5, k:'퇴출', eff:'계정 해지 · 재가입 차단 · 진행 건 종료 후 집행' },
+    ];
+    // 선택된 신고에서 파생. 리터럴로 두면 엉뚱한 사람을 제재하게 된다.
+    // 인플루언서 귀책 건에는 광고주 제재 사다리를 띄우지 않는다.
+    const SANC_OF = {
+      d1: { who:'지역맘카페', lv:2, why:'결제 지연 2/6건 (33%) · 미입금 신고 1건 접수' },
+    };
+    const sanc = SANC_OF[c.id] ?? null;
+    // ⚠️ 「단계 올리기」를 누르면 사다리가 실제로 한 칸 올라가야 한다 —
+    //    버튼 글자만 바뀌고 「현재」가 그대로면 올렸는지 알 수 없다.
+    const curLv = Math.min((sanc ? sanc.lv : 0) + (this.isActed('sanction') ? 1 : 0), 5);
+    const sanction = SANCTION.map(s => ({ ...s,
+      isNow: s.lv === curLv,
+      nowLabel: s.lv === curLv ? '현재' : '',
+      dotStyle: 'width:9px;height:9px;border-radius:50%;flex-shrink:0;background:'
+        + (s.lv === 0 ? '#22C55E' : s.lv <= 2 ? '#F59E0B' : '#EF4444')
+        + (s.lv > curLv ? ';opacity:0.28' : ''),
+      rowStyle: 'display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:9px;'
+        + (s.lv === curLv ? 'background:#FFFBEB;border:1px solid #FDE68A' : 'border:1px solid transparent'),
+      kStyle: 'font-size:12.5px;font-weight:' + (s.lv === curLv ? '800' : '600') + ';width:44px;flex-shrink:0;color:'
+        + (s.lv > curLv ? '#B0B0BB' : '#2A2A33'),
+      effStyle: 'font-size:11.5px;flex:1;min-width:0;color:' + (s.lv > curLv ? '#C4C4CE' : '#7C7C88') }));
+
+    const cur = { ...c,
+      sanction,
+      hasSanction: !!sanc,
+      sanctionWho: sanc ? sanc.who : '',
+      sanctionWhy: sanc ? sanc.why : '',
+      // 다음 단계도 **현재 단계**에서 파생 — 한 칸 올린 뒤에도 같은 단계를 권하면 안 된다
+      sanctionNext: sanc ? SANCTION[Math.min(curLv + 1, 5)].k : '',
+      sanctionNextEff: sanc ? SANCTION[Math.min(curLv + 1, 5)].eff : '',
+      tagStyle: tagStyle(c.tag),
+      sides: c.sides.map(s => ({ ...s,
+        initial: initialOf(s.name),
+        avStyle: 'width:34px;height:34px;border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;'
+          + (s.role.includes('광고주') ? 'background:#F1F1F4;color:#5C5C68' : 'background:#FEF3C7;color:#B45309'),
+        facts: s.facts.map(f => ({ ...f,
+          vStyle: 'font-size:12px;font-weight:600;line-height:1.5;color:'
+            + (f.warn ? '#DC2626' : f.ok ? '#15803D' : '#3C3C46') })),
+      })),
+      // 조치는 눌린 결과가 남아야 한다 — 분쟁 건마다 따로 기록한다
+      actions: c.actions.map(a => {
+        const key = c.id + '|' + a.k;
+        const done = this.isActed(key);
+        return { ...a,
+          k: done ? a.k.replace(/ ?\(사유 입력\)/, '') + ' · 완료' : a.k,
+          onClick: done ? undefined : this.doAct(key),
+          style: done
+            ? 'height:38px;padding:0 15px;border-radius:9px;background:#DCFCE7;border:1px solid #BBF7D0;color:#15803D;font-size:12.5px;font-weight:700;display:flex;align-items:center'
+            : ACT_S[a.kind] };
+      }),
+    };
+
+    // ── 크레딧 ──────────────────────────────────────────
+    const grantMode = this.state.grantMode;
+    const grantTabs = [
+      { key:'one', label:'개별 지급' },
+      { key:'bulk', label:'일괄 지급' },
+    ].map(t => ({ ...t,
+      onClick: () => this.setState({ grantMode: t.key }),
+      style: 'flex:1;height:32px;border-radius:7px;font-size:12.5px;display:flex;align-items:center;justify-content:center;cursor:pointer;'
+        + (t.key === grantMode ? 'background:#fff;color:#17171B;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,0.06)' : 'color:#8A8A96;font-weight:600') }));
+
+    const bulkSel = this.state.bulk ?? [];
+    const BULK = [
+      { k:'신규 가입 7일 이내', n:'12명' },
+      { k:'B등급 이상', n:'34명' },
+      { k:'최근 30일 협업 완료', n:'58명' },
+      { k:'오픈 0건 (휴면)', n:'87명' },
+    ];
+    const bulkConds = BULK.map(b => ({ ...b,
+      onClick: () => this.setState({ bulk: bulkSel.includes(b.k) ? bulkSel.filter(x => x !== b.k) : [...bulkSel, b.k] }),
+      boxStyle: 'width:18px;height:18px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;'
+        + (bulkSel.includes(b.k) ? 'background:#F59E0B;color:#17171B' : 'background:#fff;border:1.5px solid #E2E2E8;color:transparent') }));
+
+    const reason = this.state.reason;
+    const reasons = ['웰컴','이벤트','운영 보상','오류 보상','환불'].map(r => ({
+      k: r,
+      onClick: () => this.setState({ reason: r }),
+      style: 'font-size:12px;font-weight:600;border-radius:15px;padding:0 13px;height:32px;display:flex;align-items:center;cursor:pointer;'
+        + (r === reason ? 'background:#17171B;color:#fff' : 'background:#F1F1F4;color:#5C5C68') }));
+
+    const amount = this.state.amount;
+    const amounts = [1000, 3000, 5000, 10000].map(a => ({
+      k: won(a) + 'C',
+      onClick: () => this.setState({ amount: a }),
+      style: 'font-size:12.5px;font-weight:700;border-radius:9px;padding:0 15px;height:36px;display:flex;align-items:center;cursor:pointer;font-variant-numeric:tabular-nums;'
+        + (a === amount ? 'background:#17171B;color:#fff' : 'background:#fff;border:1px solid #E2E2E8;color:#3C3C46') }));
+
+    // 일괄이면 선택된 조건의 인원을 합산해 총액을 계산한다. 리터럴로 두면 실제와 어긋난다.
+    const bulkCount = BULK.filter(b => bulkSel.includes(b.k)).reduce((s, b) => s + parseInt(b.n, 10), 0);
+    const headcount = grantMode === 'one' ? 1 : bulkCount;
+    const grants = GRANTS.map(g => ({ ...g,
+      amt: (g.amt > 0 ? '+' : '') + won(g.amt),
+      amtStyle: 'font-size:12.5px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums;color:'
+        + (g.amt > 0 ? '#15803D' : '#DC2626'),
+      reasonStyle: 'font-size:11px;font-weight:700;color:#7C7C88' }));
+
+    // ── 정산 모니터 ─────────────────────────────────────
+    // 미수 목록 — 예정일이 지났는데 아직 기록되지 않은 건. 오래된 순.
+    // ⚠️ 「여름 콜드브루 제품 협찬」은 광고주 콘솔 정산 화면의 미수 카드와 **같은 건**이다.
+    //    인원·금액·예정일·D+ 를 그쪽과 다르게 적으면 광고주가 보는 화면과 어긋난다.
+    const OVERDUE_SRC = [
+      { via:'오픈', name:'지역맘카페 여름 협찬', adv:'지역맘카페', who:'뷰티하는 지연', due:'7/31', over:2, amt:150000, rep:true },
+
+      { via:'오픈', name:'키즈랜드 인천 방문', adv:'키즈랜드 인천', who:'맛집탐험 도윤', due:'7/25', over:8, amt:180000, rep:false },
+      { via:'캠페인', name:'여름 콜드브루 제품 협찬 (블로그)', adv:'여름 콜드브루', who:'5명', due:'7/20', over:13, amt:900000, rep:true },
+    ];
+
+    // 제재는 「지연 비율」로 판정한다. 건수가 아니라 비율이어야 규모가 큰 광고주가 불리해지지 않는다.
+    // ⚠️ late(지연 건수) ≥ open(미수 건수) 이어야 한다. 미수는 정의상 이미 지연이다.
+    //    두 값을 따로 두면 「지연 0% · 미수 2건」 같은 모순이 생긴다.
+    // ⚠️ 미수 건수·금액은 **아래 OVERDUE 목록에서 파생**시킨다. 따로 적으면
+    //    「목록에 없는 광고주가 미수 2건」 같은 모순이 생긴다(실제로 그랬다).
+    //    광고주 콘솔의 정산 화면과도 같은 캠페인·금액·D+ 여야 한다.
+    const ADVS = [
+      { n:'지역맘카페', total:6, lateDone:1, avg:6 },
+      { n:'가둘기정원 키즈풀빌라', total:8, lateDone:1, avg:3 },
+      { n:'여름 콜드브루', total:4, lateDone:1, avg:13 },
+      { n:'성수 델리카페', total:9, lateDone:0, avg:4 },
+      { n:'오도이촌 스테이', total:3, lateDone:1, avg:11 },
+      { n:'키즈랜드 인천', total:2, lateDone:0, avg:8 },
+    ].map(a0 => {
+      const mine = OVERDUE_SRC.filter(o => o.adv === a0.n);
+      // 지연 = 늦게라도 낸 건 + 아직 안 낸 건(미수)
+      const a = { ...a0, open: mine.length, amt: mine.reduce((s, o) => s + o.amt, 0) };
+      a.late = a.lateDone + a.open;
+      const pct = Math.round(a.late / a.total * 100);
+      // 주의 20% / 표시 30% / 제한 50% — 계정 정지는 하지 않는다(플랫폼 밖 거래를 부른다)
+      const lv = pct >= 50 ? '제한' : pct >= 30 ? '표시' : pct >= 20 ? '주의' : '정상';
+      const C = { 제한:['#FEE2E2','#DC2626'], 표시:['#FEF3C7','#B45309'], 주의:['#FEF3C7','#B45309'], 정상:['#DCFCE7','#15803D'] };
+      return { ...a,
+        pctLabel: pct + '%',
+        rate: a.total - a.late + '/' + a.total + ' 정시',
+        // 지연이 0건이면 「평균 N일 지연」이 나올 수 없다 — 두 값이 어긋나면 표를 못 믿는다
+        avgLabel: a.late ? '평균 ' + a.avg + '일 지연' : '지연 없음',
+        openLabel: a.open ? a.open + '건 · ' + won(a.amt) + '원' : '없음',
+        lv,
+        lvStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;background:' + C[lv][0] + ';color:' + C[lv][1],
+        barStyle: 'height:5px;border-radius:3px;background:' + (pct >= 30 ? '#EF4444' : pct >= 20 ? '#F59E0B' : '#22C55E')
+          + ';width:' + Math.max(pct, 3) + '%',
+        openStyle: 'font-size:12px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:'
+          + (a.open ? '#DC2626' : '#B0B0BB'),
+      };
+    });
+    // 오늘 정산 예정 — 캠페인 단위(일괄)와 오픈으로 성사된 개별 협업이 섞인다.
+    // 오늘이 지나면 곧바로 미수가 되므로, 관리자가 가장 먼저 볼 자리다.
+    const DUE_TODAY = [
+      // ⚠️ 광고주 콘솔에서 8/20 예정으로 잡힌 「신메뉴 방문 리뷰」를 여기 오늘 자로 적으면 안 된다.
+      //    같은 캠페인이 두 화면에서 다른 날짜를 갖게 된다.
+      { via:'캠페인', name:'성수 델리카페 봄 신메뉴 리뷰', adv:'성수 델리카페', ppl:5, amt:1150000, done:false },
+      { via:'오픈', name:'브런치랩 성수 여름 신메뉴', adv:'브런치랩 성수', ppl:1, amt:300000, done:true },
+      { via:'오픈', name:'가둘기정원 가을 패키지', adv:'가둘기정원 키즈풀빌라', ppl:1, amt:350000, done:false },
+    ].map(d => ({ ...d,
+      amtLabel: won(d.amt) + '원',
+      pplLabel: d.ppl + '명',
+      viaStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;flex-shrink:0;'
+        + (d.via === '캠페인' ? 'background:#FEF3C7;color:#B45309' : 'background:#F1F1F4;color:#5C5C68'),
+      stLabel: d.done ? '기록 완료' : '미기록',
+      stStyle: 'font-size:11px;font-weight:800;text-align:right;flex-shrink:0;color:' + (d.done ? '#15803D' : '#B45309'),
+      rowStyle: 'display:grid;grid-template-columns:76px minmax(0,1fr) 168px 68px 116px 84px;align-items:center;padding:12px 20px;border-bottom:1px solid #F5F5F7;'
+        + (d.done ? '' : 'background:#FFFBEB') }));
+    const dueLeft = DUE_TODAY.filter(d => !d.done);
+
+    // ⚠️ 「광고주가 정산 완료로 기록했지만 인플루언서가 아직 입금을 확인하지 않은 건」은
+    //    미수가 **아니다**. 미수는 기록조차 안 된 것이다. 둘을 한 목록에 두면
+    //    광고주는 이미 보냈다고 하고 목록은 미수라고 하는 모순이 생긴다.
+    //    인플루언서 콘솔의 「입금 확인 필요」 카드와 같은 건이어야 한다.
+    const PENDING_CONFIRM = [
+      { name:'오도이촌 가을 프로모션', adv:'오도이촌 스테이', who:'뷰티하는 지연', at:'8/1 기록', amt:300000, days:1 },
+    ];
+
+    const OVERDUE = OVERDUE_SRC.map(o => ({ ...o,
+      amtLabel: won(o.amt) + '원',
+      // 지연 알림은 매일 1회 자동 발송 — D+ 가 곧 누적 발송 횟수이고 제재 판정의 근거다
+      overLabel: 'D+' + o.over,
+      pushLabel: '알림 ' + o.over + '회',
+      overStyle: 'font-size:12.5px;font-weight:800;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;color:'
+        + (o.over >= 7 ? '#DC2626' : '#B45309'),
+      viaStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;flex-shrink:0;'
+        + (o.via === '캠페인' ? 'background:#FEF3C7;color:#B45309' : 'background:#F1F1F4;color:#5C5C68'),
+      repLabel: o.rep ? '신고 있음' : '',
+      hasRep: o.rep,
+      // 미수 행에서 갈 곳은 아직 없다 — 커서를 주면 눌리는 것처럼 보인다
+      rowStyle: 'display:grid;grid-template-columns:76px minmax(0,1fr) 150px 120px 74px 116px 84px;align-items:center;padding:12px 20px;border-bottom:1px solid #F5F5F7;'
+        + (o.over >= 7 ? 'background:#FEF2F2' : '') }));
+
+    const overdue = ADVS.filter(a => a.open > 0);
+    const settleKpis = [
+      { k:'오늘 정산 예정', v: dueLeft.length + ' / ' + DUE_TODAY.length + '건', c:'#B45309' },
+      // 건수와 금액은 같은 사실의 두 면이다 — 한 칸에 두고, 누르면 목록으로 내려간다
+      { k:'미수', v: OVERDUE.length + '건 / ' + won(OVERDUE.reduce((s, o) => s + o.amt, 0)) + '원',
+        c:'#DC2626', go:'#overdue' },
+      // 기록은 됐지만 아직 「받았다」가 아닌 돈. 3일 넘게 남아 있으면 분쟁으로 넘어간다.
+      { k:'입금 확인 대기', v: PENDING_CONFIRM.length + '건 / ' + won(PENDING_CONFIRM.reduce((s, p) => s + p.amt, 0)) + '원', c:'#B45309' },
+      { k:'제재 대상', v: ADVS.filter(a => a.lv !== '정상').length + '곳', c:'#B45309' },
+      { k:'전체 정시율', v: Math.round(ADVS.reduce((s, a) => s + a.total - a.late, 0) / ADVS.reduce((s, a) => s + a.total, 0) * 100) + '%', c:'#17171B' },
+    ].map(x => ({ ...x,
+      isLink: !!x.go,
+      href: x.go ?? '#',
+      cardStyle: 'background:#fff;border:1px solid #EAEAEE;border-radius:14px;padding:15px 17px 16px;'
+        + (x.go ? 'cursor:pointer' : ''),
+      vStyle: 'font-size:' + (x.go ? '19px' : '22px')
+        + ';font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;margin-top:7px;color:' + x.c }));
+
+    // ── 회원 ────────────────────────────────────────────
+    const mTab = this.state.mTab ?? '확인 대기';
+    // ⚠️ 이 화면의 목적은 **승인**이다. 「서류 보기 · 재요청」만 있고 승인 버튼이 없어서
+    //    확인 대기 7건을 통과시킬 방법이 없었다. 승인하면 가입 축하금이 그때 지급된다.
+    const mOv = this.state.mOv ?? {};
+    const MEMBERS = MEMBERS_SRC.map(m0 => {
+      const m = { ...m0, st: mOv[m0.n] ?? m0.st };
+      const C = { '확인 대기':['#FEF3C7','#B45309'], 승인:['#DCFCE7','#15803D'], 제재:['#FEE2E2','#DC2626'] };
+      const bonus = m.type === '광고주' ? 20000 : 10000;
+      return { ...m,
+        // 승인 = 서비스 이용 시작 + 축하금 지급. 두 일이 한 번에 일어난다는 걸 문구로 밝힌다.
+        okLabel: '승인',
+        onOk: m.st === '확인 대기'
+          ? () => this.setState({ mOv: { ...mOv, [m.n]: '승인' } }) : undefined,
+        okStyle: 'height:34px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:700;display:flex;align-items:center;cursor:pointer;background:#17171B;color:#fff',
+        bonusNote: '승인하면 가입 축하금 ' + bonus.toLocaleString() + 'C 지급',
+        okNote: m.st === '승인' ? '축하금 ' + bonus.toLocaleString() + 'C 지급됨' : '',
+        isOk: m.st === '승인',
+        initial: initialOf(m.n),
+        avStyle: 'width:34px;height:34px;border-radius:' + (m.type === '광고주' ? '9px' : '50%')
+          + ';font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;'
+          + (m.type === '광고주' ? 'background:#F1F1F4;color:#5C5C68' : 'background:#FEF3C7;color:#B45309'),
+        stStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;flex-shrink:0;background:' + C[m.st][0] + ';color:' + C[m.st][1],
+        waiting: m.st === '확인 대기',
+        stStyleFix: null,
+        // 서류 확인은 별도 뷰어가 열려야 한다. 프로토타입에서는 회원 화면에 머문다.
+        onDoc: () => this.setState({ page:'members', mTab:'확인 대기' }),
+        // 서류 재요청은 회원마다 따로 남는다
+        reaskLabel: this.isActed('reask-' + m.n) ? '재요청 보냄' : '재요청',
+        onReask: this.isActed('reask-' + m.n) ? undefined : this.doAct('reask-' + m.n),
+        reaskStyle: 'height:34px;padding:0 13px;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;'
+          + (this.isActed('reask-' + m.n)
+             ? 'background:#DCFCE7;border:1px solid #BBF7D0;color:#15803D'
+             : 'background:#fff;border:1px solid #E2E2E8;color:#5C5C68;cursor:pointer'),
+      };
+    });
+    const mCount = { 전체:MEMBERS.length };
+    ['확인 대기','승인','제재'].forEach(t => { mCount[t] = MEMBERS.filter(m => m.st === t).length; });
+    const mTabs = ['확인 대기','전체','승인','제재'].map(t =>
+      chip(t + ' ' + mCount[t], t === mTab, () => this.setState({ mTab: t })));
+    const members = MEMBERS.filter(m => mTab === '전체' || m.st === mTab);
+
+    // ── 캠페인 · 딜시트 ─────────────────────────────────
+    // 관리자가 볼 이유는 하나 — **지연된 딜을 찾는 것**. 잘 굴러가는 캠페인은 볼 필요가 없다.
+    // 「지연」 = 예정일이 지났는데 다음 단계로 안 넘어간 건 (원고 미제출 · 방문 미체크 · 미게재)
+    const CAMPS = CAMPS_SRC.map(c => {
+      const S = { 진행중:['#FEF3C7','#B45309'], 모집중:['#F1F1F4','#5C5C68'], 완료:['#DCFCE7','#15803D'] };
+      return { ...c,
+        ratio: c.conf + '/' + c.target,
+        dashLabel: c.dash + '명 대시',
+        convLabel: Math.round(c.conf / c.dash * 100) + '% 확정',
+        stuckLabel: c.stuck ? c.stuck + '건 지연' : '이상 없음',
+        stuckStyle: 'font-size:12px;font-weight:700;text-align:right;flex-shrink:0;color:'
+          + (c.stuck ? '#DC2626' : '#B0B0BB'),
+        stStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;flex-shrink:0;background:' + S[c.st][0] + ';color:' + S[c.st][1],
+        kindStyle: 'font-size:10.5px;font-weight:700;color:#9A9AA5;flex-shrink:0',
+        onClick: () => this.setState({ page:'dispute' }),
+        rowStyle: 'display:grid;grid-template-columns:minmax(0,1fr) 92px 76px 128px minmax(0,200px) 88px;align-items:center;padding:13px 20px;border-bottom:1px solid #F5F5F7;cursor:pointer;'
+          + (c.hot ? 'background:#FEF2F2' : ''),
+        barStyle: 'height:5px;border-radius:3px;background:' + (c.st === '완료' ? '#22C55E' : '#F59E0B')
+          + ';width:' + Math.round(c.conf / c.target * 100) + '%',
+      };
+    });
+    const campKpis = [
+      { k:'지연된 딜', v: CAMPS.reduce((s, c) => s + c.stuck, 0) + '건', c:'#DC2626' },
+      { k:'진행중 캠페인', v: CAMPS.filter(c => c.st === '진행중').length + '건', c:'#17171B' },
+      { k:'모집 부진', v: CAMPS.filter(c => c.st === '모집중' && c.conf / c.target < 0.5).length + '건', c:'#B45309' },
+      // 구분별 표와 같은 모집단(진행중)이어야 한 화면에서 두 값이 충돌하지 않는다
+      { k:'확정 인원', v: runRows.reduce((s, c) => s + c.conf, 0) + '명', c:'#17171B' },
+    ].map(x => ({ ...x, vStyle:'font-size:22px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;margin-top:7px;color:' + x.c }));
+
+    // ── 데이터 운영 ─────────────────────────────────────
+    // 등급이 베타라 여기를 가장 자주 만진다. 산식을 바꿀 때 버전을 남기는 것이 핵심.
+    const BATCH = [
+      { d:'8/01', at:'22:00', ok:212, fail:2, dur:'41분', note:'네이버 응답 지연 2건' },
+      { d:'7/31', at:'22:00', ok:210, fail:0, dur:'38분', note:'' },
+      { d:'7/30', at:'22:00', ok:208, fail:1, dur:'39분', note:'블로그 비공개 전환 1건' },
+      { d:'7/29', at:'22:00', ok:205, fail:0, dur:'37분', note:'' },
+    ].map(b => ({ ...b,
+      failLabel: b.fail ? b.fail + '건 실패' : '전건 성공',
+      failStyle: 'font-size:12px;font-weight:700;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;color:'
+        + (b.fail ? '#DC2626' : '#15803D'),
+      hasFail: b.fail > 0,
+      // 재시도는 회차마다 따로 — 눌린 결과가 그 줄에 남아야 한다
+      retryLabel: this.isActed('retry-' + b.d) ? '재시도 요청됨' : '재시도',
+      onRetry: this.isActed('retry-' + b.d) ? undefined : this.doAct('retry-' + b.d),
+      retryStyle: 'height:32px;padding:0 12px;border-radius:8px;font-size:11.5px;font-weight:700;display:flex;align-items:center;flex-shrink:0;'
+        + (this.isActed('retry-' + b.d) ? 'background:#DCFCE7;color:#15803D' : 'background:#17171B;color:#fff;cursor:pointer'),
+      okLabel: won(b.ok) + '건 수집' }));
+
+    const VERSIONS = [
+      { v:'v3', at:'7/28', by:'정원일', what:'노출 점수를 순위 → 예상 유입량(검색량 × CTR)으로 교체', now:true },
+      { v:'v2', at:'7/20', by:'정원일', what:'제목 전체 검색 지표 제거 · 등급 구간 S + A~D 3단계(13종)로', now:false },
+      { v:'v1', at:'7/12', by:'정원일', what:'최초 산식 — 방문자 40 · 노출 35 · 빈도 15 · 이웃 10', now:false },
+    ].map(v => ({ ...v,
+      vStyle: 'font-size:13px;font-weight:800;border-radius:6px;padding:3px 9px;flex-shrink:0;'
+        + (v.now ? 'background:#17171B;color:#fff' : 'background:#F1F1F4;color:#7C7C88'),
+      nowLabel: v.now ? '적용 중' : '',
+      isNow: v.now }));
+
+    // ── 지면 · 제휴 ─────────────────────────────────────
+    // 자체 광고 상품이 아니라 「제휴 슬롯」이다. 소재는 파트너가 주고 우리는 자리를 판다.
+    const SLOTS_AD = [
+      { pos:'인플루언서 홈 상단', size:'가로 배너', partner:'세무사 매칭 서비스', run:'8/1 – 8/31',
+        imp:12400, clk:186, live:true },
+      { pos:'광고주 캠페인 목록', size:'세로 카드', partner:'촬영 장비 렌탈', run:'7/20 – 8/20',
+        imp:8200, clk:94, live:true },
+      { pos:'대시 대화 목록', size:'네이티브', partner:'—', run:'미판매',
+        imp:0, clk:0, live:false },
+      { pos:'인플루언서 매출 화면', size:'가로 배너', partner:'개인사업자 카드', run:'8/5 – 9/5',
+        imp:0, clk:0, live:false, soon:true },
+    ].map(s => {
+      const ctr = s.imp ? (s.clk / s.imp * 100).toFixed(2) + '%' : '—';
+      return { ...s,
+        impLabel: s.imp ? won(s.imp) : '—',
+        clkLabel: s.clk ? won(s.clk) : '—',
+        ctr,
+        stLabel: s.live ? '노출중' : s.soon ? '예정' : '비어 있음',
+        stStyle: 'font-size:10.5px;font-weight:800;border-radius:5px;padding:3px 8px;flex-shrink:0;'
+          + (s.live ? 'background:#DCFCE7;color:#15803D' : s.soon ? 'background:#FEF3C7;color:#B45309' : 'background:#F1F1F4;color:#9A9AA5'),
+        partnerStyle: 'font-size:12px;font-weight:600;color:' + (s.partner === '—' ? '#C4C4CE' : '#2A2A33'),
+      };
+    });
+    const adKpis = [
+      { k:'노출중 슬롯', v: SLOTS_AD.filter(s => s.live).length + ' / ' + SLOTS_AD.length, c:'#17171B' },
+      { k:'이번 달 노출', v: won(SLOTS_AD.reduce((s, x) => s + x.imp, 0)), c:'#17171B' },
+      { k:'클릭', v: won(SLOTS_AD.reduce((s, x) => s + x.clk, 0)), c:'#17171B' },
+      { k:'빈 슬롯', v: SLOTS_AD.filter(s => !s.live && !s.soon).length + '개소', c:'#B45309' },
+    ].map(x => ({ ...x, vStyle:'font-size:22px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;margin-top:7px;color:' + x.c }));
+
+    // ── 지표 ────────────────────────────────────────────
+    // 하나만 본다면 「성사율」이다. 가입자가 늘어도 성사가 없으면 서비스가 아니다.
+    const FUNNEL = [
+      { k:'가입', v:412, note:'인플루언서 268 · 광고주 144' },
+      { k:'오픈 등록 / 캠페인 개설', v:236, note:'무언가를 올린 사람' },
+      { k:'대시 발송', v:1420, note:'베타 기간 무료' },
+      { k:'양쪽 수락', v:186, note:'딜시트 생성' },
+      { k:'게재 완료', v:142, note:'실제 콘텐츠가 나온 것' },
+      { k:'정산 완료', v:118, note:'돈이 오간 것' },
+    ];
+    const fMax = Math.max(...FUNNEL.map(f => f.v));
+    const funnel = FUNNEL.map((f, i) => {
+      const prev = i > 0 ? FUNNEL[i - 1].v : null;
+      const conv = prev ? Math.round(f.v / prev * 100) : null;
+      return { ...f,
+        vLabel: won(f.v),
+        convLabel: conv === null ? '' : conv + '%',
+        hasConv: conv !== null,
+        convStyle: 'font-size:11px;font-weight:700;flex-shrink:0;width:44px;text-align:right;color:'
+          + (conv !== null && conv < 20 ? '#DC2626' : '#9A9AA5'),
+        barStyle: 'height:26px;border-radius:6px;background:' + (i >= 4 ? '#17171B' : '#F59E0B')
+          + ';width:' + Math.max(Math.round(f.v / fMax * 100), 4) + '%',
+      };
+    });
+    // ⚠️ 성사율·완주율은 퍼널에서 파생시킨다. 따로 적으면 두 숫자가 어긋난다.
+    const fv = (k) => FUNNEL.find(f => f.k === k).v;
+    const pct = (a, b) => (fv(a) / fv(b) * 100).toFixed(1) + '%';
+    const coreKpis = [
+      { k:'성사율', v: pct('양쪽 수락', '대시 발송'), s:'대시 → 양쪽 수락', d:'-1.2%p', down:true },
+      { k:'완주율', v: pct('게재 완료', '양쪽 수락'), s:'수락 → 게재 완료', d:'+2.1%p' },
+      { k:'정산 정시율', v:'82%', s:'예정일 내 기록', d:'-3%p', down:true },
+      { k:'재협업률', v:'31%', s:'같은 짝 2회 이상', d:'+4%p' },
+    ].map(x => ({ ...x,
+      dStyle: 'font-size:11px;font-weight:700;margin-top:6px;color:' + (x.down ? '#DC2626' : '#15803D') }));
+
+    // ── 시스템 상태 ─────────────────────────────────────
+    // 감시는 세 갈래로만 한다. 더 늘리면 관리자가 안 본다.
+    //  ① 밖에서 찔러보기(uptime) ② 서버가 남긴 오류 ③ 사용자 기기에서 온 오류
+    const WATCH = [
+      { g:'① 밖에서 찔러보기', k:'앱 API', how:'1분마다 /health 호출', last:'22:00 · 240ms', lv:0, th:'3회 연속 실패 → 긴급' },
+      { g:'① 밖에서 찔러보기', k:'웹', how:'1분마다 홈 로드', last:'22:00 · 380ms', lv:0, th:'3회 연속 실패 → 긴급' },
+      { g:'② 서버 오류', k:'5xx 비율', how:'요청 로그 집계', last:'0.02% (12/58k)', lv:0, th:'1% 초과 → 긴급' },
+      { g:'② 서버 오류', k:'응답 지연', how:'p95 응답시간', last:'p95 610ms', lv:0, th:'2초 초과 → 주의' },
+      { g:'③ 사용자 기기 오류', k:'앱 예외', how:'기기에서 자동 전송', last:'1시간 14건', lv:2, th:'1시간 10건 → 긴급' },
+      { g:'③ 사용자 기기 오류', k:'웹 예외', how:'기기에서 자동 전송', last:'1시간 1건', lv:0, th:'1시간 10건 → 긴급' },
+      { g:'외부 서비스', k:'네이버 검색 API', how:'호출 성공률', last:'99.4% · 할당 34%', lv:0, th:'95% 미만 → 주의' },
+      { g:'외부 서비스', k:'푸시(FCM/APNs)', how:'발송 성공률', last:'99.1%', lv:0, th:'95% 미만 → 주의' },
+      { g:'배치', k:'블로그 수집', how:'매일 22:00 실행', last:'8/1 22:00 · 실패 2', lv:1, th:'실패 1건 이상 → 주의' },
+      { g:'배치', k:'미수 판정', how:'매일 09:00 실행', last:'8/2 09:00 정상', lv:0, th:'미실행 → 긴급' },
+    ].map(w => ({ ...w,
+      lvLabel: w.lv === 2 ? '긴급' : w.lv === 1 ? '주의' : '정상',
+      lvStyle: 'font-size:10px;font-weight:800;border-radius:4px;padding:2px 7px;flex-shrink:0;background:'
+        + LV_C[w.lv][0] + ';color:' + LV_C[w.lv][1],
+      lastStyle: 'font-size:11.5px;font-weight:600;text-align:right;color:' + (w.lv ? LV_C[w.lv][1] : '#3C3C46') }));
+
+    const ERRLOG = [
+      { at:'21:58', lv:2, where:'iOS 3.2.1 · 결제 화면', msg:"TypeError: undefined is not an object (evaluating 'deal.settledAt')", n:14 },
+      { at:'21:12', lv:0, where:'서버 · POST /api/dash', msg:'timeout upstream 5s — 재시도 성공', n:2 },
+      { at:'20:40', lv:0, where:'웹 · 캠페인 등록', msg:'이미지 업로드 413 (용량 초과) — 사용자 안내 정상', n:1 },
+      { at:'8/1 22:41', lv:1, where:'배치 · 블로그 수집', msg:'naver.com 응답 지연 2건 — 다음 회차 재시도 대기', n:2 },
+    ].map(e => ({ ...e,
+      lvStyle: 'width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:6px;background:' + LV_C[e.lv][2],
+      nLabel: e.n + '회' }));
+
+    const DEPLOYS = [
+      { at:'8/2 21:40', v:'app 3.2.1', by:'정원일', note:'결제 화면 개편', bad:true },
+      { at:'8/1 14:20', v:'web 2.8.0', by:'정원일', note:'캠페인 등록 폼 결제 조건', bad:false },
+      { at:'7/28 11:05', v:'api 1.9.3', by:'정원일', note:'등급 산식 v3', bad:false },
+    ].map(d => ({ ...d,
+      badLabel: d.bad ? '이후 오류 급증' : '',
+      isBad: d.bad,
+      vStyle: 'font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;color:' + (d.bad ? '#DC2626' : '#3C3C46') }));
+
+    const notice = this.state.notice ?? 'off';
+    const noticeOpts = [
+      { key:'off', k:'공지 없음' },
+      { key:'warn', k:'일부 지연 안내' },
+      { key:'down', k:'점검 중 안내' },
+    ].map(o => ({ ...o,
+      onClick: () => this.setState({ notice: o.key }),
+      style: 'font-size:12px;font-weight:700;border-radius:9px;padding:0 14px;height:36px;display:flex;align-items:center;cursor:pointer;'
+        + (o.key === notice ? 'background:#17171B;color:#fff' : 'background:#fff;border:1px solid #E2E2E8;color:#5C5C68') }));
+    const NOTICE_TXT = {
+      off: '지금은 사용자 화면에 아무 안내도 뜨지 않습니다.',
+      warn: '일부 기능이 느릴 수 있어요. 확인 중입니다.',
+      down: '점검 중입니다. 잠시 후 다시 시도해주세요.',
+    };
+
+    // ── 아직 안 만든 화면 ────────────────────────────────
+    const STUB = {};
+    const stub = STUB[page];
+
+    const TITLE = { today:'오늘', dispute:'신고 접수', credit:'크레딧', policy:'크레딧 정책', settle:'정산 모니터',
+      members:'회원', camps:'캠페인 · 딜시트', opens:'오픈', sys:'시스템 상태',
+      data:'데이터 운영', ads:'지면 · 제휴', stats:'지표' };
+    const SUB = {
+      today:'처리 대기 ' + QUEUE.reduce((s, q) => s + q.n, 0) + '건',
+      dispute:'매치포스트는 판정하지 않습니다 — 기록을 확인하고 안내합니다',
+      credit:'지급은 즉시 반영되고 되돌릴 수 없습니다',
+      policy:'값을 바꾸면 예정 값으로 들어갑니다 — 공지와 유예기간을 지나야 적용됩니다',
+      settle:'제재는 건수가 아니라 지연 비율로 판정합니다',
+      members:'가입 승인이 늦으면 첫 캠페인이 밀립니다',
+      camps:'예정일이 지났는데 다음 단계로 안 넘어간 딜을 찾습니다',
+      opens:'재고가 어디에 남는지를 봅니다',
+      sys:'사용자가 문의하기 전에 우리가 먼저 알아야 합니다',
+      data:'등급이 베타라 여기를 가장 자주 만집니다',
+      ads:'자체 광고가 아니라 제휴 슬롯입니다 — 자리를 팝니다',
+      stats:'하나만 본다면 성사율입니다',
+    };
+
+    return {
+      nav,
+      pageTitle: TITLE[page] ?? (stub ? stub.title : ''),
+      pageSub: SUB[page] ?? '준비 중',
+      isToday: page === 'today',
+      isDispute: page === 'dispute',
+      isCredit: page === 'credit',
+      isPolicy: page === 'policy',
+      stopClick: (e) => e.stopPropagation(),
+      ...this.policyVals(),
+      isSettle: page === 'settle',
+      isMembers: page === 'members',
+      isCamps: page === 'camps',
+      isData: page === 'data',
+      isSys: page === 'sys',
+      watch: WATCH, errLog: ERRLOG, deploys: DEPLOYS,
+      noticeOpts, noticeOn: notice !== 'off', noticeText: NOTICE_TXT[notice],
+      noticeBoxStyle: 'margin-top:12px;border-radius:11px;padding:13px 15px;font-size:12.5px;line-height:1.6;border:1px solid '
+        + (notice === 'down' ? '#FECACA;background:#FEF2F2;color:#DC2626'
+           : notice === 'warn' ? '#FDE68A;background:#FFFBEB;color:#92400E'
+           : '#EFEFF2;background:#FBFBFC;color:#9A9AA5'),
+      isAds: page === 'ads',
+      isStats: page === 'stats',
+      adSlots: SLOTS_AD, adKpis, funnel, coreKpis,
+      advs: ADVS, settleKpis,
+      dueToday: DUE_TODAY, overdueList: OVERDUE,
+      dueNote: '8월 2일 · 미기록 ' + dueLeft.length + '건 — 오늘이 지나면 미수로 잡힙니다',
+      overdueNote: '오래 밀린 순 · ' + OVERDUE.filter(o => o.rep).length + '건은 인플루언서 신고가 접수됨'
+        + ' · 광고주가 기록은 했으나 인플루언서 확인 전인 ' + PENDING_CONFIRM.length + '건은 미수에서 제외',
+      mTabs, members,
+      camps: CAMPS, campKpis, batch: BATCH, versions: VERSIONS,
+      isStub: !!stub, stub,
+      queue, todos, stats,
+      goCamps: this.go('camps'), goSys: this.go('sys'),
+      // 로고 = 홈. 관리자의 홈은 「오늘」이다.
+      goToday: this.go('today'),
+      badHealth, hasBad: badHealth.length > 0,
+      // 정상 항목 접기 · 펼치기
+      okOpen: !!this.state.okOpen,
+      okList: okHealth,
+      toggleOk: () => this.setState({ okOpen: !this.state.okOpen }),
+      okToggleLabel: this.state.okOpen ? '접기' : '펼치기',
+      // 운영 조치 버튼 — 눌린 결과가 라벨로 남는다
+      actBatchRun: this.act('batch-run', '지금 실행', '실행 요청됨'),
+      actNewVer: this.act('new-ver', '새 버전 만들기', '초안 생성됨'),
+      actSlotAdd: this.act('slot-add', '＋ 슬롯 추가', '슬롯 추가됨'),
+      actGrant: this.act('grant', '지급하기', '지급 완료'),
+      actConvoAll: this.act('convo-all', '대화 전체 보기', '새 창에서 열었어요'),
+      actSanction: this.act('sanction', '단계 올리기', '단계 올림 · 통지 발송'),
+      okCount: okHealth.length + '개 항목 정상',
+      errBars,
+      errNote: '최근 24시간 오류 ' + ERR_H.reduce((s, v) => s + v, 0) + '건',
+      healthTitle: worst === 2 ? '장애가 있습니다' : worst === 1 ? '확인이 필요합니다' : '모두 정상입니다',
+      healthTitleStyle: 'font-size:13.5px;font-weight:800;letter-spacing:-0.02em;color:'
+        + (worst === 2 ? '#DC2626' : worst === 1 ? '#B45309' : '#15803D'),
+      healthBigDot: 'width:9px;height:9px;border-radius:50%;flex-shrink:0;background:' + LV_C[worst][2],
+      openToday: OPEN_TODAY, openKind: OPEN_KIND, campKind: CAMP_KIND,
+      openRegions: [
+        { k:'서울 성동 · 마포', n:6 }, { k:'경기 시흥 · 안산', n:5 },
+        { k:'서울 강남 · 서초', n:4 }, { k:'경기 가평 · 양평', n:2 }, { k:'그 외', n:2 },
+      ].map(r => ({ ...r, nLabel: r.n + '건',
+        barStyle: 'height:5px;border-radius:3px;background:#F59E0B;width:' + Math.round(r.n / 6 * 100) + '%' })),
+      openNote: '오늘 또는 오늘이 포함된 오픈 현황 (8월 2일 기준)',
+      todayWork: TODAY_WORK, running: RUNNING,
+      runningNote: '오늘 또는 오늘이 포함된 캠페인 현황 (8월 2일 기준)',
+      goOpens: this.go('opens'),
+      isOpens: page === 'opens',
+      bars, traffic,
+      trafficWhen: '8월 2일 (일) 22:00 기준',
+      trafficPeak: '최다 방문시간대 및 방문자수 : 20시대 ' + Math.max(...HOURS) + '명',
+      goStats: this.go('stats'),
+      memberStat: MEMBER_STAT,
+      memberTotal: won(memberTotal),
+      memberToday: '오늘 +' + memberToday + '명',
+      todayLabel: '8월 2일 (일) 기준',
+      goDispute: this.go('dispute'),
+      goMembers: this.go('members'),
+      healthDot: 'width:7px;height:7px;border-radius:50%;display:block;background:' + LV_C[worst][2],
+      healthLabel: worst === 2 ? '앱 오류 발생' : worst === 1 ? '확인 필요 1건' : '모두 정상',
+      healthNote: worst === 2 ? 'iOS 결제 화면 · 최근 1시간 14건' : '자세히는 오늘 화면에서',
+      // ⚠️ 매치포스트는 통신판매중개자다. 계약은 양쪽 사이에 있고 송금도 대행하지 않는다.
+      //    「해결해준다」는 뉘앙스를 주면 실제로 못 하는 일을 약속하게 된다.
+      roleCan: [
+        '기록을 확인하고 양쪽에 같은 사실을 보여주기',
+        '연락이 닿도록 안내하고 응답을 재촉하기',
+        '약관 위반 시 우리 서비스 안에서의 조치 (표시 · 노출 제한)',
+        '당사자 요청 시, 기록 사본을 외부 조정기관에 제공하기',
+      ],
+      roleCant: [
+        '누가 옳은지 판정하기',
+        '금액이나 조정안을 우리가 정하기',
+        '대금을 환불하거나 강제로 지급하게 하기',
+        '계약을 대신 해지하거나 이행을 강제하기',
+      ],
+      reportTypes: REPORT_TYPES, typeGroups,
+      hasTypeSel: !!selType,
+      typeSelNote: selType
+        ? selType.k + ' · 이번 달 ' + selType.mon + '건 · 해결률 ' + Math.round(selType.done / selType.mon * 100) + '% · 평균 ' + selType.days.toFixed(1) + '일'
+        : '막대를 누르면 그 유형만 아래에 걸러집니다',
+      dTabs, disputes, cur,
+      dEmpty, dNotEmpty: !dEmpty,
+      dEmptyMsg: selType ? '「' + selType.k + '」으로 접수된 건이 아직 없어요' : '접수된 신고가 없어요',
+      clearType: () => this.setState({ typeSel: null, dTab: '전체' }),
+      grantTabs, isOne: grantMode === 'one', isBulk: grantMode === 'bulk',
+      bulkConds, reasons, amounts, grants,
+      grantSummary: (grantMode === 'one' ? '1명' : bulkCount + '명') + ' × ' + won(amount) + 'C · ' + reason,
+      grantTotal: won(headcount * amount),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
