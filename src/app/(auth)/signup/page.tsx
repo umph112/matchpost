@@ -387,19 +387,20 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
   const [managerPhone, setManagerPhone] = useState('')
   const [companyPhone, setCompanyPhone] = useState('')
   const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [bizDocFile, setBizDocFile] = useState<File | null>(null)
 
   const [inviteEmails, setInviteEmails] = useState<string[]>([])
   const [inviteInput, setInviteInput] = useState('')
+  // 초대 전송에 실패한 주소 — 3단계에서 알려준다(가입 자체는 이미 끝난 뒤라 되돌리지 않는다)
+  const [failedInvites, setFailedInvites] = useState<string[]>([])
 
   const router = useRouter()
   const supabase = createClient()
 
   const validateStep1 = () => {
-    if (!companyName.trim() || !bizRegNumber.trim() || !name || !managerPhone || !email || !phone || !password) {
+    if (!companyName.trim() || !bizRegNumber.trim() || !name || !managerPhone || !email || !password) {
       setError('필수 항목을 모두 입력해주세요.')
       return false
     }
@@ -431,7 +432,8 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        role: 'advertiser', name, email, phone, managerPhone, companyPhone, password,
+        // phone(user_private.phone) 은 대표의 휴대폰과 같은 값이다 — 칸을 따로 받지 않는다.
+        role: 'advertiser', name, email, phone: managerPhone, managerPhone, companyPhone, password,
         companyName, bizRegNumber,
       }),
     })
@@ -453,9 +455,15 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
       fd.append('file', bizDocFile)
       await fetch('/api/signup/biz-doc', { method: 'POST', body: fd }).catch(() => {})
     }
+    // 초대가 실패해도 가입은 이미 끝났으니 되돌리지 않는다. 다만 조용히 삼키면
+    // 3단계에서 「초대했어요」처럼 보이고, 상대는 링크를 영영 못 받는다 — 어느 주소가
+    // 실패했는지 3단계에 그대로 적는다.
+    const failed: string[] = []
     for (const inviteEmail of inviteEmails) {
-      await inviteTeamMember(inviteEmail).catch(() => {})
+      const res = await inviteTeamMember(inviteEmail).catch(() => ({ ok: false as const, error: '' }))
+      if (!res?.ok) failed.push(inviteEmail)
     }
+    setFailedInvites(failed)
 
     setLoading(false)
     setStep(3)
@@ -521,20 +529,23 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
             <label className="block text-xs font-semibold text-gray-600 mb-1">회사 대표번호 <span className="text-[#B0B0BB]">선택</span></label>
             <input value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} className={inputCls} placeholder="02-000-0000" />
           </div>
+          {/* 「대표의 휴대폰」 바로 아래에 또 「전화번호」가 있어서 뭐가 다른지 알 수 없었다.
+              (둘 다 010-0000-0000, 둘 다 필수) — 중복 칸을 없애고 그 자리에 로그인 아이디를 밝힌다.
+              대표의 휴대폰이 곧 연락처이므로 user_private.phone 으로 보낸다. */}
           <div className="col-span-2">
-            <label className="block text-xs font-semibold text-gray-600 mb-1">대표 이메일 <span className="text-[#DC2626]">필수</span></label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              로그인 이메일 <span className="text-[#DC2626]">필수</span>
+            </label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} placeholder="example@email.com" />
-            <p style={{ fontSize: 11, color: '#7C7C88', lineHeight: 1.6 }} className="mt-1.5">회사 페이지의 마케팅 문의에 이 주소가 보여요. (공개 여부는 팀 메뉴에서 켜고 꺼요)</p>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">전화번호 <span className="text-[#DC2626]">필수</span></label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} placeholder="010-0000-0000" />
+            <p style={{ fontSize: 11, color: '#7C7C88', lineHeight: 1.6 }} className="mt-1.5">
+              이 주소로 로그인해요. 회사 페이지의 마케팅 문의에도 이 주소가 보여요 (공개 여부는 팀 메뉴에서 켜고 꺼요).
+            </p>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">비밀번호 <span className="text-[#DC2626]">필수</span></label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} placeholder="8자 이상" />
           </div>
-          <div className="col-span-2">
+          <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">비밀번호 확인 <span className="text-[#DC2626]">필수</span></label>
             <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} className={inputCls} placeholder="비밀번호 재입력" />
           </div>
@@ -615,6 +626,18 @@ function AdvertiserSignup({ onBack }: { onBack: () => void }) {
       <p style={{ fontSize: 13, color: '#7C7C88', lineHeight: 1.7 }} className="mt-2 mb-5">
         이제 캠페인을 등록하거나, 날짜로 인플루언서를 찾아 대시할 수 있어요.
       </p>
+
+      {failedInvites.length > 0 && (
+        <div className="rounded-[11px] border border-[#FECACA] bg-[#FEF2F2] px-4 py-3.5 mb-4">
+          <p className="text-[12.5px] font-bold text-[#B91C1C]">이 주소는 초대에 실패했어요</p>
+          <p className="mt-1 text-[11.5px] text-[#DC2626] leading-[1.65] break-all">
+            {failedInvites.join(', ')}
+          </p>
+          <p className="mt-1.5 text-[11.5px] text-[#B91C1C] leading-[1.65]">
+            가입은 끝났어요. 「팀」 메뉴에서 다시 보내주세요.
+          </p>
+        </div>
+      )}
 
       <div className="rounded-[14px] px-[18px] py-[17px]" style={{ background: '#17171B' }}>
         <div className="flex items-center justify-between">

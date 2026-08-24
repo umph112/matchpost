@@ -62,7 +62,8 @@ export default async function DayDetailPage({
   const nameById = Object.fromEntries((profs ?? []).map((p) => [p.id, p.name]))
 
   const { data: advProfs } = advIds.length
-    ? await supabase.from('advertiser_profiles').select('user_id, company_name').in('user_id', advIds)
+    // 남의 회사명이라 advertiser_public 뷰로 읽는다(0095) — 원본 표는 본인·팀원·관리자만 보인다
+    ? await supabase.from('advertiser_public').select('user_id, company_name').in('user_id', advIds)
     : { data: [] }
   const companyById = Object.fromEntries((advProfs ?? []).map((a) => [a.user_id, a.company_name]))
 

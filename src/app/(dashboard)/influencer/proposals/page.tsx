@@ -47,8 +47,9 @@ export default function InfluencerProposalsPage() {
     const advIds = [...new Set(rows.map((r) => r.advertiser_id).filter(Boolean))]
     const companyByAdv: Record<string, string | null> = {}
     if (advIds.length > 0) {
+      // 남의 회사명이라 advertiser_public 뷰로 읽는다(0095)
       const { data: aps } = await supabase
-        .from('advertiser_profiles')
+        .from('advertiser_public')
         .select('user_id, company_name')
         .in('user_id', advIds)
       ;(aps ?? []).forEach((a) => { companyByAdv[a.user_id] = a.company_name })

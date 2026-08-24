@@ -3,12 +3,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
-export const REPORT_TYPES = [
-  'unpaid', 'cancel_unilateral', 'guide_mismatch_req',
-  'draft_late', 'guide_violation', 'no_show',
-  'abuse', 'etc',
-] as const
-export type ReportType = (typeof REPORT_TYPES)[number]
+// 상수도 타입도 ./types 에 있다 — 'use server' 파일은 async 함수만 export 할 수 있다(이유는 그 파일 주석).
+// ⚠️ `export type { ReportType }` 로 되넘기는 것도 안 된다 — 이유는
+// src/lib/cancellations/actions.ts 주석 참고(런타임 re-export 로 나가서 번들이 죽는다).
+import type { ReportType } from './types'
 
 export type ReportResult = { ok: true; id: string } | { ok: false; error: string }
 

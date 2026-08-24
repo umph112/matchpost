@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { fileReport, type ReportType } from '@/lib/reports/actions'
+import { fileReport } from '@/lib/reports/actions'
+// 타입은 'use server' 파일에서 못 가져온다 — ./types 주석 참고
+import type { ReportType } from '@/lib/reports/types'
 
 const TYPE_LABELS: Record<ReportType, string> = {
   unpaid: '대금 미지급',

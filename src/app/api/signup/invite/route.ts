@@ -72,14 +72,17 @@ export async function POST(req: Request) {
     biz_reg_number: null,
   })
 
-  // 4) 팀 멤버 활성화 + 토큰 소멸(1회용)
+  // 4) 팀 멤버 활성화. 1회용 판정은 status 로 한다 — 위(27줄)와 invite-info 가
+  //    status !== 'invited' 를 「이미 사용됨」으로 읽는다.
+  //    ⚠️ invite_token 을 null 로 지우면 안 된다. 지우면 같은 링크를 다시 열었을 때
+  //    행 자체를 못 찾아 「유효하지 않은 초대 링크예요 — 다시 요청하세요」가 뜬다.
+  //    이미 합류한 사람에게 할 안내가 아니고, 「이미 사용된 초대예요」 분기는 죽은 코드가 된다.
   await admin
     .from('team_members')
     .update({
       member_id: uid,
       status: 'active',
       joined_at: new Date().toISOString(),
-      invite_token: null,
       token_expires: null,
     })
     .eq('id', row.id)

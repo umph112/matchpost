@@ -50,6 +50,10 @@ export default function InfluencerProfilePage() {
   const [justRegistered, setJustRegistered] = useState(false)
   const [hasReport, setHasReport] = useState(false)
   const [portfolioUrl, setPortfolioUrl] = useState('')
+  // D23 봇 §2 — 불러오기가 끝나기 전에는 폼을 그리지 않는다.
+  // 빈 폼이 먼저 뜨면 사람은 그게 「내 값이 없는 것」인 줄 알고 그대로 저장을 누르고,
+  // 그 순간 이름·전화번호가 빈 문자열로 덮인다(봇이 실제로 그렇게 날렸다).
+  const [ready, setReady] = useState(false)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -98,7 +102,7 @@ export default function InfluencerProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) { setReady(true); return }
 
       const { data: p } = await supabase
         .from('profiles')
@@ -151,6 +155,7 @@ export default function InfluencerProfilePage() {
         .eq('user_id', user.id)
         .maybeSingle()
       setHasReport(!!ba?.blog_id)
+      setReady(true)
     }
     fetchProfile()
   }, [])
@@ -194,18 +199,27 @@ export default function InfluencerProfilePage() {
     }
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      setError('로그인이 풀렸어요. 새로고침 후 다시 로그인해주세요.')
+      setLoading(false)
+      return
+    }
 
-    const { error: profileError } = await supabase
+    // ⚠️ UPDATE 가 RLS 에 걸려 한 행도 못 고치면 error 는 null 이고 data 는 [] 로 온다.
+    // error 만 보면 「성공」으로 읽힌다 — 실제로 influencer_profiles 저장이 통째로
+    // 버려지는 동안 화면엔 「저장됐어요!」가 떴다. 그래서 .select() 로 돌아온 행을 센다.
+    const { data: profileRows, error: profileError } = await supabase
       .from('profiles')
       .update({ name: activityName })
       .eq('id', user.id)
+      .select('id')
 
-    await supabase
+    const { data: privRows, error: privError } = await supabase
       .from('user_private')
       .upsert({ user_id: user.id, phone, real_name: realName }, { onConflict: 'user_id' })
+      .select('user_id')
 
-    const { error: ipError } = await supabase
+    const { data: ipRows, error: ipError } = await supabase
       .from('influencer_profiles')
       .update({
         bio,
@@ -218,9 +232,16 @@ export default function InfluencerProfilePage() {
         portfolio_url: portfolioUrl,
       })
       .eq('user_id', user.id)
+      .select('user_id')
 
-    if (profileError || ipError) {
-      setError('저장에 실패했어요. 다시 시도해주세요.')
+    // 「저장됐어요!」보다 먼저 확인한다 — 순서가 바뀌면 안내가 거짓말이 된다.
+    const failed: string[] = []
+    if (profileError || !profileRows?.length) failed.push('활동명')
+    if (privError || !privRows?.length) failed.push('이름 · 전화번호')
+    if (ipError || !ipRows?.length) failed.push('소개 · 플랫폼 · 분야 · 채널')
+
+    if (failed.length > 0) {
+      setError(`저장되지 않았어요 — ${failed.join(', ')}. 새로고침 후 다시 시도해주세요.`)
       setLoading(false)
       return
     }
@@ -245,6 +266,16 @@ export default function InfluencerProfilePage() {
         </div>
         <LogoutButton />
       </div>
+
+      {/* 불러오기 전에는 폼 대신 이 자리를 보여준다 — 빈 칸을 「값이 없다」로 읽고
+          저장을 눌러 기존 값을 날리는 일을 막는다. */}
+      {!ready && (
+        <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+          <p className="text-sm text-[#7C7C88]">내 정보를 불러오는 중이에요…</p>
+        </div>
+      )}
+
+      {ready && <>
 
       {error && (
         <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>
@@ -491,6 +522,8 @@ export default function InfluencerProfilePage() {
         <span className="text-sm font-medium text-gray-700 flex items-center gap-1"><BarChart3 size={16} strokeWidth={1.75} /> 내 채널 분석 보기</span>
         <span className="text-sm text-gray-400">→</span>
       </Link>
+
+      </>}
     </div>
   )
 }

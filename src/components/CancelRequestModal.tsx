@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { requestCancellation, CANCEL_REASONS, type CancelReason } from '@/lib/cancellations/actions'
+import { requestCancellation } from '@/lib/cancellations/actions'
+// 상수는 'use server' 파일에서 못 가져온다 — ./reasons 주석 참고
+import { CANCEL_REASONS, type CancelReason } from '@/lib/cancellations/reasons'
 
 export default function CancelRequestModal({
   proposalId,

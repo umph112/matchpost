@@ -45,13 +45,15 @@ export async function POST(req: Request) {
     )
   }
 
+  // 1회용 판정은 status 로 한다(위 23줄과 같은 규칙). invite_token 은 남긴다 —
+  // 지우면 같은 링크 재방문이 「유효하지 않음」으로 떨어져 안내가 틀린다.
+  // 링크 복사 버튼은 status === 'invited' 행에만 뜨므로 토큰이 남아도 노출되지 않는다.
   await db
     .from('team_members')
     .update({
       member_id: user.id,
       status: 'active',
       joined_at: new Date().toISOString(),
-      invite_token: null,
       token_expires: null,
     })
     .eq('id', row.id)

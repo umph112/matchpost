@@ -52,11 +52,12 @@ export default function InfluencerSearchPage() {
           .select('id, name, cancellation_count')
           .eq('id', campaign.advertiser_id)
           .single()
+        // 남의 회사명이라 advertiser_public 뷰로 읽는다(0095)
         const { data: ap } = await supabase
-          .from('advertiser_profiles')
+          .from('advertiser_public')
           .select('company_name')
           .eq('user_id', campaign.advertiser_id)
-          .single()
+          .maybeSingle()
         const { data: score } = await supabase
           .from('advertiser_payment_score')
           .select('on_time_rate, deals_count')

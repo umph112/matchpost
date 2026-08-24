@@ -38,6 +38,8 @@ export default function InfluencerMessageRoomPage() {
   const [uploading, setUploading] = useState(false)
   const [checkpointKind, setCheckpointKind] = useState<'draft' | 'publish' | ''>('draft')
   const [reportOpen, setReportOpen] = useState(false)
+  // 서버액션이 실패했을 때 띄울 말. 없으면 버튼을 눌러도 아무 일 없는 화면이 된다(D23).
+  const [actionError, setActionError] = useState<string | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -150,8 +152,17 @@ export default function InfluencerMessageRoomPage() {
     if (fileRef.current) fileRef.current.value = ''
   }
 
+  // 반환값도 예외도 반드시 받는다 — 예전엔 await 만 해서, 실패해도 카드가 그대로라
+  // 사람이 「클릭이 안 먹었나」 하고 계속 누르는 화면이었다(D23에서 실제로 그 상태였다).
   const handleAcceptDate = async (pid: string) => {
-    await acceptDateProposal(pid)
+    setActionError(null)
+    try {
+      const res = await acceptDateProposal(pid)
+      if (!res.ok) { setActionError(res.error); return }
+    } catch {
+      setActionError('날짜를 수락하지 못했어요. 잠시 뒤 다시 눌러주세요.')
+      return
+    }
     load()
   }
 
@@ -239,6 +250,11 @@ export default function InfluencerMessageRoomPage() {
       </div>
 
       <div className="px-4 pb-4 [.inf-pc_&]:px-5">
+        {actionError && (
+          <div className="mb-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2 text-[12px] text-red-700">
+            {actionError}
+          </div>
+        )}
         {/* D20 §3-1 — 결제일 변경 제안 입구(입력창 위). 양쪽 다 제안할 수 있다. */}
         {proposalId && (
           <div className="mb-2">

@@ -67,6 +67,11 @@ export default function TeamPage() {
   const [intro, setIntro] = useState('')
   const [brands, setBrands] = useState('')
   const [history, setHistory] = useState('')
+  // 공개 프로필 저장이 0행으로 끝났을 때 띄우는 안내(자동 저장이라 누를 버튼이 없다)
+  const [profileError, setProfileError] = useState('')
+  // 이 카드는 onBlur 자동 저장이다 — 불러오기 전에 칸을 건드리면 빈 값이 저장된다.
+  // 그래서 값이 도착하기 전에는 입력칸을 그리지 않는다.
+  const [profileReady, setProfileReady] = useState(false)
 
   const supabase = createClient()
 
@@ -90,7 +95,7 @@ export default function TeamPage() {
   // 공개 프로필 값 로드 — 내 advertiser_profiles(마케팅 공개설정) + 폴백(user_private.email, profiles.manager_phone)
   const loadProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setProfileReady(true); return }
     setMyId(user.id)
     const { data: ap } = await supabase
       .from('advertiser_profiles')
@@ -119,30 +124,45 @@ export default function TeamPage() {
       .eq('id', user.id)
       .maybeSingle()
     setFallbackPhone(prof?.manager_phone ?? '')
+    setProfileReady(true)
   }
 
   useEffect(() => { load(); loadProfile() }, [])
+
+  // ⚠️ RLS 에 걸려 한 행도 못 고치면 error 는 null 이고 data 는 [] 다. await 만 하고
+  // 결과를 안 보면 「저장됐다」로 읽힌다 — 실제로 이 화면의 저장은 전부 버려지고 있었고
+  // (intro·one_line·brands·history·marketing_phone 이 DB 에서 전부 비어 있었다)
+  // 화면엔 아무 표시도 안 났다. 그래서 .select() 로 돌아온 행을 센다.
+  const persistAdvProfile = async (
+    patch: Record<string, string | boolean | null>,
+  ): Promise<boolean> => {
+    if (!myId) return false
+    const { data, error } = await supabase
+      .from('advertiser_profiles')
+      .update(patch)
+      .eq('user_id', myId)
+      .select('user_id')
+    const ok = !error && (data?.length ?? 0) > 0
+    setProfileError(ok ? '' : '저장되지 않았어요. 새로고침 후 다시 시도해주세요.')
+    return ok
+  }
 
   const toggleMktPublic = async () => {
     if (!myId) return
     const next = !mktPublic
     setMktPublic(next)
-    await supabase.from('advertiser_profiles').update({ marketing_contact_public: next }).eq('user_id', myId)
+    // 저장이 안 됐으면 토글도 되돌린다 — 켜진 채로 두면 공개된 줄 안다.
+    if (!(await persistAdvProfile({ marketing_contact_public: next }))) setMktPublic(!next)
   }
 
   // 「다른 연락처로 받기」 입력 — 비우면 저장도 빈 값이라 미리보기가 폴백으로 돌아간다
-  const persistContact = async (patch: { marketing_email?: string | null; marketing_phone?: string | null }) => {
-    if (!myId) return
-    await supabase.from('advertiser_profiles').update(patch).eq('user_id', myId)
-  }
+  const persistContact = (patch: { marketing_email?: string | null; marketing_phone?: string | null }) =>
+    persistAdvProfile(patch)
 
   // 직접 작성 항목 — 빈 값은 null로 저장(읽는 쪽 ap?.brands && 조건이 그대로 동작)
-  const persistProfile = async (patch: {
+  const persistProfile = (patch: {
     one_line?: string | null; intro?: string | null; brands?: string | null; history?: string | null
-  }) => {
-    if (!myId) return
-    await supabase.from('advertiser_profiles').update(patch).eq('user_id', myId)
-  }
+  }) => persistAdvProfile(patch)
 
   const previewEmail = mktEmail.trim() || fallbackEmail
   const previewPhone = mktPhone.trim() || fallbackPhone
@@ -163,8 +183,17 @@ export default function TeamPage() {
   // 재발송 = 초대 링크(토큰) 재발급. 같은 이메일로 다시 초대하면 새 토큰이 발급된다.
   const resend = async (m: Member) => {
     setBusyId(m.id)
-    await inviteTeamMember(m.email)
-    setBusyId(null)
+    setError('')
+    // 위 최초 초대와 같이 결과를 받는다 — 예전엔 실패해도 조용해서 재발송이 된 줄 알았다(D23)
+    try {
+      const res = await inviteTeamMember(m.email)
+      if (!res.ok) { setError(res.error); return }
+    } catch {
+      setError('초대를 다시 보내지 못했어요. 잠시 뒤 다시 시도해주세요.')
+      return
+    } finally {
+      setBusyId(null)
+    }
     load()
   }
 
@@ -278,6 +307,19 @@ export default function TeamPage() {
           )}
         </div>
 
+        {/* 자동 저장이라 누를 버튼이 없다 — 안 됐으면 이 자리에 뜬다 */}
+        {profileError && (
+          <div className="bg-red-50 text-red-600 text-xs rounded-lg px-3 py-2 mb-2">{profileError}</div>
+        )}
+
+        {/* 값이 도착하기 전에는 입력칸을 그리지 않는다 — 이 카드는 onBlur 자동 저장이라
+            빈 칸을 건드리는 순간 그대로 저장돼 기존 소개·브랜드·연혁이 날아간다. */}
+        {!profileReady && (
+          <p className="text-xs text-[#7C7C88] mt-4 py-6 text-center">불러오는 중…</p>
+        )}
+
+        {profileReady && (
+        <>
         {/* 토글 — 마케팅 문의 연락처 공개 */}
         <div className="flex items-start justify-between gap-3 mt-4">
           <div className="min-w-0">
@@ -437,6 +479,8 @@ export default function TeamPage() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </div>
 
       {/* 표 */}

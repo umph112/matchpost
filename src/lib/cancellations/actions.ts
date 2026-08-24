@@ -3,8 +3,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
-export const CANCEL_REASONS = ['개인 사정', '일정 중복', '조건 불일치', '건강 문제', '기타'] as const
-export type CancelReason = (typeof CANCEL_REASONS)[number]
+// 상수도 타입도 ./reasons 에 있다 — 'use server' 파일은 async 함수만 export 할 수 있다(이유는 그 파일 주석).
+// ⚠️ 여기서 `export type { CancelReason }` 로 되넘기는 것도 안 된다. Next 16 의 'use server'
+// 변환은 타입 재export 를 지우지 않고 런타임 re-export 로 내보내서
+// 「ReferenceError: CancelReason is not defined」로 번들이 똑같이 죽는다(D23 실측).
+// 쓰는 쪽은 '@/lib/cancellations/reasons' 에서 직접 가져올 것.
+import type { CancelReason } from './reasons'
 
 export type CancelResult = { ok: true; id: string } | { ok: false; error: string }
 

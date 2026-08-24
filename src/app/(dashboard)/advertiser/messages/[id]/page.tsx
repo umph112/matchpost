@@ -56,6 +56,8 @@ export default function AdvertiserMessageRoomPage() {
   const [targetedId, setTargetedId] = useState<string | null>(null)
   const [confirmTargeted, setConfirmTargeted] = useState<Participant | null>(null)
   const [reportOpen, setReportOpen] = useState(false)
+  // 서버액션이 실패했을 때 띄울 말. 없으면 버튼을 눌러도 아무 일 없는 화면이 된다(D23).
+  const [actionError, setActionError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [markAsGuide, setMarkAsGuide] = useState(true)
@@ -232,18 +234,25 @@ export default function AdvertiserMessageRoomPage() {
     const file = e.target.files?.[0]
     if (!file || !currentUser || !conv) return
     setUploading(true)
+    setActionError(null)
     const uploaded = await uploadFile(file)
     if (uploaded) {
       if (conv.kind === 'campaign') {
-        await sendCampaignMessage({
-          campaignId: conv.campaign_id,
-          content: '',
-          onlyInfluencerId: targetedId,
-          fileUrl: uploaded.url,
-          fileName: uploaded.name,
-          fileType: uploaded.type,
-          checkpointKind: markAsGuide ? 'guide' : null,
-        })
+        // 파일은 올라갔는데 전송이 실패하면 첨부한 줄 알고 넘어간다 — 실패를 알린다(D23)
+        try {
+          const res = await sendCampaignMessage({
+            campaignId: conv.campaign_id,
+            content: '',
+            onlyInfluencerId: targetedId,
+            fileUrl: uploaded.url,
+            fileName: uploaded.name,
+            fileType: uploaded.type,
+            checkpointKind: markAsGuide ? 'guide' : null,
+          })
+          if (!res.ok) setActionError(`파일을 보내지 못했어요 — ${res.error}`)
+        } catch {
+          setActionError('파일을 보내지 못했어요. 잠시 뒤 다시 시도해주세요.')
+        }
       } else {
         await supabase.from('messages').insert({
           sender_id: currentUser.id,
@@ -262,8 +271,16 @@ export default function AdvertiserMessageRoomPage() {
     if (fileRef.current) fileRef.current.value = ''
   }
 
+  // 인플루언서 화면과 같은 이유로 반환값·예외를 받는다(D23)
   const handleAcceptDate = async (proposalId: string) => {
-    await acceptDateProposal(proposalId)
+    setActionError(null)
+    try {
+      const res = await acceptDateProposal(proposalId)
+      if (!res.ok) { setActionError(res.error); return }
+    } catch {
+      setActionError('날짜를 수락하지 못했어요. 잠시 뒤 다시 눌러주세요.')
+      return
+    }
     load()
   }
 
@@ -426,6 +443,11 @@ export default function AdvertiserMessageRoomPage() {
       </div>
 
       <div className="px-4 pb-4 [.adv-pc_&]:px-5">
+        {actionError && (
+          <div className="mb-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2 text-[12px] text-red-700">
+            {actionError}
+          </div>
+        )}
         {/* D20 §3-1 — 결제일 변경 제안 입구. 캠페인 1:N 은 참여자를 먼저 골라야 한다(신고와 동일). */}
         {(isCampaign || singleProposalId) && (
           <div className="mb-2">

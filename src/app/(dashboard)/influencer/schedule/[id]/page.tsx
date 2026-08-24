@@ -94,7 +94,8 @@ export default async function OpenBundlePage({ params }: { params: Promise<{ id:
       : Promise.resolve({ data: [] as any[] }),
     advIds.length ? supabase.from('profiles').select('id, name').in('id', advIds) : Promise.resolve({ data: [] as any[] }),
     advIds.length
-      ? supabase.from('advertiser_profiles').select('user_id, company_name').in('user_id', advIds)
+      // 남의 회사명이라 advertiser_public 뷰로 읽는다(0095)
+      ? supabase.from('advertiser_public').select('user_id, company_name').in('user_id', advIds)
       : Promise.resolve({ data: [] as any[] }),
     campIds.length
       ? supabase.from('campaigns').select('id, title, brand_name, settlement_date').in('id', campIds)
