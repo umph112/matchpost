@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { ClipboardList, CalendarDays, MapPin, MessageSquare } from 'lucide-react'
+import { dateRangeWithDow } from '@/lib/date'
 
 type Open = {
   id: string
   title: string
   date: string
+  date_end?: string | null
   location_city?: string
   location_district?: string
   derivedStatus: '진행중' | '메이드' | '마감' | '캔슬'
@@ -69,7 +71,8 @@ export default function MyOpensList({ opens }: { opens: Open[] }) {
                 <div className="min-w-0">
                   <p className="font-medium text-gray-900 truncate">{o.title}</p>
                   <p className="text-xs text-gray-500 mt-0.5 flex items-center flex-wrap gap-x-2 gap-y-0.5">
-                    <span className="inline-flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {o.date}</span>
+                    {/* 기간 오픈이면 「8/28 (금) – 8/29 (토)」 */}
+                    <span className="inline-flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {dateRangeWithDow(o.date, o.date_end)}</span>
                     <span className="inline-flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {o.location_city} {o.location_district}</span>
                   </p>
                 </div>

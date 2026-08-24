@@ -8,6 +8,7 @@ import CancelNoticeCard from '@/components/CancelNoticeCard'
 import { BlogAnalyticsSummaryCard } from '@/components/BlogAnalyticsCard'
 import { initial } from '@/lib/initial'
 import { settlementDateOf } from '@/lib/deals/settlementDate'
+import { eachDay } from '@/lib/date'
 import {
   CalendarDays, Search, Hourglass, Inbox, Handshake, BarChart3, Wallet, Bell,
   MessageSquare, Plus, Megaphone, Pencil, CheckCircle2, Ban, CalendarPlus, CheckSquare,
@@ -145,7 +146,8 @@ export default async function InfluencerMyPage() {
   // 달력 카운트 (이달) — 7일 스트립도 여기서 파생
   const countsByDate: Record<string, { open: number; campaign: number }> = {}
   for (const o of opens ?? []) {
-    if (o.date >= start && o.date <= end) (countsByDate[o.date] ??= { open: 0, campaign: 0 }).open++
+    // 기간 오픈은 걸친 날 전부에 센다 — 시작일에만 세면 내 달력에서도 중간 날이 비어 보인다.
+    for (const d of eachDay(o.date, o.date_end, start, end)) (countsByDate[d] ??= { open: 0, campaign: 0 }).open++
   }
   for (const c of camps) {
     ;(countsByDate[(c as { date: string }).date] ??= { open: 0, campaign: 0 }).campaign++
@@ -242,12 +244,14 @@ export default async function InfluencerMyPage() {
     let st: '진행중' | '메이드' | '마감' | '캔슬' = '진행중'
     if (o.status === 'cancelled') st = '캔슬'
     else if (madeSchedules.has(o.id)) st = '메이드'
-    else if (o.date < todayStr) st = '마감'
+    // 기간 오픈은 끝나야 마감이다 — 시작일로 보면 진행 중인 기간이 마감으로 뜬다
+    else if ((o.date_end || o.date) < todayStr) st = '마감'
     const dash = dashBySchedule[o.id]
     return {
       id: o.id,
       title: o.title,
       date: o.date,
+      date_end: o.date_end ?? null,
       location_city: o.location_city,
       location_district: o.location_district,
       derivedStatus: st,

@@ -8,7 +8,7 @@ import { BlogAnalyticsCompact } from '@/components/BlogAnalyticsCard'
 import DashSendButton from '@/components/DashSendButton'
 import CancelBadge from '@/components/CancelBadge'
 import { initial } from '@/lib/initial'
-import { dateWithDow } from '@/lib/date'
+import { dateWithDow, eachDay } from '@/lib/date'
 
 const REGIONS = ['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '강원', '충남', '충북', '전남', '전북', '경남', '경북', '제주']
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
@@ -167,16 +167,23 @@ export default function AdvertiserSearchPage() {
 
     let q = supabase
       .from('schedules')
-      .select('id, influencer_id, date, channels, location_city, location_district, fee')
+      .select('id, influencer_id, date, date_end, channels, location_city, location_district, fee')
       .eq('is_public', true)
       .eq('status', 'open')
 
     const _lo = sA && sB ? (sA < sB ? sA : sB) : sA
     const _hi = sA && sB ? (sA > sB ? sA : sB) : sB
+    // 오픈은 [date, date_end] 구간이다. 고른 날짜가 그 안에 들면 잡힌다 —
+    // 기간 오픈을 시작일로만 찾으면 중간 날짜에서는 없는 것처럼 보인다.
+    //
+    // ⚠️ or 절에 date_end.is.null 을 홀로 두면 안 된다. 그러면 「date <= 고른날 이고
+    //    date_end 가 비었으면 통과」가 되어 지난 하루 오픈이 전부 딸려온다.
+    //    하루 오픈은 date 가 정확히 그날일 때만 잡히도록 and() 로 묶는다.
     if (dateMode === '특정일') {
-      if (sA) q = q.eq('date', sA)
+      if (sA) q = q.lte('date', sA).or(`date_end.gte.${sA},and(date_end.is.null,date.eq.${sA})`)
     } else if (_lo && _hi && !half) {
-      q = q.gte('date', _lo).lte('date', _hi)
+      // 기간 검색은 「겹치면 잡는다」 — 8/25~8/30 을 찾을 때 8/28~8/29 오픈은 나와야 한다.
+      q = q.lte('date', _hi).or(`date_end.gte.${_lo},and(date_end.is.null,date.gte.${_lo})`)
     }
     if (regions.length > 0) q = q.or(regions.map((r) => `location_city.ilike.%${r}%`).join(','))
     if (channels.length > 0) q = q.overlaps('channels', channels)
@@ -260,16 +267,24 @@ export default function AdvertiserSearchPage() {
     const start = ymd(cursor.y, cursor.m, 1)
     const base = new Date(cursor.y, cursor.m + 1, 1)
     const end = ymd(base.getFullYear(), base.getMonth(), 1)
+    const lastOfMonth = ymd(cursor.y, cursor.m, new Date(cursor.y, cursor.m + 1, 0).getDate())
     let alive = true
     supabase
       .from('schedules')
-      .select('date')
+      .select('date, date_end')
       .eq('is_public', true)
       .eq('status', 'open')
-      .gte('date', start)
+      // 지난달에 시작해 이달까지 걸친 기간 오픈도 이달 점을 찍어야 한다.
       .lt('date', end)
+      .or(`date_end.gte.${start},and(date_end.is.null,date.gte.${start})`)
       .then(({ data }) => {
-        if (alive) setOpenDays(new Set((data ?? []).map((r: any) => r.date as string)))
+        if (!alive) return
+        const days = new Set<string>()
+        // 기간 오픈은 시작~끝 전체에 점을 찍는다. 시작일에만 뜨면 중간 날짜를 보다가 놓친다.
+        for (const r of (data ?? []) as { date: string; date_end: string | null }[]) {
+          for (const d of eachDay(r.date, r.date_end, start, lastOfMonth)) days.add(d)
+        }
+        setOpenDays(days)
       })
     return () => {
       alive = false
@@ -370,7 +385,12 @@ export default function AdvertiserSearchPage() {
       <div className="flex flex-col gap-1 text-[12px]">
         <div className="flex items-center gap-2">
           <span className="text-[#B0B0BB] text-[11px] w-14 shrink-0">날짜</span>
-          <span className="font-semibold text-[#3C3C46]">{fmtDate(schedule.date)}</span>
+          {/* 기간 오픈이면 끝날까지 — 하루짜리인 줄 알고 말을 걸면 서로 어긋난다.
+              하루 표기는 이 카드가 쓰던 「8월 28일」을 그대로 둔다. */}
+          <span className="font-semibold text-[#3C3C46]">
+            {fmtDate(schedule.date)}
+            {schedule.date_end && schedule.date_end !== schedule.date && ` – ${fmtDate(schedule.date_end)}`}
+          </span>
         </div>
         {schedule.channels?.length > 0 && (
           <div className="flex items-center gap-2">

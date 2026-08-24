@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { dateWithDow } from '@/lib/date'
+import { dateRangeWithDow } from '@/lib/date'
 import { CalendarDays, Clock, Eye, Lock } from 'lucide-react'
 
 export default async function ScheduleListPage() {
@@ -17,8 +17,10 @@ export default async function ScheduleListPage() {
     .order('date', { ascending: true })
 
   const today = new Date().toISOString().split('T')[0]
-  const upcoming = schedules?.filter(s => s.date >= today) ?? []
-  const past = schedules?.filter(s => s.date < today) ?? []
+  // 기간 오픈은 끝나야 지난 일정이다. 시작일로만 나누면 「8/28~8/30」이 8/29에 지난 일정으로 내려간다.
+  const lastDay = (s: { date: string; date_end?: string | null }) => s.date_end || s.date
+  const upcoming = schedules?.filter(s => lastDay(s) >= today) ?? []
+  const past = schedules?.filter(s => lastDay(s) < today) ?? []
 
   const statusLabel = (status: string) => {
     if (status === 'open') return { label: '모집 중', color: 'bg-green-100 text-green-600' }
@@ -48,7 +50,8 @@ export default async function ScheduleListPage() {
         </div>
 
         <div className="flex items-center gap-4 text-sm text-gray-500">
-          <span className="flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {dateWithDow(schedule.date)}</span>
+          {/* 기간 오픈이면 끝날까지 — D29 2-3 */}
+          <span className="flex items-center gap-1"><CalendarDays size={16} strokeWidth={1.75} /> {dateRangeWithDow(schedule.date, schedule.date_end)}</span>
           {schedule.start_time && (
             <span className="flex items-center gap-1"><Clock size={16} strokeWidth={1.75} /> {schedule.start_time.slice(0, 5)}
               {schedule.end_time && ` ~ ${schedule.end_time.slice(0, 5)}`}

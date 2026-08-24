@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Building2, MapPin, Clock, User } from 'lucide-react'
+import { Building2, MapPin, Clock, User, CalendarDays } from 'lucide-react'
 import DashSendButton from '@/components/DashSendButton'
+import { dateRangeWithDow } from '@/lib/date'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -46,9 +47,13 @@ export default async function DayDetailPage({
   const { data: opens } = await supabase
     .from('schedules')
     .select(
-      'id, title, influencer_id, location_city, location_district, start_time, end_time, predefined_categories, free_tags'
+      'id, title, influencer_id, date, date_end, location_city, location_district, start_time, end_time, predefined_categories, free_tags'
     )
-    .eq('date', date)
+    // 이 날을 「걸치는」 오픈까지. 달력이 기간 오픈을 시작~끝 전체에 그리므로
+    // 중간 날짜를 눌러 여기 들어왔을 때 비어 있으면 앞뒤가 안 맞는다.
+    // (date_end.is.null 을 홀로 두면 지난 하루 오픈이 다 딸려온다 — and 로 묶는다.)
+    .lte('date', date)
+    .or(`date_end.gte.${date},and(date_end.is.null,date.eq.${date})`)
     .eq('is_public', true)
     .eq('status', 'open')
 
@@ -153,6 +158,12 @@ export default async function DayDetailPage({
                   </p>
                 </div>
                 <div className="text-xs text-gray-500 mt-2 space-y-0.5">
+                  {/* 이 날 하나만 보고 들어온 화면이라, 걸쳐 있는 오픈이면 기간을 말해줘야 한다 */}
+                  {o.date_end && o.date_end !== o.date && (
+                    <p className="flex items-center gap-1 text-[#B45309] font-medium">
+                      <CalendarDays size={16} strokeWidth={1.75} /> {dateRangeWithDow(o.date, o.date_end)} 기간 오픈
+                    </p>
+                  )}
                   <p className="flex items-center gap-1"><MapPin size={16} strokeWidth={1.75} /> {o.location_city} {o.location_district}</p>
                   {(o.start_time || o.end_time) && (
                     <p className="flex items-center gap-1"><Clock size={16} strokeWidth={1.75} /> {o.start_time?.slice(0, 5)}{o.end_time ? ` ~ ${o.end_time.slice(0, 5)}` : ''}</p>

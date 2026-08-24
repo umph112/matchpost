@@ -20,6 +20,9 @@ export default function SchedulePage() {
 function ScheduleForm() {
   const sp = useSearchParams()
   const [selectedDate, setSelectedDate] = useState<string>(() => sp.get('date') ?? '')
+  // 종료일. 비우면 하루 오픈(date_end = null).
+  // 「여수 1박 2일」 같은 오픈을 여기서 만들 수 있어야 오픈 묶음 보기(D24)에 담을 것이 생긴다.
+  const [endDate, setEndDate] = useState('')
   const [startTime, setStartTime] = useState(() => sp.get('from') ?? '')
   const [endTime, setEndTime] = useState(() => sp.get('to') ?? '')
   const [locationCity, setLocationCity] = useState('')
@@ -57,6 +60,13 @@ function ScheduleForm() {
       return
     }
 
+    // 종료일이 시작일보다 앞이면 기간이 성립하지 않는다.
+    // 저장까지 가면 [date, date_end] 를 보는 검색이 영영 못 잡는 유령 오픈이 남는다.
+    if (endDate && endDate < selectedDate) {
+      setError('종료일이 시작일보다 앞이에요. 날짜를 다시 확인해주세요.')
+      return
+    }
+
     setLoading(true)
     setError('')
     setDupOpenId('')
@@ -73,6 +83,10 @@ function ScheduleForm() {
     // 하루에 오픈은 하나다. 두 줄이 되면 광고주 「인플루언서 찾기」에 같은 사람이
     // 같은 날짜로 두 번 뜨고, 어느 쪽에 말을 걸어야 하는지 알 수 없게 된다.
     // 여기서 먼저 보는 이유는 이유를 말해주기 위해서다 — 못은 DB(0096)가 박는다.
+    //
+    // ⚠️ 보는 것은 시작일뿐이다(0096 인덱스도 (influencer_id, date) 하나짜리다).
+    //    기간이 서로 겹치는 경우는 여기서 막지 않는다 — 막으려면 「하루 오픈이
+    //    기간 오픈 안에 들어가도 되나」부터 정해야 해서 별건으로 둔다(D29 2-1).
     //
     // ⚠️ maybeSingle() 을 쓰면 안 된다. 그날 줄이 이미 둘 이상이면
     //    「여러 줄이 왔다」로 오류가 나면서 data 가 null 로 오고,
@@ -102,6 +116,8 @@ function ScheduleForm() {
       influencer_id: user.id,
       title,
       date: selectedDate,
+      // 비우면 null — 하루 오픈이다. 읽는 쪽은 전부 date_end ?? date 로 본다.
+      date_end: endDate || null,
       start_time: startTime || null,
       end_time: endTime || null,
       location_city: locationCity,
@@ -186,15 +202,33 @@ function ScheduleForm() {
         />
       </div>
 
-      {/* 날짜 */}
+      {/* 날짜 — 하루면 시작일만, 여러 날이면 종료일까지 */}
       <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-2">날짜 *</label>
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <p className="text-xs text-gray-400 mb-1">시작일</p>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full h-[46px] border border-gray-200 rounded-[11px] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 mb-1">종료일 (선택)</p>
+            <input
+              type="date"
+              value={endDate}
+              min={selectedDate || undefined}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full h-[46px] border border-gray-200 rounded-[11px] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+        </div>
+        <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+          여러 날에 걸친 일정이면 종료일을 넣어주세요. 하루면 비워두면 됩니다.
+        </p>
       </div>
 
       {/* 시간 */}

@@ -8,6 +8,7 @@ import IncomingHandoverBanner, { type IncomingHandoverItem } from '@/components/
 import CancelNoticeCard from '@/components/CancelNoticeCard'
 import { initial } from '@/lib/initial'
 import { resolveCompany } from '@/lib/team/company'
+import { eachDay, dateRangeWithDow } from '@/lib/date'
 import {
   Search, Bell, FileText, Megaphone, Pencil, CheckCircle2, Ban, CalendarPlus,
   Handshake, MessageSquare, Wallet, Hourglass, CheckSquare, type LucideIcon,
@@ -143,8 +144,10 @@ export default async function AdvertiserMyPage() {
     .select('*')
     .eq('is_public', true)
     .eq('status', 'open')
-    .gte('date', start)
+    // 이 달과 겹치는 오픈 — 지난달에 시작해 이달까지 걸친 기간 오픈도 달력에 있어야 한다.
+    // (date_end.is.null 을 홀로 두면 지난 하루 오픈이 다 딸려온다 — and 로 묶는다.)
     .lte('date', end)
+    .or(`date_end.gte.${start},and(date_end.is.null,date.gte.${start})`)
     .order('date')
   const openInfIds = [...new Set((openRows ?? []).map((o) => o.influencer_id))]
   const { data: openProfiles } = openInfIds.length
@@ -214,18 +217,24 @@ export default async function AdvertiserMyPage() {
     if (c.date && c.date >= start && c.date <= end) (byDay[dayOf(c.date)] ??= { campaigns: [], opens: [] }).campaigns.push(c)
   }
   for (const o of openRows ?? []) {
-    ;(byDay[dayOf(o.date)] ??= { campaigns: [], opens: [] }).opens.push({
-      id: o.id,
-      name: pNameById[o.influencer_id] || '인플루언서',
-      category: ipById[o.influencer_id]?.categories?.[0] || o.predefined_categories?.[0] || '',
-      followers: ipById[o.influencer_id]?.follower_count || 0,
-      channels: o.channels || null,
-      region: [o.location_city, o.location_district].filter(Boolean).join(' '),
-      time: o.start_time ? `${String(o.start_time).slice(0, 5)}${o.end_time ? '~' + String(o.end_time).slice(0, 5) : ''}` : '종일',
-      fee: o.fee || null,
-      memo: o.memo || null,
-      influencerId: o.influencer_id,
-    })
+    // 기간 오픈은 걸친 날 전부에. 시작일에만 뜨면 중간 날짜를 보다가 놓친다(D29 2-3).
+    const rangeLabel = o.date_end && o.date_end !== o.date ? dateRangeWithDow(o.date, o.date_end) : null
+    for (const day of eachDay(o.date, o.date_end, start, end)) {
+      ;(byDay[dayOf(day)] ??= { campaigns: [], opens: [] }).opens.push({
+        id: o.id,
+        name: pNameById[o.influencer_id] || '인플루언서',
+        category: ipById[o.influencer_id]?.categories?.[0] || o.predefined_categories?.[0] || '',
+        followers: ipById[o.influencer_id]?.follower_count || 0,
+        channels: o.channels || null,
+        region: [o.location_city, o.location_district].filter(Boolean).join(' '),
+        time: o.start_time ? `${String(o.start_time).slice(0, 5)}${o.end_time ? '~' + String(o.end_time).slice(0, 5) : ''}` : '종일',
+        fee: o.fee || null,
+        memo: o.memo || null,
+        influencerId: o.influencer_id,
+        // 여러 날에 같은 오픈이 뜨므로, 팝업에서 「이건 기간 오픈이구나」를 알아야 한다
+        range: rangeLabel,
+      })
+    }
   }
 
   // 양식함 (저장된 상세 양식). 없으면 예시로 모양 채움.

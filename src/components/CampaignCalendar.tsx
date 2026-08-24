@@ -72,7 +72,8 @@ export default function CampaignCalendar({
   }
   const openRows = (o: any): [string, string][] => {
     const r: [string, string][] = [
-      ['오픈 날짜', sel ? `${year}. ${month}. ${sel} (${dowOf(sel)})` : ''],
+      // 기간 오픈은 걸친 날마다 뜨므로, 고른 날 하나만 보여주면 하루짜리로 오해한다
+      ['오픈 날짜', o.range || (sel ? `${year}. ${month}. ${sel} (${dowOf(sel)})` : '')],
       ['가능 시간', o.time || '종일'],
     ]
     if (o.channels?.length) r.push(['채널', o.channels.join(', ')])
