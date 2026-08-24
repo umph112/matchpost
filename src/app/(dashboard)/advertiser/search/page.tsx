@@ -6,6 +6,7 @@ import { INFLUENCER_CATEGORIES } from '@/lib/categories'
 import MatchScore from '@/components/MatchScore'
 import { BlogAnalyticsCompact } from '@/components/BlogAnalyticsCard'
 import DashSendButton from '@/components/DashSendButton'
+import CancelBadge from '@/components/CancelBadge'
 import { initial } from '@/lib/initial'
 import { dateWithDow } from '@/lib/date'
 
@@ -187,7 +188,7 @@ export default function AdvertiserSearchPage() {
     const enriched = await Promise.all(
       (data ?? []).map(async (s) => {
         const [{ data: prof }, { data: ip }, { data: ba }] = await Promise.all([
-          supabase.from('profiles').select('id, name, avatar_url').eq('id', s.influencer_id).single(),
+          supabase.from('profiles').select('id, name, avatar_url, cancellation_count').eq('id', s.influencer_id).single(),
           supabase
             .from('influencer_profiles')
             .select('bio, platforms, categories, follower_count, match_score, review_count')
@@ -342,9 +343,13 @@ export default function AdvertiserSearchPage() {
           {initial(schedule.profiles?.name)}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-[#17171B] truncate">
-            {schedule.profiles?.name ?? '인플루언서'}
-          </p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="text-[13px] font-semibold text-[#17171B] truncate">
+              {schedule.profiles?.name ?? '인플루언서'}
+            </p>
+            {/* 수락 전에 보여야 의미가 있다 — 확정 후엔 늦다 */}
+            <CancelBadge role="influencer" count={schedule.profiles?.cancellation_count} />
+          </div>
           <p className="text-[11px] text-[#9A9AA5]">
             팔로워 {schedule.influencer_profiles?.follower_count?.toLocaleString() ?? '—'}명
           </p>

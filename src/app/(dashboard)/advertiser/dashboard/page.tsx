@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import CampaignCalendar from '@/components/CampaignCalendar'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
 import IncomingHandoverBanner, { type IncomingHandoverItem } from '@/components/IncomingHandoverBanner'
+import CancelNoticeCard from '@/components/CancelNoticeCard'
 import { initial } from '@/lib/initial'
 import { resolveCompany } from '@/lib/team/company'
 import {
@@ -32,7 +33,7 @@ export default async function AdvertiserMyPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('name, role, status')
+    .select('name, role, status, cancellation_count')
     .eq('id', user.id)
     .single()
 
@@ -285,6 +286,8 @@ export default async function AdvertiserMyPage() {
 
       {/* 5-5 받는 사람 이관 배너 — 넘어오는 담당이 있을 때만, 내 페이지 위에 한 줄. */}
       <IncomingHandoverBanner items={incomingHandovers} />
+
+      <CancelNoticeCard role="advertiser" count={profile?.cancellation_count} />
 
       {/* 페이지 헤더 */}
       <div className="flex flex-col gap-3 [.adv-pc_&]:flex-row [.adv-pc_&]:items-end [.adv-pc_&]:gap-4">

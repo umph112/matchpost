@@ -5,6 +5,7 @@ import InfluencerShell from '@/components/InfluencerShell'
 import HomeCalendar from '@/components/HomeCalendar'
 import MyOpensList from '@/components/MyOpensList'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
+import CancelNoticeCard from '@/components/CancelNoticeCard'
 import { BlogAnalyticsSummaryCard } from '@/components/BlogAnalyticsCard'
 import { initial } from '@/lib/initial'
 import { settlementDateOf } from '@/lib/deals/settlementDate'
@@ -48,7 +49,7 @@ export default async function InfluencerMyPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('name, role, status')
+    .select('name, role, status, cancellation_count')
     .eq('id', user.id)
     .single()
 
@@ -271,6 +272,8 @@ export default async function InfluencerMyPage() {
       notifCount={unreadNotif}
     >
       <NotificationsRealtime userId={user.id} />
+
+      <CancelNoticeCard role="influencer" count={profile?.cancellation_count} />
 
       {/* 히어로: 프로필 + 매치스코어 + 블로그등급 + 크레딧 (모바일만 — PC는 헤더/사이드바에 이미 노출) */}
       <section className="[.inf-pc_&]:hidden bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">

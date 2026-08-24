@@ -94,7 +94,7 @@ export default function AdminSanctionsPage() {
 
       <div className="space-y-3">
         {rows.map((r) => (
-          <div key={r.userId} className="bg-white rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4">
+          <div key={r.userId} className="bg-white rounded-2xl p-5 shadow-sm flex items-center justify-between gap-[14px]">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold shrink-0">
                 {initial(r.name)}

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
+import CancelBadge from '@/components/CancelBadge'
 import { dateWithDow } from '@/lib/date'
 import { Building2, CalendarDays, Search, MapPin, Clock } from 'lucide-react'
 
@@ -48,7 +49,7 @@ export default function InfluencerSearchPage() {
       (data ?? []).map(async (campaign) => {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, name')
+          .select('id, name, cancellation_count')
           .eq('id', campaign.advertiser_id)
           .single()
         const { data: ap } = await supabase
@@ -66,6 +67,7 @@ export default function InfluencerSearchPage() {
           // 인플루언서에게는 브랜드명을 그대로 노출 — 비면 회사 상호로 대체
           advertiserName: campaign.brand_name ?? ap?.company_name ?? profile?.name ?? '광고주',
           onTimeRate: score?.on_time_rate ?? null,
+          advertiserCancelCount: profile?.cancellation_count ?? 0,
         }
       })
     )
@@ -151,6 +153,8 @@ export default function InfluencerSearchPage() {
                     <span className={c.onTimeRate >= 90 ? 'text-emerald-600' : 'text-amber-600'}>정산 {c.onTimeRate}%</span>
                   </span>
                 )}
+                {/* 신청하기 전에 보여야 의미가 있다 */}
+                <CancelBadge role="advertiser" count={c.advertiserCancelCount} />
               </p>
 
               <div className="bg-gray-50 rounded-xl p-3 my-3 text-xs text-gray-500 space-y-0.5">

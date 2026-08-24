@@ -8,6 +8,10 @@
     { "path": "/api/admin/batch/visit-monthly", "schedule": "0 0 1 * *" },
     { "path": "/api/admin/batch/comeback", "schedule": "20 13 * * *" },
     { "path": "/api/admin/batch/settlement-reminder", "schedule": "25 13 * * *" },
-    { "path": "/api/cron/purge-attachments", "schedule": "30 13 * * *" }
+    { "path": "/api/cron/purge-attachments", "schedule": "30 13 * * *" },
+    { "path": "/api/admin/batch/report-autoclose", "schedule": "35 13 * * *" },
+    { "path": "/api/admin/batch/sanction-recalc", "schedule": "40 13 * * *" },
+    { "path": "/api/admin/batch/cancellation-autoconfirm", "schedule": "45 13 * * *" },
+    { "path": "/api/admin/batch/cancellation-count-reset", "schedule": "50 13 * * *" }
   ]
 }

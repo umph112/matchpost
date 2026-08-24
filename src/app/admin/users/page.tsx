@@ -8,7 +8,17 @@ import { initial } from '@/lib/initial'
 import { signupCreditAmount } from '@/lib/creditConfig'
 import { listTime } from '@/lib/date'
 import { formatBizNo } from '@/lib/business-number'
+import { cancelStage, type Role } from '@/lib/cancellation/thresholds'
 import { Smartphone } from 'lucide-react'
+
+// 관리자 화면에서만 점수를 그대로 보여준다 — 판단하려면 근거가 필요하다.
+// cancellation_count는 횟수가 아니라 점수다(가이드 이후 취소 +2).
+const CANCEL_STAGE_LABEL = { none: '기록만', notify: '본인 안내', public: '공개 표시' } as const
+const CANCEL_STAGE_STYLE = {
+  none: 'bg-gray-100 text-gray-500',
+  notify: 'bg-[#FFFBEB] text-[#B45309]',
+  public: 'bg-[#FEE2E2] text-[#DC2626]',
+} as const
 
 function UsersContent() {
   const [users, setUsers] = useState<any[]>([])
@@ -168,6 +178,20 @@ function UsersContent() {
                 <span className="inline-flex items-center gap-1"><Smartphone size={16} strokeWidth={1.75} /> {user.phone}</span>
                 <span className="mx-2">·</span>
                 <span>가입일 {listTime(user.created_at)}</span>
+                {(user.cancellation_count ?? 0) > 0 && (() => {
+                  const stage = cancelStage(user.role as Role, user.cancellation_count)
+                  return (
+                    <>
+                      <span className="mx-2">·</span>
+                      <span className="inline-flex items-center gap-1">
+                        <span>취소 {user.cancellation_count}점</span>
+                        <span className={`px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold ${CANCEL_STAGE_STYLE[stage]}`}>
+                          {CANCEL_STAGE_LABEL[stage]}
+                        </span>
+                      </span>
+                    </>
+                  )
+                })()}
               </div>
 
               {user.role === 'advertiser' && user.bizRegNumber && (

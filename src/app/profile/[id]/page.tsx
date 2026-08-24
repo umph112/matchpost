@@ -2,6 +2,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import Link from 'next/link'
 import { initial } from '@/lib/initial'
 import DashSendButton from '@/components/DashSendButton'
+import CancelBadge from '@/components/CancelBadge'
 import { dateWithDow } from '@/lib/date'
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
@@ -45,7 +46,10 @@ console.log('profile:', profile)
             {initial(profile.name)}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
+              <CancelBadge role="influencer" count={profile.cancellation_count} />
+            </div>
           </div>
         </div>
 

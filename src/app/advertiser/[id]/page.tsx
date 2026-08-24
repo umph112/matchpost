@@ -1,6 +1,7 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import { notFound } from 'next/navigation'
 import { listDateLabel } from '@/lib/date'
+import CancelBadge from '@/components/CancelBadge'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,7 +31,7 @@ export default async function AdvertiserPublicProfile({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, name, created_at, role, manager_phone')
+    .select('id, name, created_at, role, manager_phone, cancellation_count')
     .eq('id', id)
     .single()
 
@@ -142,6 +143,7 @@ export default async function AdvertiserPublicProfile({
               인플루언서로도 활동 중
             </span>
           )}
+          <CancelBadge role="advertiser" count={profile.cancellation_count} />
         </div>
 
         {oneLine && <p className="text-sm text-[#5C5C68] leading-relaxed -mt-1">{oneLine}</p>}
