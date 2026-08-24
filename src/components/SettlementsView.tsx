@@ -320,7 +320,7 @@ export default function SettlementsView({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setOpenId(isOpen ? null : r.campaign.id)}
-                    className="text-[12px] font-semibold text-[#5C5C68] hover:text-[#17171B]"
+                    className="text-[12px] font-semibold text-[#5C5C68] hover:text-[#17171B] whitespace-nowrap"
                   >
                     대상 인원 보기 {isOpen ? '^' : 'v'}
                   </button>
@@ -329,7 +329,7 @@ export default function SettlementsView({
                       r.disputed && !resolved && resolvingFor !== r.campaign.id ? (
                         <button
                           onClick={() => setResolvingFor(r.campaign.id)}
-                          className="text-[12px] font-semibold text-[#5C5C68] border border-[#E2E2E8] rounded-lg px-3 py-1.5 hover:bg-[#F6F6F7]"
+                          className="text-[12px] font-semibold text-[#5C5C68] border border-[#E2E2E8] rounded-lg px-3 py-1.5 hover:bg-[#F6F6F7] whitespace-nowrap"
                         >
                           보류 사유 해결하기
                         </button>
@@ -339,7 +339,7 @@ export default function SettlementsView({
                     ) : pct === 100 ? (
                       <button
                         onClick={() => setSettleModalFor(r.campaign)}
-                        className="text-[12.5px] font-bold bg-[#F59E0B] hover:bg-[#D97706] text-white px-4 py-2 rounded-lg"
+                        className="text-[12.5px] font-bold bg-[#F59E0B] hover:bg-[#D97706] text-white px-4 py-2 rounded-lg whitespace-nowrap"
                       >
                         정산 완료로 기록
                       </button>
@@ -347,7 +347,7 @@ export default function SettlementsView({
                       <button
                         onClick={() => handleRequestTaxDocs(r.campaign.id)}
                         disabled={busyId === r.campaign.id || requested}
-                        className="text-[12.5px] font-bold bg-[#F59E0B] hover:bg-[#D97706] text-white px-4 py-2 rounded-lg disabled:opacity-50"
+                        className="text-[12.5px] font-bold bg-[#F59E0B] hover:bg-[#D97706] text-white px-4 py-2 rounded-lg disabled:opacity-50 whitespace-nowrap"
                       >
                         {requested ? '요청 보냄 · 대기' : busyId === r.campaign.id ? '요청 중...' : `세무자료 ${r.targets.length - r.taxReceived}명 요청하기`}
                       </button>
@@ -384,16 +384,16 @@ export default function SettlementsView({
                                       currentLabel: monthDayKo(settlementDateOf(p, r.campaign)) || null,
                                     })
                                   }
-                                  className="mt-1.5 text-[11.5px] font-semibold text-[#5C5C68] border border-[#E2E2E8] bg-white hover:bg-[#FAFAFB] rounded-[7px]"
-                                  style={{ padding: '6px 10px' }}
+                                  className="mt-1.5 text-[11.5px] font-semibold text-[#5C5C68] border border-[#E2E2E8] bg-white hover:bg-[#FAFAFB] rounded-[7px] text-center leading-[1.3] px-2.5 py-2"
                                 >
-                                  {isSettlementDateChanged(p) ? '결제일 다시 제안' : '결제일 변경 제안'}
+                                  <span className="whitespace-nowrap">{isSettlementDateChanged(p) ? '결제일 다시' : '결제일 변경'}</span>{' '}
+                                  <span className="whitespace-nowrap">제안</span>
                                 </button>
                               )}
                             </div>
                             <span className="text-right">{fmt(p.budget ?? 0)}원</span>
                             <span className="text-right">
-                              <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${chip.cls}`}>{chip.label}</span>
+                              <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${chip.cls}`}>{chip.label}</span>
                             </span>
                             <span className="text-right">
                               {p.settlement_status === '완료' ? (

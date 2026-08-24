@@ -53,3 +53,34 @@ export const LEGACY_STAGE_MAP: Record<string, Stage> = {
   '검사': '게재',
   '정산': '정산',
 }
+
+// D29 PROMPT-4 — 단계마다 넘기는 사람이 다르다. 원고 제출·게재는 인플루언서가 하는 일이라
+// 광고주가 대신 눌러주기를 기다리게 두면 안 된다.
+// ⚠️ 이 표가 유일한 출처다 — 화면(DealSheet)과 서버액션(lib/deals/progress.ts)이 같이 읽는다.
+//    두 곳에 나눠 적으면 어긋난다.
+export type StageOwner = 'advertiser' | 'influencer'
+
+export const STAGE_OWNER: Record<Stage, StageOwner> = {
+  '협의': 'advertiser',
+  '수락': 'advertiser',
+  '가이드': 'advertiser',   // 가이드를 주는 쪽
+  '방문': 'influencer',
+  '원고': 'influencer',
+  '수정/컨펌': 'advertiser', // 확인하는 쪽
+  '게재': 'influencer',
+  '게재뒤수정': 'advertiser', // 확인하는 쪽
+  '정산': 'advertiser',     // 돈 보내는 쪽
+}
+
+// 지금 이 단계를 넘길 차례인 사람. 옛 저장값('신청'·'업로드' 등)도 새 이름으로 옮겨 본다.
+// 알 수 없는 값이면 첫 단계(광고주)로 본다 — 아무나 넘기게 두는 쪽보다 안전하다.
+export function stageOwnerOf(stage: string | null): StageOwner {
+  if (!stage) return STAGE_OWNER[ALL_STAGES[0]]
+  const mapped = (LEGACY_STAGE_MAP[stage] ?? stage) as Stage
+  return STAGE_OWNER[mapped] ?? STAGE_OWNER[ALL_STAGES[0]]
+}
+
+// 자기 차례가 아닐 때 화면에 띄울 한 줄 — 지금 무엇을 기다리는지 보이게.
+export function stageWaitingLine(owner: StageOwner): string {
+  return owner === 'advertiser' ? '광고주가 확인하면 넘어가요' : '인플루언서가 진행하면 넘어가요'
+}

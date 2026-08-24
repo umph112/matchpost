@@ -162,18 +162,18 @@ export default function ConfirmDashModal({
 
         {error && <p className="px-5 pb-2 text-xs text-red-500">{error}</p>}
 
-        <div className="flex gap-2 px-5 pb-5">
+        <div className="flex items-stretch gap-2 px-5 pb-5">
           <button
             onClick={onClose}
             disabled={busy}
-            className="flex-1 py-2.5 rounded-xl border border-[#EAEAEE] text-sm text-[#7C7C88] hover:bg-[#F6F6F7] transition disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-xl border border-[#EAEAEE] text-sm text-[#7C7C88] hover:bg-[#F6F6F7] transition disabled:opacity-50 whitespace-nowrap"
           >
             취소
           </button>
           <button
             onClick={confirm}
             disabled={busy || checking || (!isResend && !selectedDate)}
-            className="flex-1 py-2.5 rounded-xl bg-[#F59E0B] text-white font-bold text-sm hover:bg-[#D97706] transition disabled:opacity-50 disabled:bg-[#EAEAEE] disabled:text-[#B0B0BB]"
+            className="flex-1 py-2.5 rounded-xl bg-[#F59E0B] text-white font-bold text-sm hover:bg-[#D97706] transition disabled:opacity-50 disabled:bg-[#EAEAEE] disabled:text-[#B0B0BB] whitespace-nowrap"
           >
             {busy ? '보내는 중...' : isResend ? '다시 보내기' : '대시 보내기'}
           </button>

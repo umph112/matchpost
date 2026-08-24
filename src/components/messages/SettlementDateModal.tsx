@@ -72,18 +72,18 @@ export default function SettlementDateModal({
 
         {error && <p className="text-[11.5px] text-red-500 mt-2.5">{error}</p>}
 
-        <div className="flex gap-2 mt-5">
+        <div className="flex items-stretch gap-2 mt-5">
           <button
             onClick={onClose}
             disabled={submitting}
-            className="flex-1 py-2.5 rounded-xl border border-[#EAEAEE] text-sm text-[#7C7C88] hover:bg-[#F6F6F7] disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-xl border border-[#EAEAEE] text-sm text-[#7C7C88] hover:bg-[#F6F6F7] disabled:opacity-50 whitespace-nowrap"
           >
             취소
           </button>
           <button
             onClick={submit}
             disabled={disabled}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm transition"
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm transition whitespace-nowrap"
             style={{
               background: disabled ? '#EAEAEE' : '#17171B',
               color: disabled ? '#B0B0BB' : '#fff',

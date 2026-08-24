@@ -277,13 +277,13 @@ export default function HandoverView({
                               <button
                                 onClick={() => takeCampaign(r)}
                                 disabled={pending}
-                                style={{ height: 30, padding: '0 12px', borderRadius: 7, background: '#17171B', color: '#fff', fontSize: 11.5, fontWeight: 700, cursor: pending ? 'default' : 'pointer', opacity: pending ? 0.6 : 1 }}
+                                style={{ height: 30, padding: '0 12px', borderRadius: 7, background: '#17171B', color: '#fff', fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap', cursor: pending ? 'default' : 'pointer', opacity: pending ? 0.6 : 1 }}
                               >
                                 이관 확인
                               </button>
                               <button
                                 onClick={() => setOpenId(null)}
-                                style={{ height: 30, padding: '0 12px', borderRadius: 7, background: '#F1F1F4', color: '#5C5C68', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }}
+                                style={{ height: 30, padding: '0 12px', borderRadius: 7, background: '#F1F1F4', color: '#5C5C68', fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap', cursor: 'pointer' }}
                               >
                                 취소
                               </button>

@@ -96,7 +96,7 @@ export default function InfluencerPaidReceivedModal({
           <button
             onClick={confirm}
             disabled={loading || tooEarly}
-            className="w-full py-3 rounded-xl text-white font-semibold bg-[#15803D] hover:bg-[#166534] transition disabled:opacity-50"
+            className="w-full py-3 rounded-xl text-white font-semibold bg-[#15803D] hover:bg-[#166534] transition disabled:opacity-50 whitespace-nowrap"
           >
             {loading ? '처리 중...' : '입금 확인'}
           </button>

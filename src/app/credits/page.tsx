@@ -34,7 +34,7 @@ const PRICE_KEYS = ['open_schedule', 'create_campaign', 'send_proposal']
 const PRICE_SUBTITLE: Record<string, string> = {
   open_schedule: '가능한 날짜를 검색에 공개',
   create_campaign: '모집 캠페인을 공개로 등록',
-  send_proposal: '인플루언서에게 대시 제안',
+  send_proposal: '인플루언서에게 대시 보내기',
 }
 
 function PriceValue({ p }: { p: CreditPolicyItem }) {

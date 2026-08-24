@@ -101,7 +101,7 @@ export default function ReportModal({
             <button
               onClick={submit}
               disabled={submitting}
-              className="w-full py-3 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition disabled:opacity-40"
+              className="w-full py-3 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition disabled:opacity-40 whitespace-nowrap"
             >
               {submitting ? '접수 중...' : '운영팀에 알리기'}
             </button>

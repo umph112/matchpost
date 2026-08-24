@@ -97,8 +97,8 @@
   },
   {
     "kind": "결함",
-    "where": "딜시트 — 광고주 쪽 기록이 DB에 안 남음",
-    "text": "proposals UPDATE 정책이 광고주를 배제합니다. 실측(2026-08-24): 광고주 세션으로 .update({stage}).eq('id',...) → rows: [], error: null / 같은 행에 인플루언서 세션은 통과. DealSheet 는 브라우저 클라이언트로 쓰는 조작이 셋(advanceStage · toggleTaxDoc · setSettlement) 인데 전부 if(!error) 라 0행을 성공으로 읽고 화면만 넘어갑니다 — 새로고침하면 되돌아옵니다. 오픈 협업 딜시트(/advertiser/deals/[proposalId])와 캠페인 딜시트가 같은 코드라 둘 다 해당. 고치려면 정책 추가(광고주가 자기 건의 진행 칸만 UPDATE) 또는 서버액션 경유 — DB 정책 변경이라 사용자 승인 후 SQL Editor 에서 직접 실행해야 합니다.",
+    "where": "[해결] 딜시트 — 광고주 쪽 기록이 DB에 안 남음",
+    "text": "proposals UPDATE 정책이 광고주를 배제합니다. 실측(2026-08-24): 광고주 세션으로 .update({stage}).eq('id',...) → rows: [], error: null / 같은 행에 인플루언서 세션은 통과. DealSheet 는 브라우저 클라이언트로 쓰는 조작이 셋(advanceStage · toggleTaxDoc · setSettlement) 인데 전부 if(!error) 라 0행을 성공으로 읽고 화면만 넘어갑니다 — 새로고침하면 되돌아옵니다. 오픈 협업 딜시트(/advertiser/deals/[proposalId])와 캠페인 딜시트가 같은 코드라 둘 다 해당. 고치려면 정책 추가(광고주가 자기 건의 진행 칸만 UPDATE) 또는 서버액션 경유 — DB 정책 변경이라 사용자 승인 후 SQL Editor 에서 직접 실행해야 합니다. ▸ 해결(2026-08-24, D29 PROMPT-2): 정책을 늘리지 않고 세 조작을 서버액션(lib/deals/progress.ts)으로 옮겼습니다 — 당사자 확인 후 service 로 UPDATE 하고 영향 행 수가 0이면 에러를 돌려주며, 화면은 그 에러를 붉은 배너로 띄웁니다. 실측: 오픈 딜시트 신청→수락→방문→원고, 캠페인 딜시트 수락→방문 모두 DB에 반영 확인(24·25 스펙). 원래 결함이었다는 기록은 위 본문 그대로 남깁니다.",
     "at": "2026-08-24T09:39:29.856Z"
   }
 ]

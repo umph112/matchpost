@@ -399,13 +399,13 @@ export default function EarningsPage() {
               <div className="shrink-0 flex flex-col gap-1.5">
                 <button
                   onClick={() => inquireInChat(r)}
-                  className="text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-3 py-1.5 rounded-lg"
+                  className="text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-3 py-1.5 rounded-lg whitespace-nowrap"
                 >
                   대시에서 문의하기
                 </button>
                 <button
                   onClick={() => setPaidModal(r)}
-                  className="text-[11.5px] font-bold text-[#DC2626] bg-white border border-[#FECACA] px-3 py-1.5 rounded-lg hover:bg-[#FEF2F2]"
+                  className="text-[11.5px] font-bold text-[#DC2626] bg-white border border-[#FECACA] px-3 py-1.5 rounded-lg hover:bg-[#FEF2F2] whitespace-nowrap"
                 >
                   입금 받았어요
                 </button>

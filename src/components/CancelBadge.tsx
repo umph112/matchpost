@@ -12,7 +12,7 @@ export default function CancelBadge({
 }) {
   if (cancelStage(role, count ?? 0) !== 'public') return null
   return (
-    <span className="inline-flex items-center rounded-[4px] bg-[#FEE2E2] px-1.5 py-0.5 text-[10px] font-bold text-[#DC2626]">
+    <span className="inline-flex items-center rounded-[4px] bg-[#FEE2E2] px-1.5 py-0.5 text-[10px] font-bold text-[#DC2626] whitespace-nowrap">
       취소 요청 잦음
     </span>
   )

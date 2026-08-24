@@ -84,7 +84,7 @@ console.log('profile:', profile)
                   scheduleId={schedule.id}
                   className="w-full block text-center bg-[#F59E0B] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#D97706] transition"
                 >
-                  협업 제안하기
+                  대시 보내기
                 </DashSendButton>
               </div>
             ))}

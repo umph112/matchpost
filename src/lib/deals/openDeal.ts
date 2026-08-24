@@ -4,9 +4,9 @@ import type { DealSheetCampaign } from '@/components/DealSheet'
 // D29 1번 — 오픈에서 바로 성사된 협업(proposals.campaign_id = null)에는 딜시트가 없었다.
 // 화면을 새로 만들지 않고, 오픈(schedules 한 줄)을 캠페인 모양으로 감싸 같은 딜시트에 넣는다.
 //
-// 단계는 8단계다 — 협의·수락·방문·원고·수정/컨펌·게재·게재뒤수정·정산.
-// (campaign_type '지역' → 방문, preConfirm → 원고·수정/컨펌, postEdit → 게재뒤수정.
-//  '가이드'는 computeEnabledStages 가 어떤 조합에서도 내놓지 않아 8이 코드상 최대치다.)
+// 단계는 기본 9단계다 — 협의·수락·가이드·방문·원고·수정/컨펌·게재·게재뒤수정·정산.
+// 오픈엔 켜고 끌 캠페인 설정이 없으니 DealSheet 가 dealKind='open' 일 때 ALL_STAGES 를 그대로 쓴다.
+// (computeEnabledStages 는 어떤 조합에서도 '가이드'를 내놓지 않는다 — 캠페인 쪽 별건이라 여기선 손대지 않는다.)
 export type OpenScheduleRow = {
   id: string
   title: string | null

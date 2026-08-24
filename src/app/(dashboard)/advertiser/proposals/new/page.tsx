@@ -105,7 +105,7 @@ function NewProposalForm() {
         <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">
           ← 뒤로
         </button>
-        <h1 className="text-xl font-bold text-gray-900">협업 제안하기</h1>
+        <h1 className="text-xl font-bold text-gray-900">대시 보내기</h1>
       </div>
 
       {error && (

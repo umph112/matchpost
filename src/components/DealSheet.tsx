@@ -14,7 +14,17 @@ import { requestCancellation, acceptCancellation } from '@/lib/cancellations/act
 // 상수는 'use server' 파일에서 못 가져온다 — ./reasons 주석 참고
 import { CANCEL_REASONS, type CancelReason } from '@/lib/cancellations/reasons'
 import { proposeConnection } from '@/lib/connections/actions'
-import { computeEnabledStages, reindexStage, stageHintLine, type Stage } from '@/lib/campaign-stages'
+import {
+  ALL_STAGES,
+  computeEnabledStages,
+  reindexStage,
+  stageHintLine,
+  stageOwnerOf,
+  stageWaitingLine,
+  type Stage,
+} from '@/lib/campaign-stages'
+// D29 PROMPT-2 — 진행 기록 세 가지는 서버액션으로. 브라우저 update 는 RLS 에 막혀도 조용했다.
+import { advanceStage as advanceStageAction, setTaxDocReceived, setSettlementStatus } from '@/lib/deals/progress'
 import { CalendarDays, MapPin, AlertTriangle } from 'lucide-react'
 import { dDayLabel, monthDayKo } from '@/lib/date'
 import { isSettlementDateChanged, settlementDateOf } from '@/lib/deals/settlementDate'
@@ -189,6 +199,8 @@ export default function DealSheet({
   >({})
   const [connectionBusy, setConnectionBusy] = useState<string | null>(null)
   const [connectionError, setConnectionError] = useState('')
+  // 진행 기록(단계·세무자료·정산상태)이 서버에서 거절당하면 여기 담아 화면에 띄운다 — 조용히 넘어가지 않는다.
+  const [progressError, setProgressError] = useState('')
 
   const loadConnections = () => {
     supabase
@@ -298,11 +310,14 @@ export default function DealSheet({
   }
 
   const isLocation = campaign.campaign_type === '지역'
-  const stages = computeEnabledStages({
-    campaignType: campaign.campaign_type,
-    preConfirm: campaign.stage_pre_confirm ?? true,
-    postEdit: campaign.stage_post_edit ?? false,
-  })
+  // 오픈 협업엔 켜고 끌 캠페인 설정이 없다 — 기본 9단계(가이드 포함)를 그대로 쓴다(D29 PROMPT-2 정정).
+  const stages: Stage[] = dealKind === 'open'
+    ? [...ALL_STAGES]
+    : computeEnabledStages({
+        campaignType: campaign.campaign_type,
+        preConfirm: campaign.stage_pre_confirm ?? true,
+        postEdit: campaign.stage_post_edit ?? false,
+      })
 
   const confirmedCount = proposals_.filter((p) => p.advertiser_confirmed && p.influencer_confirmed).length
   const selectedProposals = proposals_.filter((p) => selected.has(p.id))
@@ -321,43 +336,44 @@ export default function DealSheet({
     else setSelected(new Set(proposals_.map((p) => p.id)))
   }
 
-  // advance stage
+  // D29 PROMPT-4 — 넘길 단계가 남아 있나 / 지금 내 차례인가.
+  // 담당자 표는 campaign-stages 의 STAGE_OWNER 하나뿐이다. 서버액션도 같은 표를 읽는다.
+  const stageMovable = (p: Proposal) =>
+    p.advertiser_confirmed && p.influencer_confirmed && !p.settled_at &&
+    stageIndex(p.stage, stages) < stages.length - 1
+  const myTurn = (p: Proposal) => stageOwnerOf(stages[stageIndex(p.stage, stages)]) === viewerRole
+
+  // advance stage — 서버가 실제로 바뀐 행을 세고, 0이면 에러를 돌려준다(화면만 넘기지 않는다).
   const advanceStage = async (proposalId: string) => {
     const p = proposals_.find((x) => x.id === proposalId)
     if (!p) return
     const cur = stageIndex(p.stage, stages)
     if (cur >= stages.length - 1) return
     const nextStage = stages[cur + 1]
-    const { error } = await supabase.from('proposals').update({ stage: nextStage }).eq('id', proposalId)
-    if (!error) {
-      setProposals((prev) => prev.map((x) => (x.id === proposalId ? { ...x, stage: nextStage } : x)))
-    }
+    setProgressError('')
+    const res = await advanceStageAction(proposalId, nextStage)
+    if (!res.ok) { setProgressError(`단계 이동 실패 — ${res.error}`); return }
+    setProposals((prev) => prev.map((x) => (x.id === proposalId ? { ...x, stage: nextStage } : x)))
   }
 
   // tax doc toggle
   const toggleTaxDoc = async (proposalId: string, current: boolean | null) => {
-    const { error } = await supabase
-      .from('proposals')
-      .update({ tax_doc_received: !current })
-      .eq('id', proposalId)
-    if (!error) {
-      setProposals((prev) =>
-        prev.map((x) => (x.id === proposalId ? { ...x, tax_doc_received: !current } : x)),
-      )
-    }
+    setProgressError('')
+    const res = await setTaxDocReceived(proposalId, !current)
+    if (!res.ok) { setProgressError(`세무자료 기록 실패 — ${res.error}`); return }
+    setProposals((prev) =>
+      prev.map((x) => (x.id === proposalId ? { ...x, tax_doc_received: !current } : x)),
+    )
   }
 
   // update settlement status
   const setSettlement = async (proposalId: string, status: string) => {
-    const { error } = await supabase
-      .from('proposals')
-      .update({ settlement_status: status })
-      .eq('id', proposalId)
-    if (!error) {
-      setProposals((prev) =>
-        prev.map((x) => (x.id === proposalId ? { ...x, settlement_status: status } : x)),
-      )
-    }
+    setProgressError('')
+    const res = await setSettlementStatus(proposalId, status)
+    if (!res.ok) { setProgressError(`정산 상태 변경 실패 — ${res.error}`); return }
+    setProposals((prev) =>
+      prev.map((x) => (x.id === proposalId ? { ...x, settlement_status: status } : x)),
+    )
   }
 
   // group proposals by channel (platforms[0] or '기타')
@@ -472,7 +488,7 @@ export default function DealSheet({
                 <p className="text-[12.5px] font-semibold text-[#7C7C88] truncate line-through">
                   {p.profile?.name ?? '인플루언서'}
                 </p>
-                <span className="text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded px-1.5 py-0.5">
+                <span className="text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded px-1.5 py-0.5 whitespace-nowrap">
                   취소 · {cancelled.reason}
                 </span>
               </div>
@@ -527,24 +543,30 @@ export default function DealSheet({
             </p>
           </div>
           {!isConfirmed && (
-            <span className="ml-auto shrink-0 text-[10px] font-bold bg-[#F1F1F4] text-[#9A9AA5] rounded px-1.5 py-0.5">
+            <span className="ml-auto shrink-0 text-[10px] font-bold bg-[#F1F1F4] text-[#9A9AA5] rounded px-1.5 py-0.5 whitespace-nowrap">
               협의중
             </span>
           )}
         </div>
 
-        {/* 단계 */}
+        {/* 단계 — 넘기는 사람은 단계마다 다르다(STAGE_OWNER). 내 차례가 아니면
+            버튼 대신 무엇을 기다리는지 한 줄로 보여준다. 버튼만 없으면 멈춘 것처럼 보인다. */}
         <div>
-          <span className="text-[11.5px] font-semibold text-[#3C3C46]">
+          <span className="text-[11.5px] font-semibold text-[#3C3C46] whitespace-nowrap">
             {stages[sidx]}
           </span>
-          {isAdv && isConfirmed && !isSettled && sidx < stages.length - 1 && (
+          {stageMovable(p) && myTurn(p) && (
             <button
               onClick={() => advanceStage(p.id)}
-              className="ml-1 text-[10px] text-[#B45309] hover:text-[#D97706] font-bold"
+              className="ml-1 text-[10px] text-[#B45309] hover:text-[#D97706] font-bold whitespace-nowrap"
             >
               →
             </button>
+          )}
+          {stageMovable(p) && !myTurn(p) && (
+            <span className="block mt-0.5 text-[10px] leading-[1.3] text-[#9A9AA5]">
+              {stageWaitingLine(stageOwnerOf(stages[stageIndex(p.stage, stages)]))}
+            </span>
           )}
         </div>
 
@@ -610,27 +632,17 @@ export default function DealSheet({
         {/* 세무자료 */}
         <div>
           {p.tax_doc_type ? (
-            // 수령 표시는 받는 쪽(광고주)이 한다 — 인플루언서에겐 상태만 보인다
-            isAdv ? (
-              <button
-                onClick={() => toggleTaxDoc(p.id, p.tax_doc_received)}
-                className={`text-[11px] font-semibold rounded px-2 py-0.5 transition ${
-                  p.tax_doc_received
-                    ? 'bg-[#DCFCE7] text-[#15803D]'
-                    : 'bg-[#FEE2E2] text-[#DC2626]'
-                }`}
-              >
-                {p.tax_doc_type} {p.tax_doc_received ? '✓' : '미수령'}
-              </button>
-            ) : (
-              <span
-                className={`text-[11px] font-semibold rounded px-2 py-0.5 ${
-                  p.tax_doc_received ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'
-                }`}
-              >
-                {p.tax_doc_type} {p.tax_doc_received ? '✓' : '미수령'}
-              </span>
-            )
+            // D29 PROMPT-4 — 내는 쪽(인플루언서)·받는 쪽(광고주) 둘 다 기록할 수 있다.
+            <button
+              onClick={() => toggleTaxDoc(p.id, p.tax_doc_received)}
+              className={`text-[11px] font-semibold rounded px-2 py-0.5 transition whitespace-nowrap ${
+                p.tax_doc_received
+                  ? 'bg-[#DCFCE7] text-[#15803D]'
+                  : 'bg-[#FEE2E2] text-[#DC2626]'
+              }`}
+            >
+              {p.tax_doc_type} {p.tax_doc_received ? '✓' : '미수령'}
+            </button>
           ) : (
             <span className="text-[11px] text-[#C4C4CE]">미설정</span>
           )}
@@ -639,11 +651,11 @@ export default function DealSheet({
         {/* 정산 */}
         <div className="text-right flex flex-col items-end gap-1">
           {isSettled && p.paid_disputed_at ? (
-            <span className="text-[11px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded px-2 py-0.5">
+            <span className="text-[11px] font-bold bg-[#FEE2E2] text-[#DC2626] rounded px-2 py-0.5 whitespace-nowrap">
               재정산 필요
             </span>
           ) : isSettled ? (
-            <span className="text-[11px] font-bold bg-[#DCFCE7] text-[#15803D] rounded px-2 py-0.5">
+            <span className="text-[11px] font-bold bg-[#DCFCE7] text-[#15803D] rounded px-2 py-0.5 whitespace-nowrap">
               정산완료
             </span>
           ) : isAdv ? (
@@ -681,10 +693,13 @@ export default function DealSheet({
                   currentLabel: monthDayKo(settlementDateOf(p, campaign)) || null,
                 })
               }
-              className="text-[11.5px] font-semibold text-[#5C5C68] border border-[#E2E2E8] bg-white hover:bg-[#FAFAFB] rounded-[7px]"
-              style={{ padding: '6px 10px' }}
+              // D29 PROMPT-3 — 「제안」이 빠지면 바로 바뀌는 것처럼 읽혀 줄일 수 없다.
+              // 두 줄로 두되 모양을 맞춘다: 좁은 행간 · 위아래 같은 padding · 가운데 정렬 ·
+              // 줄바꿈은 「결제일 변경」 / 「제안」 사이에서만(어절을 nowrap 으로 묶어 끊는다).
+              className="text-[11.5px] font-semibold text-[#5C5C68] border border-[#E2E2E8] bg-white hover:bg-[#FAFAFB] rounded-[7px] text-center leading-[1.3] px-2.5 py-2"
             >
-              {isSettlementDateChanged(p) ? '결제일 다시 제안' : '결제일 변경 제안'}
+              <span className="whitespace-nowrap">{isSettlementDateChanged(p) ? '결제일 다시' : '결제일 변경'}</span>{' '}
+              <span className="whitespace-nowrap">제안</span>
             </button>
           )}
           {isAdv && p.stage === stages[stages.length - 1] && isConfirmed && !reviewedIds.has(p.id) && (
@@ -721,7 +736,7 @@ export default function DealSheet({
               </span>
               <button
                 onClick={() => handleAcceptCancellation(pendingCancel.id)}
-                className="text-[10px] font-bold text-[#B45309] hover:underline"
+                className="text-[10px] font-bold text-[#B45309] hover:underline whitespace-nowrap"
               >
                 취소 요청 수락
               </button>
@@ -731,7 +746,7 @@ export default function DealSheet({
           !isSettled && (
             <button
               onClick={() => setCancelModal(p.id)}
-              className="text-[10px] text-[#9A9AA5] hover:text-[#7C7C88] hover:underline"
+              className="text-[10px] text-[#9A9AA5] hover:text-[#7C7C88] hover:underline whitespace-nowrap"
             >
               협업 취소 요청
             </button>
@@ -739,7 +754,7 @@ export default function DealSheet({
         )}
         <button
           onClick={() => setReportModal(p.id)}
-          className="text-[10px] text-[#9A9AA5] hover:text-red-600 hover:underline"
+          className="text-[10px] text-[#9A9AA5] hover:text-red-600 hover:underline whitespace-nowrap"
         >
           운영팀에 알리기
         </button>
@@ -754,7 +769,7 @@ export default function DealSheet({
             <button
               onClick={() => handleProposeConnection(p.influencer_id)}
               disabled={connectionBusy === p.influencer_id}
-              className="text-[10px] text-[#9A9AA5] hover:text-[#B45309] hover:underline"
+              className="text-[10px] text-[#9A9AA5] hover:text-[#B45309] hover:underline whitespace-nowrap"
             >
               {connectionBusy === p.influencer_id ? '제안 중...' : '서로 등록 제안'}
             </button>
@@ -772,6 +787,14 @@ export default function DealSheet({
       )}
       {connectionError && (
         <p className="px-4 py-2 text-[12px] text-red-500">{connectionError}</p>
+      )}
+      {/* 표가 길어 위쪽 배너는 못 볼 수 있다 — 실패는 화면에 붙여 띄운다 */}
+      {progressError && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-[#FEE2E2] border border-[#FCA5A5] text-[#B91C1C] text-[12.5px] font-semibold rounded-[10px] px-4 py-2.5 shadow-lg flex items-center gap-3">
+          <AlertTriangle size={14} strokeWidth={2} className="shrink-0" />
+          <span>{progressError}</span>
+          <button onClick={() => setProgressError('')} className="text-[#B91C1C]/60 hover:text-[#B91C1C]">✕</button>
+        </div>
       )}
       {reviewModal && (
         <ReviewModal
@@ -901,7 +924,7 @@ export default function DealSheet({
           {isAdv && dealKind === 'campaign' && (
             <Link
               href={`/advertiser/campaigns/new?copy=${campaign.id}`}
-              className="text-[12px] font-semibold text-[#7C7C88] border border-[#E2E2E8] rounded-lg px-3 py-2 hover:bg-[#F6F6F7] transition"
+              className="text-[12px] font-semibold text-[#7C7C88] border border-[#E2E2E8] rounded-lg px-3 py-2 hover:bg-[#F6F6F7] transition whitespace-nowrap"
             >
               복사 재등록
             </Link>
@@ -956,7 +979,7 @@ export default function DealSheet({
           {isAdv && (
             <Link
               href="/advertiser/search"
-              className="inline-block mt-4 bg-[#F59E0B] hover:bg-[#D97706] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition"
+              className="inline-block mt-4 bg-[#F59E0B] hover:bg-[#D97706] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition whitespace-nowrap"
             >
               인플루언서 찾기 →
             </Link>
@@ -1016,7 +1039,7 @@ export default function DealSheet({
             {reSettleTargets.length > 0 && (
               <button
                 onClick={handleReSettle}
-                className="bg-[#DC2626] hover:bg-[#B91C1C] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition"
+                className="bg-[#DC2626] hover:bg-[#B91C1C] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition whitespace-nowrap"
               >
                 재정산 완료로 기록
               </button>
@@ -1024,7 +1047,7 @@ export default function DealSheet({
             {settleTargets.length > 0 && (
               <button
                 onClick={() => setSettleModal(true)}
-                className="bg-[#F59E0B] hover:bg-[#D97706] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition"
+                className="bg-[#F59E0B] hover:bg-[#D97706] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition whitespace-nowrap"
               >
                 정산 완료로 기록
               </button>

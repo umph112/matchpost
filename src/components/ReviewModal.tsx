@@ -134,7 +134,7 @@ export default function ReviewModal({
             <button
               onClick={submit}
               disabled={submitting}
-              className="w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 transition disabled:opacity-40"
+              className="w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 transition disabled:opacity-40 whitespace-nowrap"
             >
               {submitting ? '제출 중...' : `평가 보내고 ${creditAmount('review').toLocaleString()}C 받기`}
             </button>

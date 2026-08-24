@@ -145,7 +145,7 @@ export default function PaidConfirmModal({
           <button
             onClick={confirmAndClose}
             disabled={loading}
-            className="w-full py-2.5 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition disabled:opacity-50"
+            className="w-full py-2.5 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition disabled:opacity-50 whitespace-nowrap"
           >
             잘 받았어요 · 닫기
           </button>
