@@ -10,12 +10,11 @@
   --color-foreground: var(--foreground);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* D28 — 다크모드 블록을 지웠다.
+   화면 표면은 전부 bg-white / bg-gray-50 으로 하드코딩돼 있는데 여기서 글자색만
+   OS 설정을 따라 #ededed 로 뒤집혔다. 그래서 OS가 다크모드인 사람에게는 색을
+   지정하지 않은 모든 글자가 흰 배경 위 흰 글씨였다(가입 입력값이 흐려 보인 원인).
+   나중에 다크모드를 제대로 지원할 땐 표면부터 같이 바꿔야 한다 — 글자만 뒤집지 말 것. */
 
 body {
   background: var(--background);
