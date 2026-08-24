@@ -370,14 +370,25 @@ export default function AdvertiserMessageRoomPage() {
           {isCampaign && <p className="text-[11px] text-gray-400 truncate">{campaignTitle}</p>}
           {conv.manager_id && <p className="text-[11px] text-gray-400">담당 {managerName}</p>}
         </div>
-        {/* D6 E4 — 신고 입구는 대화 헤더 한 곳. 캠페인 대화는 참여자를 먼저 고른다(D7 3-5) */}
-        <button
-          onClick={() => (canReport ? setReportOpen(true) : undefined)}
-          className={`ml-auto text-[11px] shrink-0 ${canReport ? 'text-gray-400 hover:text-red-500' : 'text-gray-300 cursor-not-allowed'}`}
-          title={isCampaign && !canReport ? '먼저 참여자를 선택해주세요' : undefined}
-        >
-          문제 신고
-        </button>
+        <div className="ml-auto flex items-center gap-3 shrink-0">
+          {/* D29 1번 — 개인 대화(오픈에서 성사된 건)의 딜시트로 가는 입구 */}
+          {!isCampaign && singleProposalId && (
+            <Link
+              href={`/advertiser/deals/${singleProposalId}`}
+              className="text-[11px] font-bold text-[#B45309] hover:text-[#92400E]"
+            >
+              딜시트
+            </Link>
+          )}
+          {/* D6 E4 — 신고 입구는 대화 헤더 한 곳. 캠페인 대화는 참여자를 먼저 고른다(D7 3-5) */}
+          <button
+            onClick={() => (canReport ? setReportOpen(true) : undefined)}
+            className={`text-[11px] ${canReport ? 'text-gray-400 hover:text-red-500' : 'text-gray-300 cursor-not-allowed'}`}
+            title={isCampaign && !canReport ? '먼저 참여자를 선택해주세요' : undefined}
+          >
+            문제 신고
+          </button>
+        </div>
       </div>
 
       {isCampaign && (

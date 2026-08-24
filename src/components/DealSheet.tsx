@@ -111,7 +111,8 @@ type Proposal = {
   influencer_profile: { follower_count: number | null; platforms: string[] | null; match_score: number | null; review_count: number | null } | null
 }
 
-type Campaign = {
+// 오픈 협업(campaign_id 없음)도 이 표를 쓴다 — lib/deals/openDeal.ts 가 이 모양으로 합성한다.
+export type DealSheetCampaign = {
   id: string
   title: string
   campaign_type: string | null
@@ -149,12 +150,22 @@ export default function DealSheet({
   proposals,
   userId,
   recorderName,
+  viewerRole = 'advertiser',
+  dealKind = 'campaign',
+  backHref,
+  backLabel,
 }: {
-  campaign: Campaign
+  campaign: DealSheetCampaign
   proposals: Proposal[]
   userId: string
   recorderName?: string // D14 6절 — 로그인한 기록자 이름. 정산 기록 모달 배지·확인문구에 노출.
+  // D29 1번 — 같은 표를 인플루언서도 본다. 기록·정산은 광고주 몫이라 조작만 감추고 내용은 그대로 보여준다.
+  viewerRole?: 'advertiser' | 'influencer'
+  dealKind?: 'campaign' | 'open'
+  backHref?: string
+  backLabel?: string
 }) {
+  const isAdv = viewerRole === 'advertiser'
   const supabase = createClient()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [proposals_, setProposals] = useState<Proposal[]>(proposals)
@@ -382,12 +393,17 @@ export default function DealSheet({
       className="grid text-[11px] font-bold text-[#9A9AA5] bg-[#FAFAFB] border-b border-[#F1F1F4] px-4 py-[9px] items-center gap-2"
       style={{ gridTemplateColumns: COL }}
     >
-      <input
-        type="checkbox"
-        checked={selected.size === proposals_.length && proposals_.length > 0}
-        onChange={toggleAll}
-        className="w-[14px] h-[14px] cursor-pointer accent-amber-500"
-      />
+      {/* 선택은 정산 기록으로 이어진다 — 광고주만 */}
+      {isAdv ? (
+        <input
+          type="checkbox"
+          checked={selected.size === proposals_.length && proposals_.length > 0}
+          onChange={toggleAll}
+          className="w-[14px] h-[14px] cursor-pointer accent-amber-500"
+        />
+      ) : (
+        <span />
+      )}
       <span>인플루언서</span>
       <span>단계</span>
       <span>진행 상황</span>
@@ -479,12 +495,16 @@ export default function DealSheet({
         style={{ gridTemplateColumns: COL }}
       >
         {/* checkbox */}
-        <input
-          type="checkbox"
-          checked={selected.has(p.id)}
-          onChange={() => toggleSelect(p.id)}
-          className="w-[14px] h-[14px] cursor-pointer accent-amber-500"
-        />
+        {isAdv ? (
+          <input
+            type="checkbox"
+            checked={selected.has(p.id)}
+            onChange={() => toggleSelect(p.id)}
+            className="w-[14px] h-[14px] cursor-pointer accent-amber-500"
+          />
+        ) : (
+          <span />
+        )}
 
         {/* 인플루언서 */}
         <div className="flex items-center gap-2 min-w-0">
@@ -518,7 +538,7 @@ export default function DealSheet({
           <span className="text-[11.5px] font-semibold text-[#3C3C46]">
             {stages[sidx]}
           </span>
-          {isConfirmed && !isSettled && sidx < stages.length - 1 && (
+          {isAdv && isConfirmed && !isSettled && sidx < stages.length - 1 && (
             <button
               onClick={() => advanceStage(p.id)}
               className="ml-1 text-[10px] text-[#B45309] hover:text-[#D97706] font-bold"
@@ -590,16 +610,27 @@ export default function DealSheet({
         {/* 세무자료 */}
         <div>
           {p.tax_doc_type ? (
-            <button
-              onClick={() => toggleTaxDoc(p.id, p.tax_doc_received)}
-              className={`text-[11px] font-semibold rounded px-2 py-0.5 transition ${
-                p.tax_doc_received
-                  ? 'bg-[#DCFCE7] text-[#15803D]'
-                  : 'bg-[#FEE2E2] text-[#DC2626]'
-              }`}
-            >
-              {p.tax_doc_type} {p.tax_doc_received ? '✓' : '미수령'}
-            </button>
+            // 수령 표시는 받는 쪽(광고주)이 한다 — 인플루언서에겐 상태만 보인다
+            isAdv ? (
+              <button
+                onClick={() => toggleTaxDoc(p.id, p.tax_doc_received)}
+                className={`text-[11px] font-semibold rounded px-2 py-0.5 transition ${
+                  p.tax_doc_received
+                    ? 'bg-[#DCFCE7] text-[#15803D]'
+                    : 'bg-[#FEE2E2] text-[#DC2626]'
+                }`}
+              >
+                {p.tax_doc_type} {p.tax_doc_received ? '✓' : '미수령'}
+              </button>
+            ) : (
+              <span
+                className={`text-[11px] font-semibold rounded px-2 py-0.5 ${
+                  p.tax_doc_received ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'
+                }`}
+              >
+                {p.tax_doc_type} {p.tax_doc_received ? '✓' : '미수령'}
+              </span>
+            )
           ) : (
             <span className="text-[11px] text-[#C4C4CE]">미설정</span>
           )}
@@ -615,7 +646,7 @@ export default function DealSheet({
             <span className="text-[11px] font-bold bg-[#DCFCE7] text-[#15803D] rounded px-2 py-0.5">
               정산완료
             </span>
-          ) : (
+          ) : isAdv ? (
             <select
               value={p.settlement_status ?? '미정산'}
               onChange={(e) => setSettlement(p.id, e.target.value)}
@@ -627,6 +658,14 @@ export default function DealSheet({
               <option value="정산중">정산중</option>
               <option value="완료">완료</option>
             </select>
+          ) : (
+            <span
+              className={`text-[11px] font-bold rounded px-2 py-0.5 ${
+                SETTLEMENT_STYLE[p.settlement_status ?? '미정산'] ?? ''
+              }`}
+            >
+              {p.settlement_status ?? '미정산'}
+            </span>
           )}
           {isSettlementDateChanged(p) && (
             <span className="text-[10px] font-semibold text-[#5C5C68]">
@@ -634,7 +673,7 @@ export default function DealSheet({
               <span className="text-[#1D4ED8]">(변경)</span>
             </span>
           )}
-          {!isSettled && (
+          {isAdv && !isSettled && (
             <button
               onClick={() =>
                 setDateModal({
@@ -648,7 +687,7 @@ export default function DealSheet({
               {isSettlementDateChanged(p) ? '결제일 다시 제안' : '결제일 변경 제안'}
             </button>
           )}
-          {p.stage === stages[stages.length - 1] && isConfirmed && !reviewedIds.has(p.id) && (
+          {isAdv && p.stage === stages[stages.length - 1] && isConfirmed && !reviewedIds.has(p.id) && (
             <button
               onClick={() =>
                 setReviewModal({
@@ -704,7 +743,8 @@ export default function DealSheet({
         >
           운영팀에 알리기
         </button>
-        {isSettled && (() => {
+        {/* 상대(= p.influencer_id)에게 거는 제안이라 광고주 쪽에서만 뜬다 */}
+        {isAdv && isSettled && (() => {
           const conn = connections[p.influencer_id]
           const active = conn && conn.a_ok && conn.b_ok
           const proposedByMe = conn && !active && ((conn.a_id === userId && conn.a_ok) || (conn.a_id !== userId && conn.b_ok))
@@ -751,7 +791,7 @@ export default function DealSheet({
       {reportModal && (
         <ReportModal
           proposalId={reportModal}
-          role="advertiser"
+          role={viewerRole}
           onClose={() => setReportModal(null)}
           onDone={() => setReportModal(null)}
         />
@@ -800,8 +840,11 @@ export default function DealSheet({
       <div className="flex items-start justify-between gap-4 mb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Link href="/advertiser/campaigns" className="text-[13px] text-[#9A9AA5] hover:text-[#5C5C68]">
-              ← 캠페인
+            <Link
+              href={backHref ?? (isAdv ? '/advertiser/campaigns' : '/influencer/dashboard')}
+              className="text-[13px] text-[#9A9AA5] hover:text-[#5C5C68]"
+            >
+              {backLabel ?? (isAdv ? '← 캠페인' : '← 뒤로')}
             </Link>
           </div>
           <h1 className="text-[20px] font-extrabold tracking-[-0.02em] text-[#17171B] leading-tight">
@@ -854,12 +897,15 @@ export default function DealSheet({
               </div>
             </div>
           )}
-          <Link
-            href={`/advertiser/campaigns/new?copy=${campaign.id}`}
-            className="text-[12px] font-semibold text-[#7C7C88] border border-[#E2E2E8] rounded-lg px-3 py-2 hover:bg-[#F6F6F7] transition"
-          >
-            복사 재등록
-          </Link>
+          {/* 오픈 협업엔 복사할 캠페인 원본이 없다(campaign.id 가 오픈 id) — 광고주 + 캠페인 건에서만 */}
+          {isAdv && dealKind === 'campaign' && (
+            <Link
+              href={`/advertiser/campaigns/new?copy=${campaign.id}`}
+              className="text-[12px] font-semibold text-[#7C7C88] border border-[#E2E2E8] rounded-lg px-3 py-2 hover:bg-[#F6F6F7] transition"
+            >
+              복사 재등록
+            </Link>
+          )}
         </div>
       </div>
 
@@ -907,12 +953,14 @@ export default function DealSheet({
           <p className="text-[12px] text-[#C4C4CE] mt-1.5">
             인플루언서 찾기에서 대시를 보내거나 신청을 기다려요.
           </p>
-          <Link
-            href="/advertiser/search"
-            className="inline-block mt-4 bg-[#F59E0B] hover:bg-[#D97706] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition"
-          >
-            인플루언서 찾기 →
-          </Link>
+          {isAdv && (
+            <Link
+              href="/advertiser/search"
+              className="inline-block mt-4 bg-[#F59E0B] hover:bg-[#D97706] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition"
+            >
+              인플루언서 찾기 →
+            </Link>
+          )}
         </div>
       ) : (
         /* ── 채널별 그룹 표 ── */
@@ -954,8 +1002,8 @@ export default function DealSheet({
         </div>
       )}
 
-      {/* ── 하단 정산 바 ── */}
-      {selected.size > 0 && (
+      {/* ── 하단 정산 바 ── (기록은 광고주만) */}
+      {isAdv && selected.size > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#17171B] text-white px-6 py-4 flex items-center gap-4 shadow-[0_-4px_24px_rgba(0,0,0,.35)]">
           <span className="text-[13px] font-semibold">{selected.size}명 선택</span>
           <span className="text-[#9A9AA5] text-[12px]">

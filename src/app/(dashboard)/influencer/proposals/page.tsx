@@ -174,12 +174,21 @@ export default function InfluencerProposalsPage() {
             )}
 
 {proposal.status === 'accepted' && (
- <a 
-    href={"/influencer/messages?proposalId=" + proposal.id + "&receiverId=" + proposal.advertiser_id}
-    className="w-full mt-2 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition text-center block"
-  >
-    대시 열기
-  </a>
+  <div className="grid grid-cols-2 gap-2 mt-2">
+    <a
+      href={"/influencer/messages?proposalId=" + proposal.id + "&receiverId=" + proposal.advertiser_id}
+      className="py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition text-center block"
+    >
+      대시 열기
+    </a>
+    {/* D29 1번 — 성사된 뒤 진행 단계를 보는 자리 */}
+    <Link
+      href={`/influencer/deals/${proposal.id}`}
+      className="py-2 rounded-lg text-sm font-medium border border-[#FDE68A] bg-[#FFFBEB] text-[#B45309] hover:bg-[#FEF3C7] transition text-center block"
+    >
+      딜시트 열기
+    </Link>
+  </div>
 )}
 
             <p className="text-xs text-gray-300 mt-3">

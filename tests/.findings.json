@@ -94,5 +94,11 @@
     "where": "관리자 오늘 — 로딩(배포본)",
     "text": "/admin/dashboard — 서버응답 13ms · 첫그림 1444ms · 데이터 1492ms · 누를수있음 1493ms. 기준(빈 화면 2초 · 로딩 3초 · 버튼이 데이터보다 먼저) 모두 통과.",
     "at": "2026-08-24T04:32:37.475Z"
+  },
+  {
+    "kind": "결함",
+    "where": "딜시트 — 광고주 쪽 기록이 DB에 안 남음",
+    "text": "proposals UPDATE 정책이 광고주를 배제합니다. 실측(2026-08-24): 광고주 세션으로 .update({stage}).eq('id',...) → rows: [], error: null / 같은 행에 인플루언서 세션은 통과. DealSheet 는 브라우저 클라이언트로 쓰는 조작이 셋(advanceStage · toggleTaxDoc · setSettlement) 인데 전부 if(!error) 라 0행을 성공으로 읽고 화면만 넘어갑니다 — 새로고침하면 되돌아옵니다. 오픈 협업 딜시트(/advertiser/deals/[proposalId])와 캠페인 딜시트가 같은 코드라 둘 다 해당. 고치려면 정책 추가(광고주가 자기 건의 진행 칸만 UPDATE) 또는 서버액션 경유 — DB 정책 변경이라 사용자 승인 후 SQL Editor 에서 직접 실행해야 합니다.",
+    "at": "2026-08-24T09:39:29.856Z"
   }
 ]

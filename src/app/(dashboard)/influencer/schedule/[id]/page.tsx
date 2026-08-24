@@ -411,8 +411,9 @@ export default async function OpenBundlePage({ params }: { params: Promise<{ id:
                                   ? s.deal.settlementDate ? `결제 ${monthDayKo(s.deal.settlementDate)}` : '결제일 미정'
                                   : '결제 없음'}
                               </span>
+                              {/* D29 1번 — 「딜시트 열기」는 딜시트로 간다(전엔 대화로 갔다) */}
                               <Link
-                                href={dashHref(s.deal)}
+                                href={`/influencer/deals/${s.deal.id}`}
                                 className="ml-auto text-[11.5px] font-bold text-[#B45309] hover:text-[#92400E] flex-shrink-0 whitespace-nowrap"
                               >
                                 딜시트 열기 →
