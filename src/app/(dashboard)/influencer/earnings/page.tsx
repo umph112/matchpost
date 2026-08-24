@@ -93,8 +93,9 @@ export default function EarningsPage() {
     }
     const companyByAdv: Record<string, string | null> = {}
     if (aIds.length > 0) {
+      // 남의 회사명이라 advertiser_public 뷰로 읽는다(0095)
       const { data: aps } = await supabase
-        .from('advertiser_profiles')
+        .from('advertiser_public')
         .select('user_id, company_name')
         .in('user_id', aIds)
       ;(aps ?? []).forEach((a) => { companyByAdv[a.user_id] = a.company_name })
@@ -138,8 +139,9 @@ export default function EarningsPage() {
     const rows = (pending as unknown as PendingProposal[]) ?? []
     const advIds = [...new Set(rows.map((r) => r.advertiser_id))]
     if (advIds.length > 0) {
+      // 남의 회사명이라 advertiser_public 뷰로 읽는다(0095)
       const { data: advProfiles } = await supabase
-        .from('advertiser_profiles')
+        .from('advertiser_public')
         .select('user_id, company_name')
         .in('user_id', advIds)
       const companyByAdv = Object.fromEntries((advProfiles ?? []).map((a) => [a.user_id, a.company_name]))
@@ -179,8 +181,9 @@ export default function EarningsPage() {
       const profManagerByAdv: Record<string, string | null> = {}
       const profCompanyByAdv: Record<string, string | null> = {}
       if (advIds.length > 0) {
+        // 남의 회사명이라 advertiser_public 뷰로 읽는다(0095)
         const { data: aps } = await supabase
-          .from('advertiser_profiles')
+          .from('advertiser_public')
           .select('user_id, company_name')
           .in('user_id', advIds)
         ;(aps ?? []).forEach((a) => { companyByAdv[a.user_id] = a.company_name })
@@ -272,7 +275,12 @@ export default function EarningsPage() {
   // 수금 확인 대기 배너 — 항상 전체
   const pendingConfirmTotal = pendingConfirm.reduce((s, p) => s + (p.budget ?? 0), 0)
 
+  // 버튼은 헤더에 있어서 목록보다 먼저 살아난다(실측 300ms). 그때 누르면 머리글만 있는
+  // 빈 CSV 가 조용히 받아지고, 사람은 「매출이 0건이구나」로 읽는다. 그래서 막는다.
+  const csvDisabled = loading || listRows.length === 0
+
   const handleDownloadCSV = () => {
+    if (csvDisabled) return
     const headers = ['날짜', '브랜드', '캠페인', '금액', '상태']
     const rows = listRows.map((r) => [
       r.settlementDate ?? '',
@@ -334,7 +342,9 @@ export default function EarningsPage() {
         </div>
         <button
           onClick={handleDownloadCSV}
-          className="flex items-center gap-1.5 text-sm text-[#B45309] border border-[#FCD34D] px-3 py-1.5 rounded-lg hover:bg-[#FEF3C7] transition"
+          disabled={csvDisabled}
+          title={loading ? '매출을 불러오는 중이에요' : listRows.length === 0 ? '받을 매출 내역이 없어요' : undefined}
+          className="flex items-center gap-1.5 text-sm text-[#B45309] border border-[#FCD34D] px-3 py-1.5 rounded-lg hover:bg-[#FEF3C7] transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
         >
           <Download size={14} strokeWidth={1.75} /> CSV 다운로드
         </button>

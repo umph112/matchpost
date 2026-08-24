@@ -32,6 +32,9 @@ function ScheduleForm() {
   const [seoPublic, setSeoPublic] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  // 그날 이미 열어둔 오픈이 있을 때 그리로 보내주기 위한 id.
+  // 빨간 오류만 띄우면 사람은 왜 막혔는지 모른 채 같은 걸 또 만들려고 한다.
+  const [dupOpenId, setDupOpenId] = useState('')
   const [success, setSuccess] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -56,9 +59,39 @@ function ScheduleForm() {
 
     setLoading(true)
     setError('')
+    setDupOpenId('')
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      // 여기서 그냥 return 하면 버튼이 「등록 중...」인 채로 영영 멈춘다.
+      // 로그인이 풀린 것뿐인데 화면은 아무 말도 안 해서 사람이 계속 누르게 된다.
+      setError('로그인이 풀렸어요. 다시 로그인한 뒤 등록해주세요.')
+      setLoading(false)
+      return
+    }
+
+    // 하루에 오픈은 하나다. 두 줄이 되면 광고주 「인플루언서 찾기」에 같은 사람이
+    // 같은 날짜로 두 번 뜨고, 어느 쪽에 말을 걸어야 하는지 알 수 없게 된다.
+    // 여기서 먼저 보는 이유는 이유를 말해주기 위해서다 — 못은 DB(0096)가 박는다.
+    //
+    // ⚠️ maybeSingle() 을 쓰면 안 된다. 그날 줄이 이미 둘 이상이면
+    //    「여러 줄이 왔다」로 오류가 나면서 data 가 null 로 오고,
+    //    중복을 막으려던 조회가 중복 앞에서만 통과해버린다(실제로 세 번째 줄이 들어갔다).
+    //    limit(1) 로 첫 줄만 가져온다.
+    const { data: sameDay } = await supabase
+      .from('schedules')
+      .select('id')
+      .eq('influencer_id', user.id)
+      .eq('date', selectedDate)
+      .order('created_at')
+      .limit(1)
+
+    if (sameDay && sameDay.length > 0) {
+      setDupOpenId(sameDay[0].id)
+      setError('그날은 이미 오픈이 있어요 — 수정하시겠어요?')
+      setLoading(false)
+      return
+    }
 
     const freeTagsArray = freeTags
       .split(',')
@@ -82,6 +115,22 @@ function ScheduleForm() {
     })
 
     if (insertError) {
+      // 23505 = 유니크 위반. 위에서 봤을 땐 없었는데 그새 생긴 경우다
+      // — 창을 두 개 띄웠거나 등록을 빠르게 두 번 눌렀을 때 여기로 온다.
+      // 사람에게는 위와 똑같은 말을 해야 한다. 원인이 같으니까.
+      if (insertError.code === '23505') {
+        const { data: existing } = await supabase
+          .from('schedules')
+          .select('id')
+          .eq('influencer_id', user.id)
+          .eq('date', selectedDate)
+          .order('created_at')
+          .limit(1)
+        if (existing && existing.length > 0) setDupOpenId(existing[0].id)
+        setError('그날은 이미 오픈이 있어요 — 수정하시겠어요?')
+        setLoading(false)
+        return
+      }
       setError('일정 등록에 실패했어요. 다시 시도해주세요.')
       setLoading(false)
       return
@@ -111,8 +160,17 @@ function ScheduleForm() {
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">
-          {error}
+        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4 flex items-center justify-between gap-3">
+          <span>{error}</span>
+          {/* 막았으면 갈 곳을 줘야 한다. 안 그러면 같은 걸 또 만들려고 한다. */}
+          {dupOpenId && (
+            <button
+              onClick={() => router.push(`/influencer/schedule/${dupOpenId}`)}
+              className="shrink-0 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg px-3 py-1.5 transition"
+            >
+              그날 오픈 보기 →
+            </button>
+          )}
         </div>
       )}
 

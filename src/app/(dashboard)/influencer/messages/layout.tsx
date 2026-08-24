@@ -1,26 +1,19 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import InfluencerShell from '@/components/InfluencerShell'
 import ConversationList, { type ConvRow } from '@/components/messages/ConversationList'
 import MessagesSplit from '@/components/messages/MessagesSplit'
 import { listDateLabel } from '@/lib/date'
 
 export const dynamic = 'force-dynamic'
 
-// D7 3-1 — 인플루언서는 전부 1:1(D6 A1)이라 탭 없이 목록만. InfluencerShell로 감싸서
-// 대시 페이지도 PC 2단 골격(홈과 같은 사이드바·헤더)을 갖게 한다.
+// D7 3-1 — 인플루언서는 전부 1:1(D6 A1)이라 탭 없이 목록만.
+// 사이드바·헤더(프로필·매치스코어·블로그등급·배지)는 influencer/layout.tsx 가 씌운다.
+// 여기서 같은 값을 다시 조회하던 네 건은 걷어냈다 — 셸이 이미 갖고 있다.
 export default async function InfluencerMessagesLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-
-  const { data: profile } = await supabase.from('profiles').select('name').eq('id', user.id).single()
-  const { data: ip } = await supabase.from('influencer_profiles').select('match_score, review_count').eq('user_id', user.id).single()
-  const { data: blogAnalytics } = await supabase
-    .from('blog_analytics').select('blog_grade').eq('user_id', user.id).order('crawled_at', { ascending: false }).limit(1).maybeSingle()
-  const { count: unreadNotif } = await supabase
-    .from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', false)
 
   const { data: msgs } = await supabase
     .from('messages')
@@ -78,19 +71,11 @@ export default async function InfluencerMessagesLayout({ children }: { children:
     })
   )
   personalRows.sort((a, b) => b.time.localeCompare(a.time))
-  const msgUnreadCount = personalRows.filter((r) => r.unreadCount > 0).length
 
+  // 셸은 influencer/layout.tsx 가 씌운다(여기서 또 부르면 두 겹).
+  // 3단(사이드바 · 대화목록 · 대화)의 바깥 한 단은 셸이, 안쪽 두 단은 MessagesSplit 이 맡는다.
   return (
-    <InfluencerShell
-      name={profile?.name ?? '인플루언서'}
-      sub={`인플루언서 콘솔 · ${new Date().getFullYear()}년 ${new Date().getMonth() + 1}월`}
-      matchScore={ip?.match_score ?? null}
-      reviewCount={ip?.review_count ?? 0}
-      blogGrade={blogAnalytics?.blog_grade ?? null}
-      msgCount={msgUnreadCount}
-      notifCount={unreadNotif ?? 0}
-    >
-      <div className="flex flex-col gap-3 h-full">
+    <div className="flex flex-col gap-3 h-full">
         <h1 className="text-lg font-bold text-gray-900 [.inf-pc_&]:text-[19px] [.inf-pc_&]:font-extrabold px-1 pt-3 [.inf-pc_&]:pt-0">대시</h1>
         <MessagesSplit
           basePath="/influencer/messages"
@@ -106,7 +91,6 @@ export default async function InfluencerMessagesLayout({ children }: { children:
         >
           {children}
         </MessagesSplit>
-      </div>
-    </InfluencerShell>
+    </div>
   )
 }

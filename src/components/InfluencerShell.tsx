@@ -11,7 +11,8 @@ import { creditAmount } from '@/lib/creditConfig'
 import { initial } from '@/lib/initial'
 
 // 인플루언서 셸 — 광고주 AdvertiserShell과 같은 PC/모바일 자동 감지 패턴(D7 4-8, 토글 없음).
-// 지금은 /influencer/dashboard, /influencer/messages(/[id]) 페이지에만 적용(나머지는 아직 기존 방식 유지).
+// influencer/layout.tsx 가 /influencer/** 전체에 씌운다 — 페이지에서 이걸 직접 부르면 두 겹이 된다.
+// (전에는 dashboard·messages 두 곳만 직접 불렀고, 나머지 9개 화면은 사이드바도 [.inf-pc_&] 변형도 없었다.)
 const MOBILE_TABS = [
   { href: '/influencer/dashboard', label: '홈', Icon: Home },
   { href: '/influencer/schedule/list', label: '오픈', Icon: CalendarDays },

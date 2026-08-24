@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import InfluencerShell from '@/components/InfluencerShell'
 import HomeCalendar from '@/components/HomeCalendar'
 import MyOpensList from '@/components/MyOpensList'
 import NotificationsRealtime from '@/components/NotificationsRealtime'
@@ -179,7 +178,6 @@ export default async function InfluencerMyPage() {
     ? await supabase.from('profiles').select('id, name').in('id', otherIds)
     : { data: [] }
   const nameById = Object.fromEntries((names ?? []).map((p) => [p.id, p.name]))
-  const msgUnreadCount = convs.filter((c) => c.unread).length
 
   // 매출 (이달) — proposals 기반. 귀속 기준 = settlementDateOf(proposal, campaign). D20 §2
   const { data: earnProps } = await supabase
@@ -261,16 +259,9 @@ export default async function InfluencerMyPage() {
 
   const card = 'bg-white [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] rounded-2xl [.inf-pc_&]:rounded-[14px] shadow-sm [.inf-pc_&]:shadow-none'
 
+  // 셸은 influencer/layout.tsx 가 씌운다 — 여기서 또 부르면 사이드바가 두 겹이 된다.
   return (
-    <InfluencerShell
-      name={profile?.name ?? '인플루언서'}
-      sub={`인플루언서 콘솔 · ${new Date().getFullYear()}년 ${new Date().getMonth() + 1}월`}
-      matchScore={ip?.match_score ?? null}
-      reviewCount={ip?.review_count ?? 0}
-      blogGrade={blogAnalytics?.blog_grade ?? null}
-      msgCount={msgUnreadCount}
-      notifCount={unreadNotif}
-    >
+    <>
       <NotificationsRealtime userId={user.id} />
 
       <CancelNoticeCard role="influencer" count={profile?.cancellation_count} />
@@ -594,6 +585,6 @@ export default async function InfluencerMyPage() {
           </section>
         </div>
       </div>
-    </InfluencerShell>
+    </>
   )
 }
