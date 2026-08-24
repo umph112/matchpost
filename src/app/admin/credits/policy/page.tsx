@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import Link from 'next/link'
 import { CREDIT_POLICY } from '@/lib/creditConfig'
 
 const STATUS_LABEL: Record<string, string> = { once: '1회', active: '활성', beta_free: '베타 무료' }
@@ -49,7 +48,6 @@ export default function AdminCreditPolicyPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center mb-8">
-        <Link href="/admin/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
         <h1 className="text-xl font-bold text-gray-900">크레딧 정책</h1>
       </div>
 

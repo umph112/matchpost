@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import Link from 'next/link'
 import { initial } from '@/lib/initial'
 
 // D6 E3 — 제재 사다리: 안내(0) → 표시(1) → 제한(2) → 정지(3) → 해지(4)
@@ -76,7 +75,6 @@ export default function AdminSanctionsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center mb-8">
-        <Link href="/admin/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
         <h1 className="text-xl font-bold text-gray-900">제재 관리</h1>
       </div>
 

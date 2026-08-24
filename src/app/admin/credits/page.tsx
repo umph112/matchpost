@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import Link from 'next/link'
 import { CREDIT_ACTION_LABELS } from '@/lib/creditConfig'
 import { initial } from '@/lib/initial'
 
@@ -145,7 +144,6 @@ export default function AdminCreditsPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center mb-8">
-        <Link href="/admin/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
         <h1 className="text-xl font-bold text-gray-900">크레딧 관리</h1>
       </div>
 

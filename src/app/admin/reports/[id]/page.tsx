@@ -44,8 +44,17 @@ export default async function AdminReportDetailPage({
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center mb-8">
-        <Link href="/admin/reports" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
+        <Link href="/admin/reports" className="mr-4 text-gray-400 hover:text-gray-600">
+          신고 목록
+        </Link>
         <h1 className="text-xl font-bold text-gray-900">신고 상세</h1>
+        {/* 제재는 사이드바에 두지 않는다 — 신고 판정의 결과라 여기서만 들어간다 */}
+        <Link
+          href="/admin/sanctions"
+          className="ml-auto text-sm font-medium text-[#B45309] hover:underline"
+        >
+          이용 제한 단계 →
+        </Link>
       </div>
 
       <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">

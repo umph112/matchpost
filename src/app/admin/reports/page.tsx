@@ -51,8 +51,13 @@ export default async function AdminReportsPage({
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center mb-8">
-        <Link href="/admin/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
         <h1 className="text-xl font-bold text-gray-900">신고 관리</h1>
+        <Link
+          href="/admin/sanctions"
+          className="ml-auto text-sm font-medium text-[#B45309] hover:underline"
+        >
+          이용 제한 단계 →
+        </Link>
       </div>
 
       <div className="flex gap-2 mb-6 overflow-x-auto">

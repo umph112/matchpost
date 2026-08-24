@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { Suspense } from 'react'
 import { initial } from '@/lib/initial'
 import { signupCreditAmount } from '@/lib/creditConfig'
@@ -107,9 +106,6 @@ function UsersContent() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* 헤더 */}
       <div className="flex items-center mb-8">
-        <Link href="/admin/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">
-          ← 뒤로
-        </Link>
         <h1 className="text-xl font-bold text-gray-900">회원 관리</h1>
       </div>
 
