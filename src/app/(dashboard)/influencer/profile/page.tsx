@@ -8,18 +8,36 @@ import LogoutButton from '@/components/LogoutButton'
 import { CircleCheck, BarChart3 } from 'lucide-react'
 import { unregisterConnection } from '@/lib/connections/actions'
 import { firstReportLabel } from '@/lib/blogAnalyzer/schedule'
+import { INFLUENCER_CATEGORIES, CATEGORY_ETC } from '@/lib/categories'
 
-const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
+// 분야 목록은 lib/categories 하나만 쓴다. 예전엔 이 파일이 자체 목록('맛집·라이프스타일·
+// 반려동물·피트니스·테크')을 들고 있었는데, 가입 화면과 캠페인 검색은 lib/categories를 쓴다.
+// 어휘가 다르면 가입 때 고른 '푸드'가 여기서 선택 안 된 것처럼 보이고, 저장하는 순간
+// 검색에 걸리지 않는 값('맛집')으로 바뀐다.
 const PLATFORMS = ['인스타그램', '유튜브', '블로그', '틱톡']
+
+// 입력값은 화면에서 가장 진해야 하는 글자다 — 색을 상속에 맡기지 않는다.
+const inputCls =
+  'w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm ' +
+  'text-[#17171B] placeholder:text-[#B0B0BB] ' +
+  'focus:outline-none focus:ring-2 focus:ring-amber-400'
 
 export default function InfluencerProfilePage() {
   const [profile, setProfile] = useState<any>(null)
   const [influencerProfile, setInfluencerProfile] = useState<any>(null)
-  const [name, setName] = useState('')
+  // profiles.name = 활동명(광고주에게 보이는 이름), user_private.real_name = 실명.
+  // 가입 화면이 둘을 따로 받는데(activityName / name) 여기엔 칸이 하나뿐이었고,
+  // 그 하나가 profiles.name을 고치면서 라벨만 「이름」이었다 — 활동명을 고치는 줄 몰랐다.
+  const [activityName, setActivityName] = useState('')
+  const [realName, setRealName] = useState('')
   const [phone, setPhone] = useState('')
   const [bio, setBio] = useState('')
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  // 가입과 같은 모양으로 — 메이저 1 + 서브 최대 2. 저장은 [메이저, ...서브] 한 배열이고
+  // 광고주 대시보드·검색이 categories[0]을 메이저로 읽는다(그래서 순서가 의미를 가진다).
+  const [majorCategory, setMajorCategory] = useState('')
+  const [subCategories, setSubCategories] = useState<string[]>([])
+  const [etcText, setEtcText] = useState('')
   const [followerCount, setFollowerCount] = useState('')
   const [instagramUrl, setInstagramUrl] = useState('')
   const [youtubeUrl, setYoutubeUrl] = useState('')
@@ -27,6 +45,9 @@ export default function InfluencerProfilePage() {
   // D25 §2 — 입력칸의 값(blogUrl)과 "저장된 값"을 나눠 둔다.
   // 타이핑만 한 상태에서 「채널을 등록했어요」가 뜨면 등록된 줄 알고 나가버린다.
   const [savedBlogUrl, setSavedBlogUrl] = useState('')
+  // D28 §4 — 이번 저장에서 채널을 "처음" 등록했는지. 첫 등록에만 다음 걸음을 붙인다.
+  // 매번 붙이면 여러 항목을 이어서 고칠 때 방해가 된다.
+  const [justRegistered, setJustRegistered] = useState(false)
   const [hasReport, setHasReport] = useState(false)
   const [portfolioUrl, setPortfolioUrl] = useState('')
   const [loading, setLoading] = useState(false)
@@ -91,18 +112,30 @@ export default function InfluencerProfilePage() {
         .eq('user_id', user.id)
         .single()
 
-      const { data: priv } = await supabase.from('user_private').select('phone').eq('user_id', user.id).single()
+      const { data: priv } = await supabase.from('user_private').select('phone, real_name').eq('user_id', user.id).single()
 
       if (p) {
         setProfile(p)
-        setName(p.name ?? '')
+        setActivityName(p.name ?? '')
+        setRealName(priv?.real_name ?? '')
         setPhone(priv?.phone ?? '')
       }
       if (ip) {
         setInfluencerProfile(ip)
         setBio(ip.bio ?? '')
         setSelectedPlatforms(ip.platforms ?? [])
-        setSelectedCategories(ip.categories ?? [])
+        // 저장된 배열을 가입 화면과 같은 모양(메이저 1 + 서브 2)으로 되돌린다.
+        // 목록에 없는 값은 가입 때 '기타'로 직접 입력한 값이다(가입이 입력값을 그대로 저장한다).
+        // 예전 자체 목록으로 저장된 값('맛집' 등)도 같은 경로로 살아남는다 — 조용히 지우지 않는다.
+        const cats: string[] = ip.categories ?? []
+        const known = (c: string) => INFLUENCER_CATEGORIES.includes(c)
+        const custom = cats.find((c) => c && !known(c))
+        if (custom) setEtcText(custom)
+        const major = cats[0] ? (known(cats[0]) ? cats[0] : CATEGORY_ETC) : ''
+        setMajorCategory(major)
+        setSubCategories(
+          cats.slice(1, 3).map((c) => (known(c) ? c : CATEGORY_ETC)).filter((c) => c && c !== major),
+        )
         setFollowerCount(ip.follower_count?.toString() ?? '')
         setInstagramUrl(ip.instagram_url ?? '')
         setYoutubeUrl(ip.youtube_url ?? '')
@@ -128,34 +161,56 @@ export default function InfluencerProfilePage() {
     )
   }
 
-  const toggleCategory = (c: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
-    )
+  // 아래 셋은 가입 화면(InfluencerSignup)과 같은 규칙이다 — 한쪽만 바꾸지 말 것.
+  const etcSelected = majorCategory === CATEGORY_ETC || subCategories.includes(CATEGORY_ETC)
+
+  const selectMajor = (c: string) => {
+    setMajorCategory(prev => (prev === c ? '' : c))
+    setSubCategories(prev => prev.filter(x => x !== c))
+  }
+
+  const toggleSub = (c: string) => {
+    setSubCategories(prev => {
+      if (prev.includes(c)) return prev.filter(x => x !== c)
+      if (prev.length >= 2) return prev
+      return [...prev, c]
+    })
+  }
+
+  const buildCategories = () => {
+    const major = majorCategory === CATEGORY_ETC ? etcText.trim() : majorCategory
+    const subs = subCategories.map(s => (s === CATEGORY_ETC ? etcText.trim() : s))
+    return [major, ...subs].filter(Boolean)
   }
 
   const handleSave = async () => {
     setLoading(true)
     setError('')
 
+    if (etcSelected && !etcText.trim()) {
+      setError('기타 분야를 직접 입력해주세요.')
+      setLoading(false)
+      return
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ name })
+      .update({ name: activityName })
       .eq('id', user.id)
 
     await supabase
       .from('user_private')
-      .upsert({ user_id: user.id, phone }, { onConflict: 'user_id' })
+      .upsert({ user_id: user.id, phone, real_name: realName }, { onConflict: 'user_id' })
 
     const { error: ipError } = await supabase
       .from('influencer_profiles')
       .update({
         bio,
         platforms: selectedPlatforms,
-        categories: selectedCategories,
+        categories: buildCategories(),
         follower_count: followerCount ? parseInt(followerCount) : 0,
         instagram_url: instagramUrl,
         youtube_url: youtubeUrl,
@@ -172,6 +227,8 @@ export default function InfluencerProfilePage() {
 
     setSuccess(true)
     setTimeout(() => setSuccess(false), 2000)
+    // D28 §4 — 비어 있던 채널이 이번 저장으로 채워졌으면 첫 등록이다.
+    setJustRegistered(savedBlogUrl.trim() === '' && blogUrl.trim() !== '')
     setSavedBlogUrl(blogUrl) // D25 §2 — 저장이 끝난 뒤에만 안내 카드가 뜨도록
     setLoading(false)
   }
@@ -200,13 +257,30 @@ export default function InfluencerProfilePage() {
       <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
         <h2 className="font-semibold text-gray-800 mb-4">기본 정보</h2>
         <div className="mb-3">
-          <label className="block text-sm text-gray-500 mb-1">이름</label>
+          <label className="block text-sm text-gray-500 mb-1">
+            이름 <span className="text-gray-400">(실명)</span>
+          </label>
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            value={realName}
+            onChange={(e) => setRealName(e.target.value)}
+            className={inputCls}
+            placeholder="이름 입력"
           />
+          <p className="text-xs text-gray-400 mt-1">공개되지 않아요. 정산·세금 처리에만 쓰입니다.</p>
+        </div>
+        <div className="mb-3">
+          <label className="block text-sm text-gray-500 mb-1">
+            활동명 <span className="text-gray-400">(공개 표시 이름)</span>
+          </label>
+          <input
+            type="text"
+            value={activityName}
+            onChange={(e) => setActivityName(e.target.value)}
+            className={inputCls}
+            placeholder="예: 여행하는 지니"
+          />
+          <p className="text-xs text-gray-400 mt-1">광고주에게 이 이름으로 보여요.</p>
         </div>
         <div>
           <label className="block text-sm text-gray-500 mb-1">전화번호</label>
@@ -214,7 +288,7 @@ export default function InfluencerProfilePage() {
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className={inputCls}
           />
         </div>
       </div>
@@ -226,7 +300,7 @@ export default function InfluencerProfilePage() {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={4}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+          className={`${inputCls} resize-none`}
           placeholder="광고주에게 보여질 자기 소개를 작성해주세요."
         />
       </div>
@@ -251,13 +325,13 @@ export default function InfluencerProfilePage() {
         </div>
         <div className="space-y-2">
           <input type="text" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className={inputCls}
             placeholder="인스타그램 URL" />
           <input type="text" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className={inputCls}
             placeholder="유튜브 URL" />
           <input type="text" value={blogUrl} onChange={(e) => setBlogUrl(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className={inputCls}
             placeholder="블로그 URL" />
 
           {/* D25 §2 — 등록해도 화면이 그대로면 "안 된 건가" 싶다.
@@ -270,21 +344,35 @@ export default function InfluencerProfilePage() {
                 <br />
                 방문자 · 이웃 수 · 발행 주기를 모아 등급을 계산합니다.
               </p>
+              {/* D28 §4 — 저장하고 아무 일도 안 일어나면 다음에 뭘 해야 할지 모른다.
+                  단, 첫 등록일 때만 길을 낸다. 매번 띄우면 여러 항목을 고칠 때 방해가 된다. */}
+              {justRegistered && (
+                <Link
+                  href="/influencer/channel-analytics"
+                  className="mt-3 inline-flex items-center text-[12px] font-bold text-[#92400E] hover:underline"
+                >
+                  내 채널 분석 보기 →
+                </Link>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* 카테고리 */}
+      {/* 카테고리 — 가입 화면과 같은 어휘·같은 모양(메이저 1 + 서브 2).
+          한쪽만 바꾸면 광고주 검색이 못 찾는 값이 저장된다. */}
       <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
-        <h2 className="font-semibold text-gray-800 mb-4">콘텐츠 카테고리</h2>
-        <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map(cat => (
+        <h2 className="font-semibold text-gray-800 mb-4">활동 분야</h2>
+        <label className="block text-sm text-gray-500 mb-2">
+          메이저 분야 <span className="text-[#B45309]">(1개 필수)</span>
+        </label>
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {INFLUENCER_CATEGORIES.map((cat) => (
             <button
               key={cat}
-              onClick={() => toggleCategory(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                selectedCategories.includes(cat)
+              onClick={() => selectMajor(cat)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                majorCategory === cat
                   ? 'bg-[#F59E0B] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
@@ -293,6 +381,41 @@ export default function InfluencerProfilePage() {
             </button>
           ))}
         </div>
+        <label className="block text-sm text-gray-500 mb-2">
+          서브 분야 <span className="text-gray-400">(최대 2개 · 선택)</span>
+          <span className="ml-1 text-gray-400">{subCategories.length}/2</span>
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {INFLUENCER_CATEGORIES.filter((c) => c !== majorCategory).map((cat) => {
+            const on = subCategories.includes(cat)
+            const disabled = !on && subCategories.length >= 2
+            return (
+              <button
+                key={cat}
+                onClick={() => toggleSub(cat)}
+                disabled={disabled}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                  on
+                    ? 'bg-[#F59E0B] text-white'
+                    : disabled
+                      ? 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {cat}
+              </button>
+            )
+          })}
+        </div>
+        {etcSelected && (
+          <input
+            type="text"
+            value={etcText}
+            onChange={(e) => setEtcText(e.target.value)}
+            className={`${inputCls} mt-3`}
+            placeholder="기타 분야 직접 입력"
+          />
+        )}
       </div>
 
       {/* 팔로워 수 */}
@@ -302,7 +425,7 @@ export default function InfluencerProfilePage() {
           type="number"
           value={followerCount}
           onChange={(e) => setFollowerCount(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className={inputCls}
           placeholder="총 팔로워 수 입력"
         />
       </div>
@@ -314,7 +437,7 @@ export default function InfluencerProfilePage() {
           type="text"
           value={portfolioUrl}
           onChange={(e) => setPortfolioUrl(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className={inputCls}
           placeholder="포트폴리오 링크 입력"
         />
       </div>

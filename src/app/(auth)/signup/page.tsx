@@ -11,19 +11,12 @@ import { inviteTeamMember } from '@/lib/team/actions'
 import { signupCreditAmount } from '@/lib/creditConfig'
 import Logo from '@/components/Logo'
 
+// 입력값은 이 화면에서 가장 진해야 하는 글자다 — 색을 상속에 맡기지 않는다.
+// (맡겼더니 OS 다크모드에서 body의 #ededed를 물려받아 흰 카드 위에 흰 글씨가 됐다)
 const inputCls =
-  'w-full border border-[#E2E2E8] rounded-[11px] px-[13px] h-[46px] text-[13.5px] focus:outline-none focus:ring-2 focus:ring-amber-400'
-
-function useIsPc() {
-  const [isPc, setIsPc] = useState<boolean | null>(null)
-  useEffect(() => {
-    const check = () => setIsPc(window.innerWidth >= 1024 && !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent))
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-  return isPc
-}
+  'w-full border border-[#E2E2E8] rounded-[11px] px-[13px] h-[46px] text-[13.5px] ' +
+  'text-[#17171B] placeholder:text-[#B0B0BB] ' +
+  'focus:outline-none focus:ring-2 focus:ring-amber-400'
 
 export default function SignupPage() {
   return (
@@ -36,14 +29,14 @@ export default function SignupPage() {
 function SignupInner() {
   const inviteToken = useSearchParams().get('invite')
   const [role, setRole] = useState<'influencer' | 'advertiser' | ''>('')
-  const isPc = useIsPc()
 
   // 팀 초대 링크로 들어온 경우 — 회원 유형 선택 없이 초대 전용 화면으로.
   if (inviteToken) return <InviteSignup token={inviteToken} />
 
   if (!role) return <RoleSelect onSelect={setRole} />
   if (role === 'advertiser') return <AdvertiserSignup onBack={() => setRole('')} />
-  if (isPc) return <InfluencerQrGate onBack={() => setRole('')} />
+  // PC에서도 그대로 가입시킨다. 예전엔 PC면 QR 안내로 보냈는데(D7 4-2) 그 QR이 빈 사각형이라
+  // PC에서는 가입 자체가 막혀 있었다. 앱 권유는 폼 위 한 줄로 충분하다.
   return <InfluencerSignup onBack={() => setRole('')} />
 }
 
@@ -235,27 +228,7 @@ function RoleSelect({ onSelect }: { onSelect: (r: 'influencer' | 'advertiser') =
   )
 }
 
-// ── 1. 인플루언서 — PC는 QR 안내만 (D7 4-2) ──
-function InfluencerQrGate({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-sm p-8 max-w-[380px]">
-      <button onClick={onBack} className="text-gray-400 hover:text-gray-600 mb-4"><ChevronLeft size={20} /></button>
-      <h2 style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.025em' }} className="text-[#17171B]">
-        인플루언서 가입은 앱에서 해주세요
-      </h2>
-      <p className="mt-[9px]" style={{ fontSize: 12.5, color: '#5C5C68', lineHeight: 1.7 }}>
-        채널 소유 확인과 오픈 등록이 폰에서 훨씬 빠릅니다.<br />
-        아래 코드를 폰 카메라로 비추면 바로 가입 화면이 열려요.
-      </p>
-      <div className="mt-5 h-[180px] rounded-[14px] bg-[#17171B] flex flex-col items-center justify-center gap-2">
-        <div className="w-[118px] h-[118px] border-2 border-white/80 rounded-lg bg-white/5" />
-        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>matchpost.kr/app</span>
-      </div>
-    </div>
-  )
-}
-
-// ── 2. 인플루언서 — 모바일: 기존 단일 폼 유지(카테고리 로직 이미 스펙과 일치) ──
+// ── 1. 인플루언서 — PC·모바일 공용 단일 폼 ──
 function InfluencerSignup({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState('')
   const [activityName, setActivityName] = useState('')
@@ -319,6 +292,11 @@ function InfluencerSignup({ onBack }: { onBack: () => void }) {
     <div className="bg-white rounded-2xl shadow-sm p-8">
       <button onClick={onBack} className="text-gray-400 hover:text-gray-600 mb-3"><ChevronLeft size={20} /></button>
       <div className="text-center mb-6"><Logo size={20} className="mx-auto" /></div>
+
+      {/* 권유일 뿐 관문이 아니다 — 여기서 막으면 PC 사용자는 가입할 방법이 없다. */}
+      <div className="bg-[#FAFAFB] rounded-[11px] px-3.5 py-2.5 text-[11.5px] text-[#7C7C88] mb-5 leading-relaxed">
+        채널 확인과 오픈(가능일정) 등록은 앱에서 더 편해요. 지금 여기서 가입하셔도 됩니다.
+      </div>
 
       {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>}
 
