@@ -2,9 +2,11 @@
 //
 // ⚠️ 처리 대기 큐와 사이드바 배지는 todayQueue.ts 가 센다. 여기서 다시 세지 않는다.
 //
-// ⚠️ 트래픽은 프로토타입이 24시간 막대였는데 user_visit_log 가 (user_id, visited_on) —
-//    **날짜 단위**라 시(hour)가 없다. 없는 원본을 만들어내지 않고 최근 14일 일별 막대로 바꿨다.
-//    시간대별이 필요해지면 방문 로그에 시각을 남기는 것이 먼저다.
+// ⚠️ 트래픽은 두 표를 읽는다 — 성격이 달라 합치지 않았다(D30 [1]).
+//    · 일별(최근 14일) = user_visit_log. (user_id, visited_on) 하루 순방문자이고
+//      리워드 판정(visit-weekly · visit-monthly)이 그 위에 선다. 여기서 건드리지 않는다.
+//    · 시간대(오늘 24시간) = page_views. 매 조회마다 한 행이라 시각이 있다.
+//    page_views 가 쌓이기 전 구간은 0 이 아니라 「모름」이다 — firstViewAt 으로 갈라 화면이 비워둔다.
 //
 // ⚠️ 관리자 집계는 서비스 클라이언트로 읽는다 — user_visit_log RLS 가 본인 것만 허용이라
 //    세션 클라이언트로 읽으면 관리자에게도 0건이 온다.
@@ -34,6 +36,10 @@ export type TodayStats = {
     yesterday: number
     avg7: number
     sum30: number
+    /** 오늘(KST) 0~23시 조회수. page_views 기준이라 일별과 단위가 다르다(조회수 ≠ 순방문자). */
+    hours: { hour: number; views: number; visitors: number }[]
+    /** page_views 최초 기록 시각. null 이면 시간대 기록이 아직 없다. */
+    firstViewAt: string | null
   }
   opens: { upcoming: number; today: number; week: number }
   campaigns: { open: number; dash: number; confirmed: number; newToday: number }
@@ -48,7 +54,8 @@ export async function getTodayStats(): Promise<TodayStats> {
   const from30 = shiftDate(today, -29)
   const week = shiftDate(today, 6)
 
-  const [profRes, visitRes, schedRes, campRes, propRes, reportRes] = await Promise.all([
+  const [profRes, visitRes, schedRes, campRes, propRes, reportRes, hourRes, firstViewRes] =
+    await Promise.all([
     db.from('profiles').select('role, created_at').neq('role', 'admin'),
     db.from('user_visit_log').select('user_id, visited_on').gte('visited_on', from30),
     db
@@ -60,6 +67,14 @@ export async function getTodayStats(): Promise<TodayStats> {
     db.from('campaigns').select('id, status, created_at'),
     db.from('proposals').select('campaign_id, advertiser_confirmed, influencer_confirmed'),
     db.from('reports').select('created_at').gte('created_at', kstDayStart(yesterday)),
+    // 오늘(KST) 조회 원본 — 시간대 막대용
+    db
+      .from('page_views')
+      .select('user_id, viewed_at')
+      .gte('viewed_at', kstDayStart(today))
+      .lt('viewed_at', kstDayStart(shiftDate(today, 1))),
+    // 기록이 언제부터 있나 — 그 이전 구간은 0 이 아니라 「모름」이다
+    db.from('page_views').select('viewed_at').order('viewed_at', { ascending: true }).limit(1),
   ])
 
   // ── 회원 현황 ───────────────────────────────────────────
@@ -86,6 +101,21 @@ export async function getTodayStats(): Promise<TodayStats> {
   }
   const last7 = days.slice(-7)
   const avg7 = last7.length ? Math.round(last7.reduce((s, d) => s + d.count, 0) / last7.length) : 0
+
+  // 시간대 — KST 시(hour)로 담는다. 서버 TZ 를 타지 않게 +9h 밀고 UTC 시를 읽는다.
+  const kstHour = (iso: string) => new Date(Date.parse(iso) + 9 * 60 * 60 * 1000).getUTCHours()
+  const perHour: { views: number; users: Set<string> }[] = Array.from({ length: 24 }, () => ({
+    views: 0,
+    users: new Set<string>(),
+  }))
+  for (const v of hourRes.data ?? []) {
+    const h = perHour[kstHour(v.viewed_at)]
+    if (!h) continue
+    h.views++
+    if (v.user_id) h.users.add(v.user_id)
+  }
+  const hours = perHour.map((h, hour) => ({ hour, views: h.views, visitors: h.users.size }))
+  const firstViewAt = firstViewRes.data?.[0]?.viewed_at ?? null
 
   // ── 오픈 ───────────────────────────────────────────────
   const scheds = schedRes.data ?? []
@@ -125,6 +155,8 @@ export async function getTodayStats(): Promise<TodayStats> {
       yesterday: visitPrev,
       avg7,
       sum30: visits.length,
+      hours,
+      firstViewAt,
     },
     opens: {
       upcoming: scheds.length,

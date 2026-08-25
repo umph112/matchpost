@@ -12,6 +12,7 @@
     { "path": "/api/admin/batch/report-autoclose", "schedule": "35 13 * * *" },
     { "path": "/api/admin/batch/sanction-recalc", "schedule": "40 13 * * *" },
     { "path": "/api/admin/batch/cancellation-autoconfirm", "schedule": "45 13 * * *" },
-    { "path": "/api/admin/batch/cancellation-count-reset", "schedule": "50 13 * * *" }
+    { "path": "/api/admin/batch/cancellation-count-reset", "schedule": "50 13 * * *" },
+    { "path": "/api/cron/purge-page-views", "schedule": "55 13 * * *" }
   ]
 }

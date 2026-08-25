@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/siteUrl";
+import PageViewTracker from "@/components/PageViewTracker";
 import "./globals.css";
 
 const DESCRIPTION =
@@ -35,6 +36,8 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
+        {/* D30 [1] — 페이지 조회 기록. 공개 페이지·로그아웃 상태까지 세려면 루트여야 한다. */}
+        <PageViewTracker />
       </body>
     </html>
   );

@@ -7,11 +7,12 @@
 // ⚠️ 간격은 14px 하나. 20·18·16 을 섞지 않는다.
 
 import Link from 'next/link'
-import { listTime } from '@/lib/date'
+import { listTime, kstDateString } from '@/lib/date'
 import { getTodayQueue } from '@/lib/admin/todayQueue'
 import { getTodayStats } from '@/lib/admin/todayStats'
 import { BATCH_ROUTES } from '@/lib/admin/batchRoutes'
 import { createServiceClient } from '@/lib/supabase/service'
+import TrafficPanel from '@/components/admin/TrafficPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -100,7 +101,6 @@ export default async function AdminTodayPage() {
     weekday: 'short',
   }).format(new Date())
 
-  const trafficMax = Math.max(1, ...stats.traffic.days.map((d) => d.count))
 
   return (
     <>
@@ -213,53 +213,8 @@ export default async function AdminTodayPage() {
         </div>
       </section>
 
-      {/* 트래픽 — 시(hour)가 없어 일별 막대다(todayStats.ts 주석 참고) */}
-      <section className={CARD}>
-        <div className={HEAD}>
-          <h2 className={H2}>트래픽</h2>
-          <span className="ml-[9px] text-[11.5px] text-[#9A9AA5]">최근 14일</span>
-          {SEP}
-          <span className="text-[11.5px] text-[#B0B0BB]">방문 로그는 날짜 단위로만 쌓입니다</span>
-        </div>
-        <div className="grid grid-cols-[minmax(0,1fr)_420px] items-stretch">
-          <div className="px-5 pt-4 pb-[14px] border-r border-[#F1F1F4]">
-            <div className="flex items-end gap-[2px] h-[76px]">
-              {stats.traffic.days.map((d, i) => (
-                <div
-                  key={d.date}
-                  title={`${d.date} · ${d.count}명`}
-                  className={`flex-1 min-w-0 rounded-t-[2px] ${i === stats.traffic.days.length - 1 ? 'bg-[#F59E0B]' : 'bg-[#D4D4DC]'}`}
-                  style={{ height: `${Math.max(Math.round((d.count / trafficMax) * 100), 2)}%` }}
-                />
-              ))}
-            </div>
-            <div className="flex justify-between mt-[7px] text-[10px] text-[#B0B0BB]">
-              <span>{stats.traffic.days[0]?.date.slice(5).replace('-', '/')}</span>
-              <span>{stats.traffic.days[6]?.date.slice(5).replace('-', '/')}</span>
-              <span>{stats.traffic.days[13]?.date.slice(5).replace('-', '/')} (오늘)</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2">
-            {[
-              { k: '오늘 방문', v: won(stats.traffic.today), s: `어제 ${won(stats.traffic.yesterday)}명` },
-              { k: '어제 방문', v: won(stats.traffic.yesterday), s: '전일 확정치' },
-              { k: '최근 7일 평균', v: won(stats.traffic.avg7), s: '하루 평균 방문자' },
-              { k: '30일 누적', v: won(stats.traffic.sum30), s: '연인원 · 중복 포함' },
-            ].map((t) => (
-              <div
-                key={t.k}
-                className="px-[18px] py-[13px] border-b border-r border-[#F5F5F7]"
-              >
-                <div className="text-[11px] text-[#9A9AA5]">{t.k}</div>
-                <div className="text-[18px] font-extrabold tracking-[-0.025em] tabular-nums mt-1">
-                  {t.v}
-                </div>
-                <div className="text-[10.5px] text-[#B0B0BB] mt-[3px]">{t.s}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 트래픽 — 시간대(page_views) / 일별(user_visit_log) 두 탭. 탭 상태라 클라이언트 컴포넌트다. */}
+      <TrafficPanel traffic={stats.traffic} today={kstDateString()} />
 
       {/* 진행중인 오픈 */}
       <section className={CARD}>

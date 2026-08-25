@@ -1,0 +1,2601 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+  <meta charset="utf-8">
+  <title>Cafe Master (2x render)</title>
+  <style>/* ─────────────────────────────────────────────────────────
+ * MANIAN — Cafe (Golf Mania Club) Banner Master
+ * Naver Cafe main-page paint, sliceable
+ * Drawn at @2x natively (1620×1716) for retina export
+ * ───────────────────────────────────────────────────────── */
+
+/**
+ * Minified by jsDelivr using clean-css v5.3.3.
+ * Original file: /gh/orioncactus/pretendard@1.3.9/dist/web/variable/pretendardvariable.css
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+@font-face{font-family:'Pretendard Variable';font-weight:45 920;font-style:normal;font-display:swap;src:url("ffa3d67c-2698-4f0e-950e-d9bf08b63cfc") format('woff2-variations')}
+/*# sourceMappingURL=/sm/cb46c7e49fc38cbd97a389d4dc69706f7471d0646edc67e9dc7defe084c0b8bf.map */
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("79ff9783-bdff-49cd-b7d7-11cf73bade36") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("8ee63e23-ca95-4f59-a32c-111bc72dbde1") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("16e5f89e-4e70-402c-aab5-1ab4b1e6faf5") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("36c62b52-52a3-4426-8f6e-c30684506330") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("892779b8-a3e6-4004-a263-1df9fbb4592d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c72aa840-98d8-47fa-98e8-e69846ad4946") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("79ff9783-bdff-49cd-b7d7-11cf73bade36") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("8ee63e23-ca95-4f59-a32c-111bc72dbde1") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("16e5f89e-4e70-402c-aab5-1ab4b1e6faf5") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("36c62b52-52a3-4426-8f6e-c30684506330") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("892779b8-a3e6-4004-a263-1df9fbb4592d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c72aa840-98d8-47fa-98e8-e69846ad4946") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("79ff9783-bdff-49cd-b7d7-11cf73bade36") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("8ee63e23-ca95-4f59-a32c-111bc72dbde1") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("16e5f89e-4e70-402c-aab5-1ab4b1e6faf5") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("36c62b52-52a3-4426-8f6e-c30684506330") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("892779b8-a3e6-4004-a263-1df9fbb4592d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c72aa840-98d8-47fa-98e8-e69846ad4946") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("79ff9783-bdff-49cd-b7d7-11cf73bade36") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("8ee63e23-ca95-4f59-a32c-111bc72dbde1") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("16e5f89e-4e70-402c-aab5-1ab4b1e6faf5") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("36c62b52-52a3-4426-8f6e-c30684506330") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("892779b8-a3e6-4004-a263-1df9fbb4592d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("c72aa840-98d8-47fa-98e8-e69846ad4946") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+:root {
+  --green-950: #061d14;
+  --green-900: #0a2e20;
+  --green-850: #0b3324;
+  --green-800: #0d3b2a;
+  --green-700: #14523a;
+  --green-600: #1c6649;
+  --gold-500: #d4b06b;
+  --gold-400: #e6c989;
+  --gold-300: #efd8a4;
+  --cream: #f4ede0;
+  --paper: #fbf6ec;
+  --mint: #c8e6d9;
+  --mint-d: #4a8c75;
+  --on-dark-1: rgba(255,255,255,0.96);
+  --on-dark-2: rgba(255,255,255,0.78);
+  --on-dark-3: rgba(255,255,255,0.6);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #1a1a1a; font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+body { padding: 40px; }
+
+.mono { font-family: 'JetBrains Mono', monospace; letter-spacing: -0.01em; }
+
+/* Master container — drawn at @2x (1620 = 2× 810) */
+.cafe-master {
+  width: 1620px;
+  background: var(--green-900);
+  position: relative;
+}
+
+/* Row 0 — top ad banner */
+.top-ad {
+  width: 1620px; height: 280px;
+  background: #f4f4f4;
+  position: relative; overflow: hidden;
+}
+.top-ad image-slot {
+  width: 100%; height: 100%; display: block;
+  --is-bg: #f4f4f4;
+  --is-border: rgba(0,0,0,0.10);
+  --is-text: rgba(13,59,42,0.45);
+}
+
+/* Footer — 골프마니아클럽 홍보 + 제휴문의 (810×100 display / 1620×200 @2x) */
+.footer-cta {
+  width: 1620px; height: 200px;
+  /* Layered CSS fairway: foreground grass blur, mid green, distant green of the green */
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(167,210,120,0.55) 0%, transparent 55%),
+    linear-gradient(180deg,
+      #6fa84a 0%,        /* fairway near */
+      #5a9039 30%,
+      #3f7a2e 55%,
+      #2e5f25 75%,
+      #1f4a1e 100%);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 60px;
+  color: white;
+  position: relative; overflow: hidden;
+}
+.footer-cta .fc-photo {
+  position: absolute; inset: 0; z-index: 0;
+}
+.footer-cta .fc-photo::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 30%, transparent 70%, rgba(6,29,20,0.40) 100%);
+  z-index: 1;
+}
+.footer-cta .fc-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(255,255,255,0.6);
+}
+.footer-cta .fc-mask {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(13,59,42,0.55) 0%, rgba(13,59,42,0.25) 35%, rgba(13,59,42,0.35) 100%);
+}
+.footer-cta::after {
+  content: ""; position: absolute; right: -100px; top: -80px;
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(255,235,160,0.18) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 2;
+}
+.footer-cta .fc-left {
+  display: flex; align-items: center; gap: 28px;
+  position: relative; z-index: 3;
+}
+.footer-cta .fc-logo {
+  width: 110px; height: 110px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.footer-cta .fc-logo img {
+  width: 110px; height: 110px; object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.30));
+}
+.footer-cta .fc-text {
+  display: flex; flex-direction: column; gap: 6px; line-height: 1;
+}
+.footer-cta .fc-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; font-weight: 700;
+  color: var(--gold-300);
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+.footer-cta .fc-brand {
+  font-size: 44px; font-weight: 900;
+  letter-spacing: -0.04em;
+  color: white;
+  margin-top: 4px;
+  text-shadow: 0 3px 14px rgba(0,0,0,0.55);
+}
+.footer-cta .fc-cta {
+  display: inline-flex; align-items: center; gap: 14px;
+  background: var(--gold-500);
+  color: var(--green-950);
+  border: 0;
+  border-radius: 999px;
+  padding: 22px 38px;
+  font-size: 22px; font-weight: 900;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.20) inset;
+  position: relative; z-index: 3;
+}
+.footer-cta .fc-cta .arrow {
+  font-size: 26px; font-weight: 900;
+}
+
+/* Row baseline — every row spans full 1620 */
+.row { display: flex; width: 1620px; position: relative; }
+.row-1 { height: 480px; } /* 2× 240 — 세로로 뛰운 */
+.row-2 { height: 270px; } /* 2× 135 — 광고 배너 (1440×240 비율) */
+.row-3 { height: 450px; } /* 2× 225 — 1.25배 확대 (4셀) */
+.row-3b { height: 450px; } /* row-3 동일 크기 4셀 — 이성주 + 빈셀 3 */
+.row-4 { height: 375px; }     /* 4셀 × 405 — 1.5배 확대 */
+.row-5 { height: 480px; }
+.row-6 { height: 250px; }
+.row-7 { height: 250px; }
+
+/* ── Row 5: 회원권 거래소 ────────────────────── */
+.r5m-intro {
+  width: 324px; height: 250px;
+  background: white;
+  color: var(--green-900);
+  padding: 26px 22px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; overflow: hidden;
+  border-right: 2px solid var(--cream);
+}
+.r5m-intro .pencil-icon {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--green-900); border-radius: 16px;
+  color: var(--gold-400);
+}
+.r5m-intro h3 {
+  font-size: 28px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.05;
+  white-space: nowrap;
+}
+.r5m-intro h3 .gold { color: var(--gold-500); }
+.r5m-intro .sub {
+  font-size: 12px; color: rgba(13,59,42,0.55); font-weight: 600;
+  margin-top: 4px; letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ── Row 5: 회원권 거래소 (4셀 · 골마스쿨 행과 같은 높이 450px) ─── */
+.r5m-vendor {
+  width: 405px; height: 450px;
+  background: white;
+  color: var(--green-900);
+  padding: 40px 38px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border-right: 2px solid var(--cream);
+  position: relative; overflow: hidden;
+}
+.r5m-vendor:last-child { border-right: 0; }
+.r5m-vendor .top-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--mint); color: var(--green-900);
+  border-radius: 999px; padding: 8px 18px;
+  font-size: 15px; font-weight: 800; letter-spacing: 0.04em;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+.r5m-vendor .copy {
+  font-size: 25px; font-weight: 800; color: var(--green-900);
+  line-height: 1.30; letter-spacing: -0.02em;
+  margin-top: 14px;
+}
+.r5m-vendor .copy em {
+  font-style: normal; color: var(--gold-500);
+}
+.r5m-vendor .english {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: rgba(13,59,42,0.55);
+  letter-spacing: 0.06em; font-weight: 600;
+  white-space: nowrap;
+  margin-top: auto;
+}
+.r5m-vendor .logo-slot {
+  width: 100%; height: 84px;
+  margin-top: 18px;
+  padding: 4px 12px;
+  background: rgba(13,59,42,0.04);
+  border: 1px dashed rgba(13,59,42,0.18);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.r5m-vendor .logo-slot image-slot {
+  width: 100%; height: 100%; display: block;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(13,59,42,0.45);
+}
+.r5m-vendor .footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 20px; margin-top: 14px;
+  border-top: 1px solid rgba(13,59,42,0.08);
+}
+.r5m-vendor .footer .brand {
+  font-size: 17px; font-weight: 800; color: var(--green-900);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.r5m-vendor .footer .phone {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 17px; font-weight: 800; color: var(--mint-d);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.r5m-vendor .phone-circle {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--mint-d); color: white;
+  display: flex; align-items: center; justify-content: center;
+}
+.r5m-vendor .phone-circle svg {
+  width: 16px; height: 16px;
+}
+
+
+
+/* ── 매치포스트 자체 광고 (G-2 · 810×875) ─────────────── */
+.mp-ad {
+  position: absolute; inset: 0; background: #17171B;
+  padding: 72px 64px; display: flex; flex-direction: column;
+}
+svg.mp-logo { width: 380px; height: auto; display: block; flex-shrink: 0; }
+/* 마크의 사각형이 #17171B 라 같은 색 배경에서는 십자선·원만 보인다 — 그대로가 의도 */
+.mp-head {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 62px; font-weight: 900; line-height: 1.16; letter-spacing: -.04em;
+  color: #fff; margin-top: 56px;
+}
+.mp-head em { font-style: normal; color: #F59E0B; }
+.mp-sub {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 27px; font-weight: 500; line-height: 1.6; color: rgba(255,255,255,.62);
+  margin-top: 26px;
+}
+.mp-rows { display: flex; flex-direction: column; gap: 18px; margin-top: auto; }
+.mp-row { display: flex; align-items: center; gap: 18px; }
+.mp-row .mp-num {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 20px; font-weight: 700; color: #F59E0B; flex-shrink: 0;
+}
+.mp-row .mp-txt {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 26px; font-weight: 600; color: rgba(255,255,255,.86);
+}
+.mp-cta {
+  display: inline-flex; align-items: center; gap: 12px; align-self: flex-start;
+  margin-top: 44px; background: #F59E0B; color: #17171B;
+  padding: 20px 30px; border-radius: 12px;
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 27px; font-weight: 800; letter-spacing: -.01em;
+}
+.mp-cta .mp-arrow { font-size: 25px; }
+
+/* 레슨 앞 광고 자리 — 좁고 세로로 긴 칸이라 샘플을 세로로 쌓는다 */
+#b-3-1 .ad-sample {
+  flex-direction: column; align-items: flex-start; justify-content: center;
+  gap: 16px; padding: 0 30px;
+}
+#b-3-1 .ad-sample-mark { width: 66px; height: 66px; font-size: 22px; }
+#b-3-1 .ad-sample-title { font-size: 34px; line-height: 1.12; }
+#b-3-1 .ad-sample-sub { font-size: 20px; }
+#b-3-1 .ad-cta { right: auto; left: 30px; top: auto; bottom: 30px; align-items: flex-start; }
+#b-3-1 .ad-cta-tag { font-size: 18px; padding: 9px 14px; }
+#b-3-1 .ad-cta-size { font-size: 16px; }
+
+/* ── 카드형 광고 자리 (E-1~4 · 회원권 행과 같은 규격) ────── */
+.ad-cell { position: relative; background: #F7F7F5; }
+.ad-cell image-slot { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ad-cell-sample {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: flex-start; justify-content: center; gap: 14px;
+  padding: 0 34px; opacity: .5;
+}
+.ad-cell-mark {
+  width: 62px; height: 62px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(13,59,42,.06); border: 3px solid rgba(13,59,42,.22);
+  display: flex; align-items: center; justify-content: center;
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 21px; font-weight: 900; color: var(--green-900);
+}
+.ad-cell-title {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 32px; font-weight: 900; line-height: 1.1; letter-spacing: -.03em;
+  color: var(--green-900); margin-top: 6px;
+}
+.ad-cell-sub {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 20px; font-weight: 600; line-height: 1.45; color: rgba(13,59,42,.62);
+}
+.ad-cell-cta {
+  position: absolute; left: 34px; bottom: 34px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 9px;
+}
+.ad-cell-tag {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 20px; font-weight: 900; letter-spacing: -.01em;
+  background: var(--gold-400); color: #17171B;
+  padding: 12px 18px; border-radius: 9px;
+  box-shadow: 0 5px 16px rgba(13,59,42,.18);
+}
+.ad-cell-size {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 16px; font-weight: 700; color: rgba(13,59,42,.5);
+}
+
+/* ── 자리 번호표 (검토용 · 광고 안내 페이지의 이름 기준) ───── */
+.slot-map .banner { position: relative; }
+.slot-map .banner[data-slot]::before {
+  content: attr(data-slot);
+  position: absolute; left: 0; top: 0; z-index: 60;
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 30px; font-weight: 900; line-height: 1; letter-spacing: -.02em;
+  color: #fff; background: rgba(13,59,42,.88);
+  padding: 12px 18px; border-bottom-right-radius: 10px;
+  pointer-events: none;
+}
+.slot-map .banner[data-name]::after {
+  content: attr(data-name);
+  position: absolute; left: 0; top: 54px; z-index: 60;
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 19px; font-weight: 700; line-height: 1.35;
+  color: #17171B; background: var(--gold-400);
+  padding: 9px 16px; border-bottom-right-radius: 8px;
+  max-width: 380px; pointer-events: none;
+}
+/* 번호가 보이게 사진·샘플을 흐리게 */
+.slot-map .banner > .slot-size {
+  position: absolute; left: 0; z-index: 60;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 17px; font-weight: 700; line-height: 1;
+  color: #fff; background: rgba(13,59,42,.72);
+  padding: 8px 16px; border-bottom-right-radius: 8px;
+  pointer-events: none; white-space: nowrap;
+}
+.slot-map .banner[data-slot] image-slot { opacity: .28; }
+.slot-map .ad-sample { opacity: .18 !important; }
+
+/* ── 판매용 광고 자리 (샘플 배너 · 흐리게) ───────────── */
+/* ⚠️ 이 파일에 --gold · --sans 는 없다 (--gold-400 · Pretendard 스택이 실제 이름).
+   그리고 font shorthand 안의 var 하나가 틀리면 그 선언 전체가 무효가 되어
+   크기·굵기가 통째로 사라진다 — 그래서 나눠 쓴다. */
+.ad-slot { position: relative; }
+.ad-slot .ad-sample {
+  position: absolute; inset: 0; display: flex; align-items: center; gap: 40px;
+  padding: 0 56px; opacity: .42;
+}
+.ad-slot .ad-sample-mark {
+  width: 96px; height: 96px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(13,59,42,.06); border: 3px solid rgba(13,59,42,.22);
+  display: flex; align-items: center; justify-content: center;
+  font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 30px; font-weight: 900; line-height: 1;
+  color: var(--green-900); letter-spacing: -.02em;
+}
+.ad-slot .ad-sample-copy { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ad-slot .ad-sample-title {
+  font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 46px; font-weight: 900; line-height: 1.08;
+  color: var(--green-900); letter-spacing: -.035em;
+}
+.ad-slot .ad-sample-sub {
+  font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 26px; font-weight: 600; line-height: 1.4;
+  color: rgba(13,59,42,.72);
+}
+.ad-slot .ad-cta {
+  position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+}
+.ad-slot .ad-cta-tag {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  font-size: 24px; font-weight: 900; letter-spacing: -.01em;
+  background: var(--gold-400); color: #17171B;
+  padding: 15px 24px; border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.28);
+}
+.ad-slot .ad-cta-size {
+  font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 20px; font-weight: 600; line-height: 1;
+  color: rgba(13,59,42,.62);
+}
+
+/* ── Row 2: 광고 배너 (full-width) ─────────────────── */
+.ad-banner {
+  width: 1620px; height: 270px;
+  position: relative; overflow: hidden;
+  background: #f4f4f4;
+}
+.ad-banner image-slot {
+  width: 100%; height: 100%; display: block;
+  --is-bg: #f4f4f4;
+  --is-border: rgba(0,0,0,0.1);
+}
+
+/* Each banner = single export cell */
+.banner {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Hero (Row 1) ───────────────────────────────────────── */
+.hero {
+  width: 540px; height: 480px;
+  background: var(--green-800);
+  color: white;
+  padding: 36px 32px 32px;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+.hero + .hero { border-left: 2px solid var(--green-900); }
+
+.hero .bg-art {
+  position: absolute; inset: 0; pointer-events: none;
+  opacity: 0.85;
+  z-index: 1;
+}
+.hero .hero-photo {
+  position: absolute; inset: 0; z-index: 1;
+}
+.hero .hero-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(255,255,255,0.5);
+}
+.hero .hero-photo.h1 {
+  background: radial-gradient(circle at 30% 35%, #4a8c5e 0%, #1c6649 35%, #0d3b2a 70%, #061d14 100%);
+}
+.hero .hero-photo.h2 {
+  background: radial-gradient(ellipse at 60% 30%, #3d7a62 0%, #1c6649 30%, #0d3b2a 65%, #061d14 100%);
+}
+.hero .hero-photo.h3 {
+  background:
+    radial-gradient(ellipse at 75% 30%, #d4a86b 0%, #8e6f3f 18%, transparent 45%),
+    linear-gradient(180deg, #1a3845 0%, #0d2b3a 70%, #061d14 100%);
+}
+.hero .photo-mask {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10,46,32,0.55) 0%, rgba(10,46,32,0.20) 30%, rgba(10,46,32,0.55) 70%, rgba(6,29,20,0.92) 100%),
+    linear-gradient(90deg, rgba(6,29,20,0.45) 0%, rgba(6,29,20,0.12) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hero-top {
+  display: flex; align-items: center; gap: 10px;
+  position: relative; z-index: 3;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 14px; border-radius: 999px;
+  font-size: 15px; font-weight: 800; letter-spacing: 0.04em;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.chip.hot { background: #d94a3a; color: white; }
+.chip.new { background: #2d8de0; color: white; }
+.chip.premium { background: var(--gold-500); color: var(--green-900); }
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px; font-weight: 800;
+  color: white;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.hero-title {
+  font-size: 68px; font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  margin-top: 36px;
+  position: relative; z-index: 3;
+  pointer-events: none;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.55);
+}
+.hero-title span.gold {
+  color: var(--gold-400);
+}
+
+.hero-sub {
+  font-size: 21px; color: white;
+  margin-top: 20px; line-height: 1.45;
+  position: relative; z-index: 3;
+  font-weight: 600;
+  pointer-events: none;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+}
+
+.hero-bottom {
+  margin-top: auto;
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative; z-index: 3;
+  pointer-events: none;
+}
+.hero-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--gold-500);
+  color: var(--green-950);
+  border: 0;
+  border-radius: 999px;
+  padding: 13px 22px;
+  font-size: 16px; font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.18) inset;
+}
+.hero-stat {
+  text-align: right;
+}
+.hero-stat .v {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px; font-weight: 800;
+  color: var(--gold-400);
+  line-height: 1;
+  white-space: nowrap;
+}
+.hero-stat .l {
+  font-size: 12px; color: var(--on-dark-3);
+  margin-top: 5px; letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* ── Row 2: HOT Join segmented ──────────────────────────── */
+.r2-title {
+  width: 324px; height: 250px; /* 162×125 → 2× */
+  background: var(--green-700);
+  color: white;
+  padding: 28px 22px;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  position: relative; overflow: hidden;
+}
+.r2-title::after {
+  content: ""; position: absolute; right: -40px; top: -40px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(212,176,107,0.15), transparent 65%);
+}
+.r2-title .trophy-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.r2-title .trophy-box {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(212,176,107,0.18);
+  border: 1px solid rgba(212,176,107,0.35);
+  display: flex; align-items: center; justify-content: center;
+}
+.r2-title .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  color: var(--gold-400); letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+.r2-title h3 {
+  font-size: 30px; font-weight: 900; letter-spacing: -0.03em; margin-top: 6px;
+  white-space: nowrap;
+}
+.r2-title .meta {
+  font-size: 14px; color: var(--on-dark-3); font-weight: 500;
+  white-space: nowrap;
+}
+
+.r2-region {
+  width: 270px; height: 250px; /* 135×125 → 2× */
+  background: var(--green-800);
+  color: white;
+  padding: 22px 20px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border-left: 2px solid var(--green-900);
+  position: relative; overflow: hidden;
+}
+.r2-region .rg-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px; color: var(--gold-400); font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.r2-region .rg-name {
+  font-size: 32px; font-weight: 900; letter-spacing: -0.03em;
+  margin-top: 4px;
+}
+.r2-region .rg-count {
+  font-size: 14px; color: var(--on-dark-2); font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.r2-region .rg-count .dot {
+  width: 6px; height: 6px; border-radius: 99px; background: var(--gold-400);
+  box-shadow: 0 0 8px var(--gold-400);
+}
+
+.r2-cta {
+  width: 216px; height: 250px; /* 108×125 → 2× */
+  background: var(--green-700);
+  color: white;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 0 16px;
+  border-left: 2px solid var(--green-900);
+  position: relative; overflow: hidden;
+}
+.r2-cta .arrow-circle {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--gold-500);
+  color: var(--green-900);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.r2-cta .lbl { font-size: 16px; font-weight: 700; white-space: nowrap; }
+.r2-cta .sub {
+  font-size: 11px; color: var(--on-dark-3);
+  letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── Row 3: Golma Class ─────────────────────────────────── */
+.r3-title {
+  width: 405px; height: 450px; /* 4셀로 1.25배 확대 */
+  background: linear-gradient(180deg, var(--cream), #ebe2cc);
+  color: var(--green-900);
+  padding: 32px 24px;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  position: relative; overflow: hidden;
+}
+.r3-title .r3-photo {
+  position: absolute; inset: 0; z-index: 0;
+}
+.r3-title .r3-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(13,59,42,0.45);
+}
+.r3-title .photo-mask {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(6,29,20,0.45) 0%, rgba(6,29,20,0.20) 35%, rgba(6,29,20,0.55) 70%, rgba(6,29,20,0.92) 100%),
+    linear-gradient(90deg, rgba(6,29,20,0.35) 0%, rgba(6,29,20,0.08) 60%, transparent 100%);
+}
+.r3-title .badge,
+.r3-title > div,
+.r3-title .arrow-pill {
+  position: relative; z-index: 2;
+}
+.r3-title .badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 14px; border-radius: 999px;
+  background: var(--gold-500); color: var(--green-950);
+  font-size: 13px; font-weight: 800; letter-spacing: 0.04em;
+  align-self: flex-start;
+  white-space: nowrap;
+  word-break: keep-all;
+  width: max-content;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+.r3-title h3 {
+  font-size: 38px; font-weight: 900; letter-spacing: -0.04em;
+  line-height: 1.0; color: white;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+}
+.r3-title h3 .gold {
+  display: block; color: var(--gold-400); font-size: 28px; margin-top: 6px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+}
+.r3-title .desc {
+  font-size: 15px; color: rgba(255,255,255,0.92); font-weight: 600;
+  margin-top: 10px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+}
+.r3-title .arrow-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold-500); color: var(--green-950);
+  border-radius: 999px; padding: 14px 22px;
+  font-size: 17px; font-weight: 800;
+  align-self: flex-start;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.18) inset;
+}
+
+.r3-class {
+  width: 405px; height: 450px;
+  background: var(--green-800);
+  padding: 24px 22px;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+  color: white;
+  border-left: 2px solid var(--green-950);
+}
+.r3-class:first-of-type { border-left: 0; }
+.r3-class .r3c-photo {
+  position: absolute; inset: 0; z-index: 0;
+}
+.r3-class .r3c-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(255,255,255,0.5);
+}
+.r3-class .photo-mask {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(6,29,20,0.45) 0%, rgba(6,29,20,0.22) 35%, rgba(6,29,20,0.55) 70%, rgba(6,29,20,0.92) 100%),
+    linear-gradient(90deg, rgba(6,29,20,0.30) 0%, rgba(6,29,20,0.05) 60%, transparent 100%);
+}
+.r3-class > .num,
+.r3-class > h4,
+.r3-class > .meta {
+  position: relative; z-index: 2;
+}
+.r3-class .num {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: 17px; font-weight: 700;
+  color: var(--gold-400); letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+.r3-class .num .sep {
+  display: inline-block;
+  margin: 0 2px;
+  color: rgba(212,176,107,0.45);
+  font-weight: 400;
+}
+.r3-class h4 {
+  font-size: 28px; font-weight: 900; letter-spacing: -0.03em;
+  margin-top: 10px; line-height: 1.15;
+  color: white;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+  word-break: keep-all;
+}
+.r3-class h4 .sub {
+  display: block; font-size: 16px; color: rgba(255,255,255,0.92); font-weight: 700;
+  margin-top: 12px; line-height: 1.5;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+  word-break: keep-all;
+}
+.r3-class .meta {
+  font-size: 13px; color: rgba(255,255,255,0.9);
+  font-weight: 700; margin-top: auto;
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+.r3-class .r3c-cta {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--gold-500);
+  color: var(--green-950);
+  border-top: 1px solid rgba(212,176,107,0.6);
+  padding: 22px 0;
+  font-size: 22px; font-weight: 900;
+  letter-spacing: -0.01em;
+}
+.r3-class .r3c-cta::after {
+  content: "→"; color: var(--green-950); font-weight: 900;
+}
+
+/* ── Row 4: Community Shortcuts ─────────────────────────── */
+/* ── Row 4: Community Shortcuts (4셀 구성, 1.5배 확대) ─────────── */
+.r4-ad {
+  width: 405px; height: 375px;
+  background: var(--green-900);
+  border-left: 2px solid var(--green-950);
+  position: relative; overflow: hidden;
+  color: white;
+}
+.r4-ad .r4-ad-photo {
+  position: absolute; inset: 0; z-index: 0;
+}
+.r4-ad .r4-ad-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(255,255,255,0.5);
+}
+.r4-ad .r4-ad-mask {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(6,29,20,0.85) 0%, rgba(6,29,20,0.55) 42%, rgba(6,29,20,0.15) 75%, transparent 100%);
+}
+.r4-ad .r4-ad-content {
+  position: relative; z-index: 2;
+  padding: 30px 28px 26px;
+  display: flex; flex-direction: column;
+  height: 100%;
+  pointer-events: none;
+}
+.r4-ad .r4-ad-eyebrow {
+  font-size: 15px; font-weight: 700;
+  color: var(--gold-400);
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+  white-space: nowrap;
+}
+.r4-ad .r4-ad-title {
+  margin: 6px 0 0;
+  font-size: 48px; font-weight: 900;
+  letter-spacing: -0.04em;
+  color: white;
+  text-shadow: 0 2px 14px rgba(0,0,0,0.7);
+  line-height: 1;
+}
+.r4-ad .r4-ad-hook {
+  margin-top: 16px;
+  display: inline-flex; align-items: center;
+  align-self: flex-start;
+  background: var(--gold-500);
+  color: var(--green-950);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 15px; font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  white-space: nowrap;
+}
+.r4-ad .r4-ad-sub {
+  margin-top: auto;
+  font-size: 15px; font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+  white-space: nowrap;
+}
+
+.r4-cell {
+  width: 405px; height: 375px; /* 270×250 → 1.5배 확대 */
+  background: var(--green-800);
+  color: white;
+  padding: 36px 28px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border-left: 2px solid var(--green-900);
+  position: relative; overflow: hidden;
+}
+.r4-cell:first-child { border-left: 0; }
+.r4-cell:nth-child(even) { background: var(--green-850); }
+
+/* Photo-backed variant */
+.r4-cell-photo {
+  background: var(--green-900);
+}
+.r4-cell-photo .r4-photo {
+  position: absolute; inset: 0; z-index: 0;
+}
+.r4-cell-photo .r4-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(255,255,255,0.5);
+}
+.r4-cell-photo .r4-photo-mask {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(6,29,20,0.55) 0%, rgba(6,29,20,0.20) 35%, rgba(6,29,20,0.65) 80%, rgba(6,29,20,0.92) 100%);
+}
+.r4-cell-photo .icon-box,
+.r4-cell-photo .lbl-row {
+  position: relative; z-index: 2;
+}
+.r4-cell-photo .lbl-row {
+  margin-top: auto;
+}
+.r4-cell-photo .lbl {
+  text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+}
+.r4-cell-photo .desc {
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+.r4-cell .icon-box {
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold-400);
+}
+.r4-cell .icon-box-lg {
+  width: 108px; height: 108px;
+  margin: -4px -8px -8px -4px;
+}
+.r4-cell .lbl-row { display: flex; flex-direction: column; gap: 5px; }
+.r4-cell .lbl {
+  font-size: 30px; font-weight: 900; letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+.r4-cell .desc {
+  font-size: 14px; color: var(--on-dark-3); font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ── Winners Club banner (replaces r5-right) ────────────── */
+.winners-club {
+  width: 810px; height: 250px;
+  position: relative; overflow: hidden;
+  background: var(--green-900);
+  color: white;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+.winners-club .wc-photo {
+  position: absolute; inset: 0; z-index: 0;
+}
+.winners-club .wc-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(255,255,255,0.5);
+}
+.winners-club .wc-mask {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(6,29,20,0.92) 0%, rgba(6,29,20,0.60) 38%, rgba(6,29,20,0.20) 65%, transparent 100%),
+    linear-gradient(180deg, rgba(6,29,20,0.20) 0%, rgba(6,29,20,0.45) 100%);
+}
+.winners-club .wc-content {
+  position: relative; z-index: 4;
+  padding: 30px 36px 0;
+  display: flex; flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+.winners-club .wc-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 800;
+  color: var(--gold-400);
+  letter-spacing: 0.10em;
+  white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+.winners-club .wc-title {
+  margin: 4px 0 0;
+  font-size: 44px; font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: white;
+  text-shadow: 0 3px 14px rgba(0,0,0,0.75);
+  white-space: nowrap;
+}
+.winners-club .wc-title em {
+  font-style: normal; color: var(--gold-400);
+}
+.winners-club .wc-winner {
+  display: inline-flex; align-items: baseline; gap: 10px;
+  margin-top: 12px;
+  align-self: flex-start;
+  padding: 6px 14px;
+  background: rgba(212,176,107,0.18);
+  border: 1px solid rgba(212,176,107,0.35);
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+.winners-club .wc-winner-label {
+  font-size: 12px; font-weight: 700;
+  color: var(--gold-400);
+  letter-spacing: 0.08em;
+}
+.winners-club .wc-winner-name {
+  font-size: 18px; font-weight: 900;
+  color: white;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+}
+.winners-club .wc-cta {
+  position: relative; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--gold-500);
+  color: var(--green-950);
+  padding: 14px 26px;
+  font-size: 16px; font-weight: 900;
+  letter-spacing: -0.01em;
+}
+.winners-club .wc-cta .arrow {
+  font-size: 20px; font-weight: 900;
+}
+
+/* ── Row Bottom: 4셀 의류/장비 메뉴 (1.5배 확대) ──────── */
+.row-bottom {
+  display: flex;
+  width: 1620px;
+  height: 375px;
+}
+.golmart-intro {
+  width: 540px; height: 250px;
+  background: white;
+  color: var(--green-900);
+  position: relative; overflow: hidden;
+}
+.golmart-intro::before {
+  content: ""; position: absolute; right: -40px; top: -40px; pointer-events: none;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(212,176,107,0.15) 0%, transparent 65%);
+}
+.golmart-intro .gm-content {
+  position: relative; z-index: 1;
+  padding: 28px 30px;
+  display: flex; flex-direction: column;
+  height: 100%;
+  gap: 4px;
+}
+.golmart-intro .gm-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 800;
+  color: var(--gold-500);
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+.golmart-intro .gm-title {
+  margin: 6px 0 0;
+  font-size: 46px; font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: var(--green-900);
+  white-space: nowrap;
+}
+.golmart-intro .gm-title strong {
+  font-weight: 900;
+  font-size: 92px;
+  letter-spacing: -0.05em;
+  color: var(--green-900);
+  position: relative;
+  padding: 0 4px;
+  background: linear-gradient(180deg, transparent 65%, rgba(212,176,107,0.55) 65%, rgba(212,176,107,0.55) 100%);
+}
+.golmart-intro .gm-sub {
+  margin-top: auto;
+  font-size: 13px; font-weight: 600;
+  color: rgba(13,59,42,0.62);
+  letter-spacing: -0.01em;
+  line-height: 1.55;
+}
+.golmart-intro .gm-partner {
+  position: absolute; right: 28px; bottom: 28px; z-index: 2;
+  background: #f5faff;
+  border: 1px solid rgba(15,99,232,0.18);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(15,99,232,0.08);
+}
+.golmart-intro .gm-partner img {
+  display: block;
+  height: 30px;
+  width: auto;
+  mix-blend-mode: multiply;
+}
+
+/* Row Bottom buttons — white tone matching membership row */
+.rb-cell {
+  width: 405px; height: 375px;
+  background: white;
+  color: var(--green-900);
+  padding: 36px 28px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border-left: 2px solid var(--cream);
+  position: relative; overflow: hidden;
+}
+.rb-cell .icon-box {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--green-800);
+}
+.rb-cell .lbl-row { display: flex; flex-direction: column; gap: 5px; }
+.rb-cell .lbl {
+  font-size: 30px; font-weight: 900; letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: var(--green-900);
+}
+.rb-cell .desc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; color: rgba(13,59,42,0.5); font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* Photo-backed variant */
+.rb-cell-photo {
+  color: white;
+  justify-content: flex-end;
+  background: var(--green-900);
+}
+.rb-cell-photo .rb-photo {
+  position: absolute; inset: 0; z-index: 0;
+}
+.rb-cell-photo .rb-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(255,255,255,0.5);
+}
+.rb-cell-photo .rb-photo-mask {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(6,29,20,0.40) 0%, rgba(6,29,20,0.15) 30%, rgba(6,29,20,0.65) 78%, rgba(6,29,20,0.92) 100%);
+}
+.rb-cell-photo .lbl-row {
+  position: relative; z-index: 2;
+}
+.rb-cell-photo .lbl {
+  color: white;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+}
+.rb-cell-photo .desc {
+  color: rgba(255,255,255,0.78);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+
+/* Featured variant — 특템발굴단 */
+.rb-cell-feature .feat-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--green-950);
+  background: var(--gold-400);
+  padding: 5px 10px;
+  border-radius: 4px;
+  align-self: flex-start;
+  width: max-content;
+  margin-bottom: 6px;
+  white-space: nowrap;
+}
+.rb-cell-feature .feat-title {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--gold-400) !important;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+}
+.rb-cell-feature .feat-sub {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: rgba(255,255,255,0.92) !important;
+  white-space: normal !important;
+  line-height: 1.4;
+  margin-top: 6px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+.rb-cell-feature .rb-photo-mask {
+  background:
+    linear-gradient(180deg, rgba(6,29,20,0.30) 0%, rgba(6,29,20,0.15) 30%, rgba(6,29,20,0.75) 75%, rgba(6,29,20,0.95) 100%);
+}
+
+.row-kgtr {
+  display: grid;
+  grid-template-columns: 810px 810px;
+  height: 875px;  /* 좌 구단랭킹 875 · 우 통합 광고 875 — 늘린 뒤 푸터와 겹치지 않게 */
+  grid-template-rows: 500px;
+  width: 1620px;
+}
+.row-kgtr .kgtr-right { display: block; }
+/* 우측 통합 광고 자리 — 위너스클럽·르노·의류·득템 4칸을 하나로 (810×875) */
+.mega-ad {
+  width: 810px; height: 875px;
+  background: linear-gradient(160deg, var(--green-850) 0%, var(--green-950) 100%);
+  border-left: 2px solid var(--green-900);
+  position: relative; overflow: hidden;
+}
+.mega-ad .ad-sample { flex-direction: column; align-items: flex-start; justify-content: center; gap: 22px; padding: 0 64px; }
+.mega-ad .ad-sample-title { font-size: 64px; color: #fff; }
+.mega-ad .ad-sample-sub { font-size: 30px; color: rgba(255,255,255,.72); }
+.mega-ad .ad-sample-mark { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.34); color: #fff; }
+.mega-ad .ad-cta { right: 64px; top: auto; bottom: 56px; transform: none; align-items: flex-start; }
+.mega-ad .ad-cta-size { color: rgba(255,255,255,.62); }
+
+.kgtr-promo {
+  width: 810px; height: 875px;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(212,176,107,0.12) 0%, transparent 50%),
+    linear-gradient(180deg, var(--green-800) 0%, var(--green-900) 100%);
+  color: white;
+  position: relative; overflow: hidden;
+  padding: 32px 36px 30px;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 16px;
+}.kgtr-promo::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: linear-gradient(180deg, transparent, black 30%, black 70%, transparent);
+  pointer-events: none;
+}
+.kgtr-promo > * { position: relative; }
+
+/* Brand row */
+.kgtr-promo .kgtr-brand {
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.kgtr-promo .manian-mark {
+  display: flex; flex-direction: column; line-height: 1; gap: 6px;
+}
+.kgtr-promo .manian-mark .m-text {
+  font-size: 22px; font-weight: 900; letter-spacing: 0.08em; color: white;
+}
+.kgtr-promo .manian-mark .m-tagline {
+  font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.55); letter-spacing: 0.22em;
+}
+.kgtr-promo .kgtr-week {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+  text-align: right;
+}
+.kgtr-promo .kgtr-week .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 800; color: var(--gold-400); letter-spacing: 0.14em;
+}
+.kgtr-promo .kgtr-week .t-name {
+  font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.85); white-space: nowrap;
+}
+
+/* Headline */
+.kgtr-promo .kgtr-headline {
+  margin: 0; display: flex; flex-direction: column; gap: 8px;
+}
+.kgtr-promo .kgtr-headline .kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 800; color: var(--gold-500); letter-spacing: 0.22em;
+}
+.kgtr-promo .kgtr-headline .title {
+  font-size: 28px; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+}
+.kgtr-promo .kgtr-headline .title em {
+  font-style: normal; color: var(--gold-400);
+}
+
+/* Body: rank + cards */
+.kgtr-promo .kgtr-body {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 14px;
+  align-items: stretch;
+}
+.kgtr-promo .kgtr-rank {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex; flex-direction: column;
+}
+.kgtr-promo .rank-head {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--gold-400);
+  font-size: 11px; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 6px;
+}
+.kgtr-promo .rank-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+}
+.kgtr-promo .rank-row + .rank-row { border-top: 1px solid rgba(255,255,255,0.05); }
+.kgtr-promo .r-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px; font-weight: 800; color: var(--gold-500);
+  font-variant-numeric: tabular-nums;
+}
+.kgtr-promo .r-team {
+  font-size: 14px; font-weight: 700; color: white;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.kgtr-promo .r-pt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.95);
+  font-variant-numeric: tabular-nums;
+}
+
+.kgtr-promo .kgtr-cards {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.kgtr-promo .kgtr-card {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 12px;
+  padding: 12px 14px;
+  position: relative; overflow: hidden;
+}
+.kgtr-promo .kgtr-card.mvp-card {
+  border-color: rgba(212,176,107,0.30);
+}
+.kgtr-promo .card-photo {
+  position: absolute; inset: 0; z-index: 0;
+}
+.kgtr-promo .card-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(255,255,255,0.5);
+}
+.kgtr-promo .card-mask {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(6,29,20,0.55) 0%, rgba(6,29,20,0.25) 35%, rgba(6,29,20,0.65) 70%, rgba(6,29,20,0.92) 100%);
+}
+.kgtr-promo .kgtr-card.mvp-card .card-mask {
+  background:
+    linear-gradient(180deg, rgba(50,32,8,0.55) 0%, rgba(30,18,4,0.45) 35%, rgba(40,26,8,0.78) 70%, rgba(20,12,2,0.92) 100%);
+}
+.kgtr-promo .card-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; gap: 6px;
+  height: 100%;
+  pointer-events: none;
+}
+.kgtr-promo .card-head {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--gold-400);
+  font-size: 10px; font-weight: 800; letter-spacing: 0.10em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+.kgtr-promo .card-body {
+  display: flex; flex-direction: column; gap: 2px;
+  margin-top: auto;
+}
+.kgtr-promo .p-name {
+  font-size: 16px; font-weight: 900; color: white; letter-spacing: -0.02em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+.kgtr-promo .p-team {
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.75);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+.kgtr-promo .p-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 800; color: var(--gold-400);
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+
+/* CTA */
+.kgtr-promo .kgtr-cta {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--gold-500); color: var(--green-950);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 15px; font-weight: 900;
+  letter-spacing: -0.01em;
+}
+.kgtr-promo .cta-arrow {
+  font-size: 22px; font-weight: 900;
+}
+.r5-left, .r5-right, .r6-left, .r6-right {
+  width: 810px; height: 250px; /* 405×125 → 2× */
+  position: relative; overflow: hidden;
+  display: flex; align-items: center;
+  padding: 0 36px;
+  color: white;
+}
+.r5-left + * , .r6-left + * { border-left: 2px solid var(--green-900); }
+
+/* MANIAN gateway slot — 카페 자체 콘텐츠로 교체 */
+.r5-left {
+  background: linear-gradient(135deg, var(--green-800) 0%, var(--green-900) 100%);
+}
+.r5-left::after {
+  content: ""; position: absolute; right: -50px; bottom: -50px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(212,176,107,0.18), transparent 60%);
+}
+.r5-left .col-l { flex: 1; position: relative; z-index: 2; }
+.r5-left .col-r { flex: 0 0 auto; position: relative; z-index: 2; }
+.r5-left .eyebrow {
+  font-size: 13px; color: var(--gold-400); font-weight: 700;
+  letter-spacing: 0.18em;
+}
+.r5-left h4 {
+  font-size: 30px; font-weight: 900; letter-spacing: -0.03em;
+  margin-top: 8px; line-height: 1.1;
+}
+.r5-left .sub {
+  font-size: 14px; color: var(--on-dark-2);
+  margin-top: 8px; font-weight: 500;
+}
+.r5-left .gw-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold-500); color: var(--green-900);
+  border-radius: 999px; padding: 14px 22px;
+  font-size: 16px; font-weight: 800;
+}
+
+/* Overseas tour */
+.r5-right {
+  background: linear-gradient(135deg, #16557a 0%, #0b2c43 100%);
+}
+.r5-right::before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 80% 20%, rgba(255,200,120,0.22) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 100%, rgba(0,0,0,0.5) 0%, transparent 50%);
+  pointer-events: none;
+}
+.r5-right .col-l { flex: 1; position: relative; z-index: 2; }
+.r5-right .col-r { flex: 0 0 auto; position: relative; z-index: 2; }
+.r5-right .eyebrow {
+  font-size: 13px; color: #ffd494; font-weight: 700; letter-spacing: 0.18em;
+}
+.r5-right h4 {
+  font-size: 30px; font-weight: 900; letter-spacing: -0.03em;
+  margin-top: 8px; line-height: 1.1;
+}
+.r5-right .countries {
+  display: flex; gap: 10px; margin-top: 10px;
+  font-size: 14px; color: rgba(255,255,255,0.82); font-weight: 600;
+}
+.r5-right .pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+  color: white;
+  border-radius: 999px; padding: 14px 22px;
+  font-size: 15px; font-weight: 700;
+}
+
+/* Row 6 left: cafe news */
+.r6-left {
+  background: var(--green-800);
+}
+.r6-left::after {
+  content: ""; position: absolute; left: 60%; top: 50%;
+  transform: translateY(-50%);
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(212,176,107,0.08), transparent 60%);
+}
+.r6-left .col-l { flex: 1; }
+.r6-left .col-r { flex: 0 0 auto; position: relative; z-index: 2; }
+.r6-left .eyebrow {
+  font-size: 13px; color: var(--gold-400); font-weight: 700; letter-spacing: 0.18em;
+}
+.r6-left h4 {
+  font-size: 28px; font-weight: 900; letter-spacing: -0.03em;
+  margin-top: 8px;
+}
+.r6-left .sub {
+  font-size: 14px; color: var(--on-dark-2); margin-top: 8px; font-weight: 500;
+}
+.r6-left .pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.22);
+  color: white;
+  border-radius: 999px; padding: 14px 22px;
+  font-size: 15px; font-weight: 700;
+}
+
+/* KGTR row right-bottom: Renault Grand Koleos ad */
+.renault-ad {
+  width: 810px; height: 250px;
+  position: relative; overflow: hidden;
+  background: #0a0d12;
+  color: white;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+.renault-ad .ra-photo {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 50px; z-index: 0;
+}
+.renault-ad .ra-photo image-slot {
+  width: 100%; height: 100%; display: block;
+  pointer-events: auto;
+  --is-bg: transparent;
+  --is-border: transparent;
+  --is-text: rgba(255,255,255,0.4);
+}
+.renault-ad .ra-bg {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 50px; z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 85% 30%, rgba(255,204,51,0.08) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(24,29,39,0.30) 0%, rgba(10,13,18,0.20) 70%, rgba(5,6,8,0.30) 100%);
+}
+.renault-ad .ra-mask {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 50px; z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(10,13,18,0.95) 0%, rgba(10,13,18,0.78) 30%, rgba(10,13,18,0.30) 55%, transparent 70%);
+}
+.renault-ad .ra-content {
+  position: relative; z-index: 3;
+  padding: 26px 32px 0;
+  display: flex; flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+.renault-ad .ra-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.renault-ad .ra-diamond {
+  width: 28px; height: 28px; flex-shrink: 0;
+}
+.renault-ad .ra-brand-text {
+  display: flex; flex-direction: column; line-height: 1.1;
+}
+.renault-ad .ra-mark {
+  font-size: 14px; font-weight: 800; letter-spacing: 0.26em;
+  color: white;
+}
+.renault-ad .ra-line {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 700; color: #FFCC33;
+  letter-spacing: 0.16em;
+  margin-top: 3px;
+}
+.renault-ad .ra-title {
+  margin: 6px 0 0;
+  font-size: 36px; font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: white;
+  text-shadow: 0 3px 14px rgba(0,0,0,0.7);
+  white-space: nowrap;
+}
+.renault-ad .ra-title .ra-en {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  color: #FFCC33;
+  letter-spacing: 0.24em;
+  margin-top: 6px;
+}
+.renault-ad .ra-tag {
+  font-size: 13px; font-weight: 600;
+  color: rgba(255,255,255,0.82);
+  letter-spacing: -0.01em;
+  margin-top: 10px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+.renault-ad .ra-cta {
+  position: relative; z-index: 4;
+  display: flex; align-items: center; justify-content: space-between;
+  background: #FFCC33;
+  color: #0a0d12;
+  padding: 14px 26px;
+  font-size: 16px; font-weight: 900;
+  letter-spacing: -0.01em;
+}
+.renault-ad .ra-cta .arrow {
+  font-size: 20px; font-weight: 900;
+}
+
+/* Row 6 right: brand slogan */
+.r6-right {
+  background:
+    linear-gradient(180deg, rgba(6,29,20,0.65), rgba(6,29,20,0.85)),
+    linear-gradient(135deg, var(--green-700), var(--green-900));
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 0 32px;
+  flex-direction: column; gap: 14px;
+}
+.r6-right .crest {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--gold-400); border-radius: 50%;
+  position: relative;
+}
+.r6-right h4 {
+  font-size: 30px; font-weight: 900; letter-spacing: 0.08em;
+  color: var(--gold-400);
+  white-space: nowrap;
+}
+.r6-right .since {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; color: var(--on-dark-3); letter-spacing: 0.3em; font-weight: 600;
+}
+</style>
+  <script src="../image-slot.js"></script>
+</head>
+<body>
+
+
+<!-- 1620×1716 master @2x — sliceable into Naver Cafe banner cells -->
+<div class="cafe-master" id="master">
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW 0 · 최상단 광고 배너 (810×140 display / 1620×280 @2x) -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="banner top-ad ad-slot" id="b-0-ad" data-slot="A" data-name="최상단 광고 배너" data-size="810 × 140">
+    <image-slot id="top-ad-banner" shape="rect" placeholder=""></image-slot>
+    <div class="ad-sample">
+      <div class="ad-sample-mark">AD</div>
+      <div class="ad-sample-copy">
+        <span class="ad-sample-title">A 광고 배너</span>
+        <span class="ad-sample-sub">810 × 140 · 카페 최상단 첫 화면</span>
+      </div>
+    </div>
+    <div class="ad-cta">
+      <span class="ad-cta-tag">이 자리 광고 문의 →</span>
+      <span class="ad-cta-size">최상단 · 810 × 140</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW 1 · Hero ────────────────── 3 × (270×178) @2x = 540×356 -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="row row-1">
+
+    <!-- 1-1: 국내 골프조인 -->
+    <div class="banner hero" id="b-1-1">
+      <div class="hero-photo h1">
+        <image-slot id="cafe-hero-1" shape="rect" src="a0b27fa8-c41f-4d6c-ad91-b49f037acc78" placeholder="스윈 사진·라운딩 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+
+      <div class="hero-top">
+        <span class="chip hot">HOT</span>
+        <span class="eyebrow">JOIN · 국내</span>
+      </div>
+      <h2 class="hero-title">국내<br><span class="gold">골프조인</span></h2>
+      <div class="hero-sub">지금 모집중인 조인!<br>바로 참여하세요~</div>
+      <div class="hero-bottom">
+        <span class="hero-cta">지금 참여하기 →</span>
+      </div>
+    </div>
+
+    <!-- 1-2: 골마스쿨 레슨조인 -->
+    <div class="banner hero" id="b-1-2">
+      <div class="hero-photo h2">
+        <image-slot id="cafe-hero-2" shape="rect" src="49b08497-e60e-43b8-8e0e-d07d9c54aab0" placeholder="레슨·코칭 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+
+      <div class="hero-top">
+        <span class="chip new">NEW</span>
+        <span class="eyebrow">SCHOOL · 레슨</span>
+      </div>
+      <h2 class="hero-title">골마스쿨<br><span class="gold">레슨조인</span></h2>
+      <div class="hero-sub">함께해서 더 부담없이,<br>같이 배워서 더 즐겁게!</div>
+      <div class="hero-bottom">
+        <span class="hero-cta">클래스 보러가기 →</span>
+      </div>
+    </div>
+
+    <!-- 1-3: 해외 골프조인 & 골프투어 -->
+    <div class="banner hero" id="b-1-3">
+      <div class="hero-photo h3">
+        <image-slot id="cafe-hero-3" shape="rect" src="24f4f617-77e0-4078-b101-0d2b0c868585" placeholder="해외 골프장·리조트 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+
+      <div class="hero-top">
+        <span class="chip premium">PREMIUM</span>
+        <span class="eyebrow">TOUR · 해외</span>
+      </div>
+      <h2 class="hero-title"><span class="gold">골프투어</span><br>해외 골프조인</h2>
+      <div class="hero-sub">믿을 수 있는<br>해외골프투어를 찾는다면 클릭!</div>
+      <div class="hero-bottom">
+        <span class="hero-cta">해외 투어 보기 →</span>
+      </div>
+    </div>
+
+  </div>
+
+    <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW 2 · 광고 배너 (810×135 display / 1620×270 @2x)   -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="banner ad-banner ad-slot" id="b-2-ad" data-slot="B" data-name="본문 중단 광고 배너" data-size="810 × 135">
+    <image-slot id="cafe-ad-banner" shape="rect" placeholder=""></image-slot>
+    <div class="ad-sample">
+      <div class="ad-sample-mark">AD</div>
+      <div class="ad-sample-copy">
+        <span class="ad-sample-title">B 광고 배너</span>
+        <span class="ad-sample-sub">810 × 135 · 본문 중단 전면</span>
+      </div>
+    </div>
+    <div class="ad-cta">
+      <span class="ad-cta-tag">이 자리 광고 문의 →</span>
+      <span class="ad-cta-size">본문 중단 · 810 × 135</span>
+    </div>
+  </div>
+
+    <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW 3 · 골마스쿨 클래스 (810×180) = 162 + 4×162 -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="row row-3">
+
+    <div class="banner r3-title ad-slot" id="b-3-1" data-slot="D-0" data-name="레슨 앞 광고 배너" data-size="162 × 180">
+      <image-slot id="lesson-ad-banner" shape="rect" placeholder=""></image-slot>
+      <div class="ad-sample">
+        <div class="ad-sample-mark">AD</div>
+        <div class="ad-sample-copy">
+          <span class="ad-sample-title">D-0 광고 배너</span>
+          <span class="ad-sample-sub">162 × 180 · 레슨 상품 바로 앞</span>
+        </div>
+      </div>
+      <div class="ad-cta">
+        <span class="ad-cta-tag">이 자리 광고 문의 →</span>
+        <span class="ad-cta-size">레슨 앞 · 162 × 180</span>
+      </div>
+    </div>
+
+    <div class="banner r3-class" id="b-3-2">
+      <div class="r3c-photo">
+        <image-slot id="golma-class-1" shape="rect" src="1a3898ef-1cad-4af9-b3f0-85336674cc73" placeholder="드라이버 클래스 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+      <span class="num">서울 <span class="sep">|</span> 광진구</span>
+      <h4>워커힐 숏파르타<br>만족도 최상, 숏게임 특훈<span class="sub">2시간 1회 단과반부터 6주 과정까지!<br>평일주말, 시간도 내마음대로~</span></h4>
+      <span class="r3c-cta">수업 참여하기</span>
+    </div>
+
+    <div class="banner r3-class" id="b-3-3">
+      <div class="r3c-photo">
+        <image-slot id="golma-class-2" shape="rect" src="0c5365c1-3d80-407b-84a4-de42db2c3390" placeholder="아이언 클래스 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+      <span class="num">서울 <span class="sep">|</span> 청담&amp;여의도</span>
+      <h4>홍태경 프로<br>일대일 맞춤 골프레슨<span class="sub">시원한 실내 골프스튜디오에서 진행<br>비거리향상은 기본, 예쁜 스윙 만들기</span></h4>
+      <span class="r3c-cta">수업 참여하기</span>
+    </div>
+
+    <div class="banner r3-class" id="b-3-4">
+      <div class="r3c-photo">
+        <image-slot id="golma-class-3" shape="rect" src="ff6b7a50-fd03-48a0-a7d4-b40a1512e993" placeholder="숏게임 클래스 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+      <span class="num">인천 <span class="sep">|</span> 영종</span>
+      <h4>이혜빈 프로<br>숏게임+타석 150분 집중레슨<span class="sub">클럽72 숏게임연습장 및 타석 레슨 150분<br>스윙의 자신감을 찾아드립니다!</span></h4>
+      <span class="r3c-cta">수업 참여하기</span>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW 3b · 골마스쿨 추가 (이성주 + 빈셀 3) 4 × (405×450) -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="row row-3b">
+
+    <div class="banner r3-class" id="b-3b-1">
+      <div class="r3c-photo">
+        <image-slot id="golma-class-4" shape="rect" src="8f9a59f8-b453-492a-8cac-13818c85e4ee" placeholder="여성반 클래스 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+      <span class="num">경기 <span class="sep">|</span> 용인</span>
+      <h4>이성주 프로<br>초보탈출 100일의 기적<span class="sub">수준별 맞춤레슨, 올여름 100타 깨기<br>30분씩 30회 타석부터 숏게임까지 완성</span></h4>
+      <span class="r3c-cta">수업 참여하기</span>
+    </div>
+
+    <div class="banner r3-class r3-class-empty" id="b-3b-2">
+      <div class="r3c-photo">
+        <image-slot id="golma-class-5" shape="rect" placeholder="클래스 5 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+      <span class="num">지역 <span class="sep">|</span> 위치</span>
+      <h4>프로명<br>클래스 제목 자리<span class="sub">한 줄 설명 자리, 자유롭게 변경하세요<br>두 번째 줄도 활용 가능</span></h4>
+      <span class="r3c-cta">수업 참여하기</span>
+    </div>
+
+    <div class="banner r3-class r3-class-empty" id="b-3b-3">
+      <div class="r3c-photo">
+        <image-slot id="golma-class-6" shape="rect" placeholder="클래스 6 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+      <span class="num">지역 <span class="sep">|</span> 위치</span>
+      <h4>프로명<br>클래스 제목 자리<span class="sub">한 줄 설명 자리, 자유롭게 변경하세요<br>두 번째 줄도 활용 가능</span></h4>
+      <span class="r3c-cta">수업 참여하기</span>
+    </div>
+
+    <div class="banner r3-class r3-class-empty" id="b-3b-4">
+      <div class="r3c-photo">
+        <image-slot id="golma-class-7" shape="rect" placeholder="클래스 7 사진을 끌어다 놓으세요"></image-slot>
+      </div>
+      <div class="photo-mask"></div>
+      <span class="num">지역 <span class="sep">|</span> 위치</span>
+      <h4>프로명<br>클래스 제목 자리<span class="sub">한 줄 설명 자리, 자유롭게 변경하세요<br>두 번째 줄도 활용 가능</span></h4>
+      <span class="r3c-cta">수업 참여하기</span>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW 4b · 광고 배너 (810×140 display / 1620×280 @2x) — 최상단과 동일 규격 -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="banner top-ad ad-slot" id="b-4b-ad" data-slot="C" data-name="본문 하단 광고 배너" data-size="810 × 140">
+    <image-slot id="mid2-ad-banner" shape="rect" placeholder=""></image-slot>
+    <div class="ad-sample">
+      <div class="ad-sample-mark">AD</div>
+      <div class="ad-sample-copy">
+        <span class="ad-sample-title">C 광고 배너</span>
+        <span class="ad-sample-sub">810 × 140 · 본문 하단 전면</span>
+      </div>
+    </div>
+    <div class="ad-cta">
+      <span class="ad-cta-tag">이 자리 광고 문의 →</span>
+      <span class="ad-cta-size">본문 하단 · 810 × 140</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW 5 · 회원권 거래소 (3 × 540×480) — 히어로 사이즈 -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="row row-5m" style="height: 450px;">
+
+    <div class="banner r5m-vendor" id="b-5m-2">
+      <span class="top-tag">골마 추천 회원권 거래소</span>
+      <div class="copy">고객님이 <em>YES</em> 외칠 때까지<br>최선을 다하겠습니다.</div>
+      <div class="logo-slot">
+        <image-slot id="vendor-logo-yes" shape="rect" fit="contain" src="97855ab0-9003-43bf-83e6-07c0d92ee654" placeholder="〉예스회원권거래소 로고 (가로형)"></image-slot>
+      </div>
+      <div class="english">UNTIL YOU SAY YES, WILL DO MY BEST.</div>
+      <div class="footer">
+        <span class="brand">㈜예스회원권거래소</span>
+        <span class="phone">
+          <span class="phone-circle">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24c1.16.39 2.4.6 3.68.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.46a1 1 0 0 1 1 1c0 1.28.21 2.52.6 3.68a1 1 0 0 1-.24 1.05l-2.2 2.06z"></path></svg>
+          </span>
+          02-535-2043
+        </span>
+      </div>
+    </div>
+
+    <div class="banner r5m-vendor" id="b-5m-3">
+      <span class="top-tag">골마 추천 회원권 거래소</span>
+      <div class="copy">I belie<em>V</em>e <em>Y</em>ou<br>정직, 정확, 정성</div>
+      <div class="logo-slot">
+        <image-slot id="vendor-logo-ivy" shape="rect" fit="contain" src="bde19b1a-8b8d-4449-b59b-b76a1200e5d9" placeholder="IVY LEISURE 로고 (가로형)"></image-slot>
+      </div>
+      <div class="english">IVY LEISURE · GOLF &amp; CONDO</div>
+      <div class="footer">
+        <span class="brand">IVY LEISURE</span>
+        <span class="phone">
+          <span class="phone-circle">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24c1.16.39 2.4.6 3.68.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.46a1 1 0 0 1 1 1c0 1.28.21 2.52.6 3.68a1 1 0 0 1-.24 1.05l-2.2 2.06z"></path></svg>
+          </span>
+          02-404-2228
+        </span>
+      </div>
+    </div>
+
+    <div class="banner r5m-vendor" id="b-5m-4">
+      <span class="top-tag">골마 추천 회원권 거래소</span>
+      <div class="copy"><em>최고가 매입</em>, <em>최저가 판매</em><br>365일 친절한 원스톱 서비스</div>
+      <div class="logo-slot">
+        <image-slot id="vendor-logo-gj" shape="rect" fit="contain" src="b074cb2e-2e81-4fd7-8055-16d5d6f06dcb" placeholder="광장회원권거래소 로고 (가로형)"></image-slot>
+      </div>
+      <div class="english">GWANGJANG MEMBERSHIP EXCHANGE</div>
+      <div class="footer">
+        <span class="brand">광장회원권거래소</span>
+        <span class="phone">
+          <span class="phone-circle">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24c1.16.39 2.4.6 3.68.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.46a1 1 0 0 1 1 1c0 1.28.21 2.52.6 3.68a1 1 0 0 1-.24 1.05l-2.2 2.06z"></path></svg>
+          </span>
+          02-423-0644
+        </span>
+      </div>
+    </div>
+
+
+    <div class="banner r5m-vendor" id="b-5m-5">
+      <span class="top-tag">골마 추천 회원권 거래소</span>
+      <div class="copy">회원권 문의는<br><em>한솔회원권거래소</em></div>
+      <div class="logo-slot">
+        <image-slot id="vendor-logo-4" shape="rect" fit="contain" src="hansol-logo.png" placeholder="로고 (가로형)"></image-slot>
+      </div>
+      <div class="english">MEMBERSHIP EXCHANGE</div>
+      <div class="footer">
+        <span class="brand">한솔회원권거래소</span>
+        <span class="phone">
+          <span class="phone-circle">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24c1.16.39 2.4.6 3.68.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.46a1 1 0 0 1 1 1c0 1.28.21 2.52.6 3.68a1 1 0 0 1-.24 1.05l-2.2 2.06z"></path></svg>
+          </span>
+          02-000-0000
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW KGTR · 좌측 통합 KGTR 배너 + 우측 (투어 + 슬로건) -->
+  <!-- 좌 405×250 / 우 405×125 + 405×125  (display)            -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="row row-kgtr">
+
+    <!-- KGTR PROMO — spans full row height -->
+    <div class="banner kgtr-promo" id="b-kgtr">
+      <div class="kgtr-brand">
+        <div class="manian-mark">
+          <span class="m-text">MANIAN</span>
+          <span class="m-tagline">FOR THOSE WHO LIVE IT</span>
+        </div>
+        <div class="kgtr-week">
+          <span class="lbl">2026 · KLPGA</span>
+          <span class="t-name">한국프로골프구단랭킹(KGTR)</span>
+        </div>
+      </div>
+
+      <h3 class="kgtr-headline">
+        <span class="kicker">SIGNATURE · MANIAN</span>
+        <span class="title">NH투자증권 레이디스 챔피언십 <em>구단랭킹</em></span>
+      </h3>
+
+      <div class="kgtr-body">
+        <!-- TOP 5 -->
+        <div class="kgtr-rank">
+          <div class="rank-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 4h8v6a4 4 0 0 1-8 0V4z"></path>
+              <path d="M6 4H4v3a3 3 0 0 0 3 3M18 4h2v3a3 3 0 0 1-3 3M9 18h6M10 14v4M14 14v4"></path>
+            </svg>
+            <span>TOP 5 구단</span>
+          </div>
+          <div class="rank-list">
+            <div class="rank-row"><span class="r-num">01</span><span class="r-team">NH투자증권</span><span class="r-pt">106</span></div>
+            <div class="rank-row"><span class="r-num">02</span><span class="r-team">삼천리</span><span class="r-pt">97.64</span></div>
+            <div class="rank-row"><span class="r-num">03</span><span class="r-team">롯데</span><span class="r-pt">97</span></div>
+            <div class="rank-row"><span class="r-num">04</span><span class="r-team">대방건설</span><span class="r-pt">92.25</span></div>
+            <div class="rank-row"><span class="r-num">05</span><span class="r-team">대보건설</span><span class="r-pt">88</span></div>
+          </div>
+        </div>
+
+        <!-- MVP + FA cards stacked -->
+        <div class="kgtr-cards">
+          <div class="kgtr-card mvp-card">
+            <div class="card-photo">
+              <image-slot id="kgtr-mvp-photo" shape="rect" src="dd9011d5-700b-4747-945b-9669ad57e400" placeholder="우승선수 사진"></image-slot>
+            </div>
+            <div class="card-mask"></div>
+            <div class="card-content">
+              <div class="card-head">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16l-5.4 2.9 1-6.1L3.2 8.5l6.1-.9L12 2z"></path>
+                </svg>
+                <span>대회 우승 선수</span>
+              </div>
+              <div class="card-body">
+                <span class="p-name">김효주</span>
+                <span class="p-team">롯데</span>
+                <span class="p-score">-9 우승</span>
+              </div>
+            </div>
+          </div>
+          <div class="kgtr-card fa-card">
+            <div class="card-photo">
+              <image-slot id="kgtr-fa-photo" shape="rect" src="5e8f27f3-4ac8-481c-86fc-30a3600ff10e" placeholder="FA 선수 사진"></image-slot>
+            </div>
+            <div class="card-mask"></div>
+            <div class="card-content">
+              <div class="card-head">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 20l8-16 8 16M9 14h6"></path>
+                </svg>
+                <span>FA 선수 랭킹 TOP</span>
+              </div>
+              <div class="card-body">
+                <span class="p-name">유서연2</span>
+                <span class="p-team">FA</span>
+                <span class="p-score">627pt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kgtr-cta">
+        <span class="cta-label">구단 랭킹 전체 보기</span>
+        <span class="cta-arrow">→</span>
+      </div>
+    </div>
+
+    <!-- 우측 통합 광고 자리 (810×875) — 위너스클럽·르노·의류·득템 자리를 하나로 -->
+    <div class="kgtr-right">
+      <div class="banner mega-ad" id="b-mega-ad">
+        <div class="mp-ad">
+          <svg class="mp-logo" viewBox="0 0 468 64" role="img" aria-label="MATCHPOST">
+            <rect width="64" height="64" rx="16.6" fill="#17171B"></rect>
+            <rect x="0" y="37.1" width="64" height="1.9" fill="#FFFFFF" fill-opacity="0.26"></rect>
+            <rect x="24.3" y="0" width="1.9" height="64" fill="#FFFFFF" fill-opacity="0.26"></rect>
+            <circle cx="25.3" cy="38.1" r="8.3" fill="#F59E0B"></circle>
+            <text x="88" y="50.2" font-family="Archivo, Helvetica, Arial, sans-serif" font-weight="900" font-size="50" letter-spacing="2.75" fill="#FFFFFF">MATCH</text>
+            <circle cx="303" cy="32" r="6.5" fill="#F59E0B"></circle>
+            <text x="315" y="50.2" font-family="Archivo, Helvetica, Arial, sans-serif" font-weight="900" font-size="50" letter-spacing="2.75" fill="#FFFFFF">POST</text>
+          </svg>
+          <h3 class="mp-head">대화 한 번으로<br><em>협업이 시작됩니다</em></h3>
+          <p class="mp-sub">인플루언서가 열어둔 날짜를 보고<br>바로 대시를 보내세요.</p>
+          <div class="mp-rows">
+            <div class="mp-row"><span class="mp-num">01</span><span class="mp-txt">날짜로 찾는 인플루언서</span></div>
+            <div class="mp-row"><span class="mp-num">02</span><span class="mp-txt">딜시트로 보는 진행 단계</span></div>
+            <div class="mp-row"><span class="mp-num">03</span><span class="mp-txt">정산까지 한 곳에서</span></div>
+          </div>
+          <div class="mp-cta"><span>matchpost.kr</span><span class="mp-arrow">→</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW AD4 · 카드형 광고 4자리 (회원권 거래소와 같은 규격 405×450 @2x) -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="row row-5m" style="height: 450px;">
+
+    <div class="banner r5m-vendor ad-cell" id="b-ad4-1" data-slot="E-1" data-name="카드형 광고" data-size="202 × 225">
+      <image-slot id="ad4-img-1" shape="rect" placeholder=""></image-slot>
+      <div class="ad-cell-sample">
+        <span class="ad-cell-mark">AD</span>
+        <span class="ad-cell-title">브랜드 이름</span>
+        <span class="ad-cell-sub">한 줄 메시지가<br>들어갑니다</span>
+      </div>
+      <div class="ad-cell-cta">
+        <span class="ad-cell-tag">이 자리 광고 문의 →</span>
+        <span class="ad-cell-size">202 × 225</span>
+      </div>
+    </div>
+
+    <div class="banner r5m-vendor ad-cell" id="b-ad4-2" data-slot="E-2" data-name="카드형 광고" data-size="202 × 225">
+      <image-slot id="ad4-img-2" shape="rect" placeholder=""></image-slot>
+      <div class="ad-cell-sample">
+        <span class="ad-cell-mark">AD</span>
+        <span class="ad-cell-title">브랜드 이름</span>
+        <span class="ad-cell-sub">한 줄 메시지가<br>들어갑니다</span>
+      </div>
+      <div class="ad-cell-cta">
+        <span class="ad-cell-tag">이 자리 광고 문의 →</span>
+        <span class="ad-cell-size">202 × 225</span>
+      </div>
+    </div>
+
+    <div class="banner r5m-vendor ad-cell" id="b-ad4-3" data-slot="E-3" data-name="카드형 광고" data-size="202 × 225">
+      <image-slot id="ad4-img-3" shape="rect" placeholder=""></image-slot>
+      <div class="ad-cell-sample">
+        <span class="ad-cell-mark">AD</span>
+        <span class="ad-cell-title">브랜드 이름</span>
+        <span class="ad-cell-sub">한 줄 메시지가<br>들어갑니다</span>
+      </div>
+      <div class="ad-cell-cta">
+        <span class="ad-cell-tag">이 자리 광고 문의 →</span>
+        <span class="ad-cell-size">202 × 225</span>
+      </div>
+    </div>
+
+    <div class="banner r5m-vendor ad-cell" id="b-ad4-4" data-slot="E-4" data-name="카드형 광고" data-size="202 × 225">
+      <image-slot id="ad4-img-4" shape="rect" placeholder=""></image-slot>
+      <div class="ad-cell-sample">
+        <span class="ad-cell-mark">AD</span>
+        <span class="ad-cell-title">브랜드 이름</span>
+        <span class="ad-cell-sub">한 줄 메시지가<br>들어갑니다</span>
+      </div>
+      <div class="ad-cell-cta">
+        <span class="ad-cell-tag">이 자리 광고 문의 →</span>
+        <span class="ad-cell-size">202 × 225</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- ROW FOOTER · 골프마니아클럽 홍보 + 제휴문의 (810×100 display) -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="banner footer-cta" id="b-footer" data-slot="D" data-name="푸터 · 제휴 및 협업문의" data-size="810 × 100">
+    <div class="fc-photo">
+      <image-slot id="footer-bg" shape="rect" src="b064bc7e-4284-43e6-8642-8dfc92e7994c" placeholder="페어웨이/그린 사진을 끌어다 놓으세요"></image-slot>
+    </div>
+    <div class="fc-mask"></div>
+    <div class="fc-left">
+      <div class="fc-logo">
+        <img src="93c39aed-ac95-4aac-85b3-f318a8589653" alt="골프마니아클럽">
+      </div>
+      <div class="fc-text">
+        <span class="fc-tag">대한민국 No.1 골프커뮤니티</span>
+        <span class="fc-brand">골프마니아클럽</span>
+      </div>
+    </div>
+    <button class="fc-cta">
+      <span>제휴 및 협업문의</span>
+      <span class="arrow">→</span>
+    </button>
+  </div>
+
+</div>
+
+<!-- Floating export controls -->
+<div id="export-bar" style="position:fixed;top:16px;right:272px;z-index:9999;display:flex;gap:8px;font-family:system-ui,sans-serif;flex-wrap:wrap;max-width:calc(100vw - 304px);justify-content:flex-end;">
+  <button id="btn-export-png" style="padding:10px 16px;border-radius:8px;border:1px solid #d4b06b;background:#0d3b2a;color:#f4e2b0;font-size:13px;font-weight:700;letter-spacing:0.04em;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.4);">
+    ⬇ 마스터 PNG (810×자동)
+  </button>
+  <button id="btn-export-today" style="padding:10px 16px;border-radius:8px;border:1px solid #d4b06b;background:#1c6649;color:#f4e2b0;font-size:13px;font-weight:700;letter-spacing:0.04em;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.4);">
+    ⬇ 오늘 수정 셀 (810)
+  </button>
+  <button id="btn-export-cells-1x" style="padding:10px 16px;border-radius:8px;border:1px solid #d4b06b;background:#d4b06b;color:#0d3b2a;font-size:13px;font-weight:700;letter-spacing:0.04em;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.4);">
+    ⬇ 셀별 PNG ZIP (행별 최적)
+  </button>
+  <button id="btn-export-cells" style="padding:10px 16px;border-radius:8px;border:1px solid rgba(212,176,107,0.5);background:rgba(212,176,107,0.2);color:#f4e2b0;font-size:13px;font-weight:700;letter-spacing:0.04em;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.4);">
+    ⬇ 셀별 @2x ZIP (원본)
+  </button>
+  <span id="export-status" style="padding:10px 14px;border-radius:8px;background:rgba(0,0,0,0.7);color:#fff;font-size:12px;display:none;align-self:center;"></span>
+</div>
+<script>
+  // ─────────────────────────────────────────────────────────
+  // Cell map: banner ID → output filename (per exports/README.md)
+  // ─────────────────────────────────────────────────────────
+  // [id, filename, targetWidth(px)]
+  // targetWidth = 카페 본문 폭 810 안에서, 셀 사이 인라인 공백을 ~15px 여유 두고 계산한 행별 폭
+  const CELL_MAP = [
+    ['b-0-ad',     'row0-top-ad-shortgame',    810],  // Row 0 solo
+    ['b-1-1',      'hero-01-domestic-join',    260],  // Row 1: 3 heroes (3×260 + 2×15 = 810)
+    ['b-1-2',      'hero-02-golma-lesson',     260],
+    ['b-1-3',      'hero-03-kgtr',             260],
+    ['b-2-ad',     'row2-ad-uvmask',           810],  // Row 2 solo
+    ['b-3-1',      'row3-01-golma-intro',      195],  // Row 3: 4 cells (4×195 + 3×10 ≈ 810)
+    ['b-3-2',      'row3-02-class-walkerhill', 195],
+    ['b-3-3',      'row3-03-class-hong',       195],
+    ['b-3-4',      'row3-04-class-lee-h',      195],
+    ['b-3b-1',     'row3b-01-class-lee-s',     195],  // Row 3b: 이성주만 (빈셀 3개는 이미지 없어서 제외)
+    ['b-4-2',      'row4-01-course-info',      198],  // Row 4: 4 cells (4×198 + 3×6 ≈ 810)
+    ['b-4-3',      'row4-02-gear-review',      198],
+    ['b-4-4',      'row4-03-best-swing',       198],
+    ['b-4-ad',     'row4-04-ad-travelroom',    198],
+    ['b-5m-2',     'row5-01-membership-yes',   265],  // Row 5: 3 vendors (3×265 + 2×7 ≈ 810)
+    ['b-5m-3',     'row5-02-membership-ivy',   265],
+    ['b-5m-4',     'row5-03-membership-gj',    265],
+    ['b-kgtr',     'row6-01-kgtr-promo',       810],  // Row 6: each solo (full-width)
+    ['b-5-2',      'row6-02-winners-club',     810],
+    ['b-6-2',      'row6-03-renault-koleos',   810],
+    ['b-7-1',      'row7-01-club-driver',      198],  // Row 7: 4 cells (4×198 + 3×6 ≈ 810)
+    ['b-7-2',      'row7-02-club-iron',        198],
+    ['b-7-3',      'row7-03-club-apparel',     198],
+    ['b-7-4',      'row7-04-special-mask',     198],
+    ['b-footer',   'footer-golmania',          810],  // Footer solo
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // PNG Export — renders full master at 1620×2840 and downloads.
+  // ─────────────────────────────────────────────────────────
+  (function() {
+    const btnMaster = document.getElementById('btn-export-png');
+    const btnCells = document.getElementById('btn-export-cells');
+    const btnCells1x = document.getElementById('btn-export-cells-1x');
+    const status = document.getElementById('export-status');
+    const exportBar = document.getElementById('export-bar');
+
+    function setStatus(msg, color) {
+      status.style.display = 'inline-block';
+      status.textContent = msg;
+      if (color) status.style.background = color;
+    }
+
+    btnMaster.addEventListener('click', async () => {
+      btnMaster.disabled = true; btnMaster.style.opacity = '0.6';
+      setStatus('렌더링 중…', 'rgba(0,0,0,0.7)');
+      try {
+        exportBar.style.visibility = 'hidden';
+        const node = document.getElementById('master');
+        // Master is drawn at 1620 (@2x). Scale 810/1620 = 0.5 to match
+        // Naver Cafe content width 810.
+        const SCALE = 810 / 1620;
+        const masterH = Math.round(node.getBoundingClientRect().height);
+        const outH = Math.round(masterH * SCALE);
+        const dataUrl = await htmlToImage.toPng(node, {
+          width: 1620, height: masterH,
+          canvasWidth: 1620, canvasHeight: masterH,
+          pixelRatio: SCALE,
+          backgroundColor: '#0d3b2a',
+          style: { transform: 'none', margin: '0' },
+        });
+        exportBar.style.visibility = 'visible';
+        setStatus('다운로드 시작…', 'rgba(0,120,60,0.85)');
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = 'cafe-master-810.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        setStatus(`✓ 마스터 PNG (810×${outH}) 완료`, 'rgba(0,120,60,0.85)');
+      } catch (e) {
+        exportBar.style.visibility = 'visible';
+        setStatus('실패: ' + e.message, 'rgba(180,40,40,0.9)');
+        console.error(e);
+      } finally {
+        btnMaster.disabled = false; btnMaster.style.opacity = '1';
+      }
+    });
+
+    async function exportCells(scale, label, zipName) {
+      btnCells.disabled = true; btnCells.style.opacity = '0.6';
+      btnCells1x.disabled = true; btnCells1x.style.opacity = '0.6';
+      btnMaster.disabled = true; btnMaster.style.opacity = '0.6';
+      setStatus(`${label} 셀별 렌더링 준비…`, 'rgba(0,0,0,0.7)');
+      const zip = new JSZip();
+      const folder = zip.folder(zipName);
+      const t0 = performance.now();
+      try {
+        for (let i = 0; i < CELL_MAP.length; i++) {
+          const [id, filename, targetW] = CELL_MAP[i];
+          const el = document.getElementById(id);
+          if (!el) { console.warn('Missing cell:', id); continue; }
+          const rect = el.getBoundingClientRect();
+          const srcW = Math.round(rect.width);
+          const srcH = Math.round(rect.height);
+          // scale === 'cafe' → use per-cell targetWidth (CELL_MAP[2])
+          // scale === number → uniform scale (retina backup)
+          const cellScale = (scale === 'cafe') ? (targetW / srcW) : scale;
+          const outW = Math.round(srcW * cellScale);
+          const outH = Math.round(srcH * cellScale);
+          const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
+          setStatus(`(${i+1}/${CELL_MAP.length}) ${filename} · ${outW}×${outH} · ${elapsed}s`, 'rgba(0,0,0,0.7)');
+          await new Promise(r => setTimeout(r, 16));
+          const dataUrl = await htmlToImage.toPng(el, {
+            width: srcW, height: srcH,
+            canvasWidth: srcW, canvasHeight: srcH,
+            pixelRatio: cellScale,
+            style: { transform: 'none', margin: '0' },
+            // Skip empty <img> elements — they fire an Event on render
+            filter: (node) => !(node?.tagName === 'IMG' && !node.getAttribute('src')),
+          });
+          const b64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
+          folder.file(filename + '.png', b64, { base64: true });
+        }
+        setStatus('ZIP 생성 중…', 'rgba(0,0,0,0.7)');
+        await new Promise(r => setTimeout(r, 16));
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = zipName + '.zip';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        const total = ((performance.now() - t0) / 1000).toFixed(1);
+        setStatus(`✓ ${label} 셀별 PNG ${CELL_MAP.length}개 완료 · ${total}s`, 'rgba(0,120,60,0.85)');
+      } catch (e) {
+        setStatus('실패: ' + e.message, 'rgba(180,40,40,0.9)');
+        console.error(e);
+      } finally {
+        btnCells.disabled = false; btnCells.style.opacity = '1';
+        btnCells1x.disabled = false; btnCells1x.style.opacity = '1';
+        btnMaster.disabled = false; btnMaster.style.opacity = '1';
+      }
+    }
+
+    btnCells1x.addEventListener('click', () => exportCells('cafe', '카페용 (행별 최적)', 'cafe-cells-960'));
+    btnCells.addEventListener('click', () => exportCells(1.0, '@2x', 'cafe-cells-2x'));
+
+    // ── Today's-modifications high-res export ──
+    const TODAY_CELLS = new Set([
+      // Row 3 (golma school, restructured to 4 cells)
+      'b-3-1', 'b-3-2', 'b-3-3', 'b-3-4',
+      // Row 3b (이성주만 — 빈 셀 3개는 image-slot 비어있어서 export 시 에러)
+      'b-3b-1',
+      // Row 4 (community, restructured to 4 cells at 1.5×)
+      'b-4-2', 'b-4-3', 'b-4-4', 'b-4-ad',
+      // Row 5m (membership, vendor cells enlarged to hero size)
+      'b-5m-2', 'b-5m-3', 'b-5m-4',
+      // Row 7 (golmart, 4 cells at 1.5× without intro)
+      'b-7-1', 'b-7-2', 'b-7-3', 'b-7-4',
+    ]);
+    const btnToday = document.getElementById('btn-export-today');
+    btnToday.addEventListener('click', async () => {
+      const orig = CELL_MAP.slice();
+      // Filter in-place by reassigning array contents
+      CELL_MAP.length = 0;
+      for (const e of orig) if (TODAY_CELLS.has(e[0])) CELL_MAP.push(e);
+      try {
+        await exportCells('cafe', '오늘 수정 (카페 폭 810)', 'cafe-today-810');
+      } finally {
+        // Restore
+        CELL_MAP.length = 0;
+        for (const e of orig) CELL_MAP.push(e);
+      }
+    });
+  })();
+
+  // ─────────────────────────────────────────────────────────
+  // Export helpers — isolate one banner at a time for clean
+  // pixel-exact screenshot capture.
+  // ─────────────────────────────────────────────────────────
+  function isolate(id) {
+    const target = document.getElementById(id);
+    if (!target) return;
+    // Hide all banners but the target
+    document.querySelectorAll('.banner').forEach(b => {
+      b.style.display = (b.id === id) ? 'flex' : 'none';
+    });
+    // Hide rows that don't contain the target; reflow contained row
+    document.querySelectorAll('.row').forEach(r => {
+      if (r.contains(target)) {
+        r.style.display = 'flex';
+        r.style.width = 'fit-content';
+      } else {
+        r.style.display = 'none';
+      }
+    });
+    const master = document.getElementById('master');
+    master.style.width = 'fit-content';
+    master.style.background = 'transparent';
+    document.body.style.padding = '0';
+    document.body.style.margin = '0';
+    document.body.style.background = 'transparent';
+    document.documentElement.scrollTop = 0;
+  }
+
+  function showAll() {
+    document.querySelectorAll('.banner').forEach(b => { b.style.display = ''; });
+    document.querySelectorAll('.row').forEach(r => { r.style.display = ''; r.style.width = '1620px'; });
+    const master = document.getElementById('master');
+    master.style.width = '1620px';
+    master.style.background = '';
+    document.body.style.padding = '40px';
+    document.body.style.background = '#1a1a1a';
+  }
+
+  // Render scaled-down master if ?preview is set
+  if (location.search.includes('preview')) {
+    document.body.style.padding = '0';
+    document.body.style.background = '#111';
+    const master = document.getElementById('master');
+    master.style.transformOrigin = 'top left';
+    master.style.transform = 'scale(0.5)';
+    // shrink body to scaled size so scrollbars are correct
+    const wrap = document.createElement('div');
+    wrap.style.width = '810px';
+    wrap.style.height = '858px';
+    master.parentNode.insertBefore(wrap, master);
+    wrap.appendChild(master);
+  }
+</script>
+
+
+
+</body></html>
