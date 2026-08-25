@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
+import SaveButton, { useSaveState } from '@/components/SaveButton'
 
 const CATEGORIES = ['맛집', '패션', '뷰티', '여행', '라이프스타일', '육아', '반려동물', '피트니스', '테크', '기타']
 const PLATFORMS = ['블로그', '유튜브', '인스타그램', '틱톡']
@@ -33,8 +34,9 @@ function ScheduleForm() {
   const [platforms, setPlatforms] = useState<string[]>([])
   const [isPublic, setIsPublic] = useState(true)
   const [seoPublic, setSeoPublic] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  // D31 [4] — 등록 버튼의 상태는 SaveButton 이 들고 있다(하기/중/실패).
+  // 성공은 아래 전면 안내로 이미 말하고 1.5초 뒤 화면을 떠난다.
+  const save = useSaveState()
   // 그날 이미 열어둔 오픈이 있을 때 그리로 보내주기 위한 id.
   // 빨간 오류만 띄우면 사람은 왜 막혔는지 모른 채 같은 걸 또 만들려고 한다.
   const [dupOpenId, setDupOpenId] = useState('')
@@ -54,30 +56,31 @@ function ScheduleForm() {
     )
   }
 
-  const handleSubmit = async () => {
-    if (!selectedDate || !locationCity || !locationDistrict || !title) {
-      setError('날짜, 제목, 장소는 필수 입력이에요.')
-      return
-    }
+  // 필수값이 비면 버튼을 회색으로 둔다 — 눌러보고 나서 「필수예요」를 듣는 것보다 낫다.
+  const canSubmit = !!(selectedDate && locationCity && locationDistrict && title)
 
-    // 종료일이 시작일보다 앞이면 기간이 성립하지 않는다.
-    // 저장까지 가면 [date, date_end] 를 보는 검색이 영영 못 잡는 유령 오픈이 남는다.
-    if (endDate && endDate < selectedDate) {
-      setError('종료일이 시작일보다 앞이에요. 날짜를 다시 확인해주세요.')
-      return
-    }
+  const handleSubmit = () =>
+    save.run(async () => {
+      // 회색이라 눌리지 않지만, 눌린 경우를 위해 남겨둔다.
+      if (!canSubmit) return '날짜, 제목, 장소는 필수 입력이에요.'
 
-    setLoading(true)
-    setError('')
-    setDupOpenId('')
+      // 종료일이 시작일보다 앞이면 기간이 성립하지 않는다.
+      // 저장까지 가면 [date, date_end] 를 보는 검색이 영영 못 잡는 유령 오픈이 남는다.
+      if (endDate && endDate < selectedDate) {
+        return '종료일이 시작일보다 앞이에요. 날짜를 다시 확인해주세요.'
+      }
 
+      setDupOpenId('')
+      return await insertOpen()
+    })
+
+  // 실패 이유를 문자열로 돌려주면 버튼이 「등록 실패」가 된다.
+  const insertOpen = async (): Promise<string | null> => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      // 여기서 그냥 return 하면 버튼이 「등록 중...」인 채로 영영 멈춘다.
+      // 여기서 그냥 return 하면 버튼이 「등록 중…」인 채로 영영 멈췄었다.
       // 로그인이 풀린 것뿐인데 화면은 아무 말도 안 해서 사람이 계속 누르게 된다.
-      setError('로그인이 풀렸어요. 다시 로그인한 뒤 등록해주세요.')
-      setLoading(false)
-      return
+      return '로그인이 풀렸어요. 다시 로그인한 뒤 등록해주세요.'
     }
 
     // 하루에 오픈은 하나다. 두 줄이 되면 광고주 「인플루언서 찾기」에 같은 사람이
@@ -102,9 +105,7 @@ function ScheduleForm() {
 
     if (sameDay && sameDay.length > 0) {
       setDupOpenId(sameDay[0].id)
-      setError('그날은 이미 오픈이 있어요 — 수정하시겠어요?')
-      setLoading(false)
-      return
+      return '그날은 이미 오픈이 있어요 — 수정하시겠어요?'
     }
 
     const freeTagsArray = freeTags
@@ -143,17 +144,14 @@ function ScheduleForm() {
           .order('created_at')
           .limit(1)
         if (existing && existing.length > 0) setDupOpenId(existing[0].id)
-        setError('그날은 이미 오픈이 있어요 — 수정하시겠어요?')
-        setLoading(false)
-        return
+        return '그날은 이미 오픈이 있어요 — 수정하시겠어요?'
       }
-      setError('일정 등록에 실패했어요. 다시 시도해주세요.')
-      setLoading(false)
-      return
+      return '일정 등록에 실패했어요. 다시 시도해주세요.'
     }
 
     setSuccess(true)
     setTimeout(() => router.push('/influencer/dashboard'), 1500)
+    return null
   }
 
   if (success) {
@@ -175,20 +173,8 @@ function ScheduleForm() {
         <h1 className="text-xl font-bold text-gray-900">일정 등록</h1>
       </div>
 
-      {error && (
-        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4 flex items-center justify-between gap-3">
-          <span>{error}</span>
-          {/* 막았으면 갈 곳을 줘야 한다. 안 그러면 같은 걸 또 만들려고 한다. */}
-          {dupOpenId && (
-            <button
-              onClick={() => router.push(`/influencer/schedule/${dupOpenId}`)}
-              className="shrink-0 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg px-3 py-1.5 transition"
-            >
-              그날 오픈 보기 →
-            </button>
-          )}
-        </div>
-      )}
+      {/* D31 [4] — 실패는 화면 맨 위가 아니라 등록 버튼 자리에서 말한다(아래).
+          폼이 길어서 버튼을 누른 사람은 여기까지 올라와 보지 않는다. */}
 
       {/* 제목 */}
       <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
@@ -377,14 +363,28 @@ function ScheduleForm() {
         </div>
       </div>
 
-      {/* 등록 버튼 */}
-      <button
+      {/* 등록 버튼 — 상태 네 가지는 SaveButton 안에 있다 */}
+      <SaveButton
+        status={save.status}
+        error={save.error}
         onClick={handleSubmit}
-        disabled={loading}
-        className="w-full bg-[#F59E0B] text-white py-3 rounded-xl font-medium hover:bg-[#D97706] transition disabled:opacity-50"
-      >
-        {loading ? '등록 중...' : '일정 등록하기'}
-      </button>
+        label="일정 등록하기"
+        savingLabel="등록 중…"
+        savedLabel="등록했어요 ✓"
+        failedLabel="등록 실패"
+        disabled={!canSubmit}
+        disabledHint={canSubmit ? undefined : '날짜 · 제목 · 장소를 채워주세요'}
+      />
+
+      {/* 막았으면 갈 곳을 줘야 한다. 안 그러면 같은 걸 또 만들려고 한다. */}
+      {dupOpenId && save.status === 'failed' && (
+        <button
+          onClick={() => router.push(`/influencer/schedule/${dupOpenId}`)}
+          className="mt-2 w-full text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl py-2.5 transition"
+        >
+          그날 오픈 보기 →
+        </button>
+      )}
     </div>
   )
 }

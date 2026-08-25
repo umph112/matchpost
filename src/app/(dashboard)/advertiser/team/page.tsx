@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { initial } from '@/lib/initial'
@@ -73,6 +73,30 @@ export default function TeamPage() {
   // 그래서 값이 도착하기 전에는 입력칸을 그리지 않는다.
   const [profileReady, setProfileReady] = useState(false)
 
+  // D31 [4] — 이 카드만 저장 버튼이 없다(칸을 떠나면 저장된다). 버튼으로 바꾸면
+  // 「불러오기 전엔 칸을 안 그린다」로 막아둔 빈 값 덮어쓰기를 다시 풀어야 해서 그대로 둔다.
+  // 대신 눌린 흔적이 남도록 칸 옆에 작게 — 저장 중엔 「저장 중…」, 끝나면 「저장됨 ✓」 2초.
+  // 실패는 지금처럼 카드 위 빨간 줄(profileError)이 말한다.
+  const [saveMark, setSaveMark] = useState<{ key: string; state: 'saving' | 'saved' } | null>(null)
+  const markTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (markTimer.current) clearTimeout(markTimer.current) }, [])
+
+  // 마지막으로 저장된 값. onBlur 는 안 고쳐도 불리므로, 같으면 쓰지도 표시하지도 않는다.
+  const savedVals = useRef<Record<string, string>>({})
+
+  const mark = (key: string) =>
+    saveMark?.key !== key ? null : (
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          color: saveMark.state === 'saved' ? '#16A34A' : '#9A9AA5',
+        }}
+      >
+        {saveMark.state === 'saved' ? '저장됨 ✓' : '저장 중…'}
+      </span>
+    )
+
   const supabase = createClient()
 
   const load = async () => {
@@ -110,6 +134,14 @@ export default function TeamPage() {
       setIntro(ap.intro ?? '')
       setBrands(ap.brands ?? '')
       setHistory(ap.history ?? '')
+      savedVals.current = {
+        marketing_email: ap.marketing_email ?? '',
+        marketing_phone: ap.marketing_phone ?? '',
+        one_line: ap.one_line ?? '',
+        intro: ap.intro ?? '',
+        brands: ap.brands ?? '',
+        history: ap.history ?? '',
+      }
     }
     // 본인 user_private는 RLS(본인·관리자)로 조회 가능
     const { data: priv } = await supabase
@@ -135,8 +167,13 @@ export default function TeamPage() {
   // 화면엔 아무 표시도 안 났다. 그래서 .select() 로 돌아온 행을 센다.
   const persistAdvProfile = async (
     patch: Record<string, string | boolean | null>,
+    markKey?: string,
   ): Promise<boolean> => {
     if (!myId) return false
+    if (markKey) {
+      if (markTimer.current) clearTimeout(markTimer.current)
+      setSaveMark({ key: markKey, state: 'saving' })
+    }
     const { data, error } = await supabase
       .from('advertiser_profiles')
       .update(patch)
@@ -144,6 +181,13 @@ export default function TeamPage() {
       .select('user_id')
     const ok = !error && (data?.length ?? 0) > 0
     setProfileError(ok ? '' : '저장되지 않았어요. 새로고침 후 다시 시도해주세요.')
+    if (markKey) {
+      if (!ok) setSaveMark(null) // 실패는 빨간 줄이 말한다 — 「저장됨」을 남기면 안 된다
+      else {
+        setSaveMark({ key: markKey, state: 'saved' })
+        markTimer.current = setTimeout(() => setSaveMark(null), 2000)
+      }
+    }
     return ok
   }
 
@@ -152,17 +196,17 @@ export default function TeamPage() {
     const next = !mktPublic
     setMktPublic(next)
     // 저장이 안 됐으면 토글도 되돌린다 — 켜진 채로 두면 공개된 줄 안다.
-    if (!(await persistAdvProfile({ marketing_contact_public: next }))) setMktPublic(!next)
+    if (!(await persistAdvProfile({ marketing_contact_public: next }, 'mkt_public'))) setMktPublic(!next)
   }
 
-  // 「다른 연락처로 받기」 입력 — 비우면 저장도 빈 값이라 미리보기가 폴백으로 돌아간다
-  const persistContact = (patch: { marketing_email?: string | null; marketing_phone?: string | null }) =>
-    persistAdvProfile(patch)
-
-  // 직접 작성 항목 — 빈 값은 null로 저장(읽는 쪽 ap?.brands && 조건이 그대로 동작)
-  const persistProfile = (patch: {
-    one_line?: string | null; intro?: string | null; brands?: string | null; history?: string | null
-  }) => persistAdvProfile(patch)
+  // 칸을 떠날 때 저장. 빈 값은 null 로 저장한다
+  // (연락처는 비우면 미리보기가 폴백으로 돌아가고, 소개·브랜드·이력은 회사 페이지에서 그 항목이 사라진다)
+  type ProfileCol = 'marketing_email' | 'marketing_phone' | 'one_line' | 'intro' | 'brands' | 'history'
+  const saveField = async (col: ProfileCol, value: string) => {
+    const v = value.trim()
+    if (savedVals.current[col] === v) return // 안 고치고 지나갔다 — 조용히 둔다
+    if (await persistAdvProfile({ [col]: v || null }, col)) savedVals.current[col] = v
+  }
 
   const previewEmail = mktEmail.trim() || fallbackEmail
   const previewPhone = mktPhone.trim() || fallbackPhone
@@ -323,7 +367,9 @@ export default function TeamPage() {
         {/* 토글 — 마케팅 문의 연락처 공개 */}
         <div className="flex items-start justify-between gap-3 mt-4">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-gray-800">마케팅 문의 연락처 공개</p>
+            <p className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+              마케팅 문의 연락처 공개 {mark('mkt_public')}
+            </p>
             <p style={{ fontSize: 11.5, color: '#7C7C88', lineHeight: 1.6 }} className="mt-0.5">
               켜면 회사 페이지에 이메일과 전화가 보여요. 대행 문의를 받고 싶을 때 켜세요.
             </p>
@@ -374,7 +420,7 @@ export default function TeamPage() {
                   type="email"
                   value={mktEmail}
                   onChange={(e) => setMktEmail(e.target.value)}
-                  onBlur={() => persistContact({ marketing_email: mktEmail.trim() || null })}
+                  onBlur={() => saveField('marketing_email', mktEmail)}
                   placeholder={fallbackEmail || '마케팅 이메일'}
                   className="w-full"
                   style={{ height: 46, borderRadius: 11, padding: '0 13px', fontSize: 13.5, border: '1px solid #E2E2E8' }}
@@ -383,12 +429,14 @@ export default function TeamPage() {
                   type="tel"
                   value={mktPhone}
                   onChange={(e) => setMktPhone(e.target.value)}
-                  onBlur={() => persistContact({ marketing_phone: mktPhone.trim() || null })}
+                  onBlur={() => saveField('marketing_phone', mktPhone)}
                   placeholder={fallbackPhone || '마케팅 전화'}
                   className="w-full"
                   style={{ height: 46, borderRadius: 11, padding: '0 13px', fontSize: 13.5, border: '1px solid #E2E2E8' }}
                 />
-                <p style={{ fontSize: 11, color: '#7C7C88' }}>비우면 기본값으로 돌아가요.</p>
+                <p style={{ fontSize: 11, color: '#7C7C88' }} className="flex items-center gap-1.5">
+                  비우면 기본값으로 돌아가요. {mark('marketing_email')} {mark('marketing_phone')}
+                </p>
               </div>
             )}
           </>
@@ -406,11 +454,12 @@ export default function TeamPage() {
               <label className="flex items-center gap-1.5">
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: '#3C3C46' }}>한 줄 소개</span>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#B0B0BB' }}>선택</span>
+                {mark('one_line')}
               </label>
               <input
                 value={oneLine}
                 onChange={(e) => setOneLine(e.target.value)}
-                onBlur={() => persistProfile({ one_line: oneLine.trim() || null })}
+                onBlur={() => saveField('one_line', oneLine)}
                 placeholder="비우면 소개의 첫 문장이 쓰여요"
                 className="w-full mt-1.5"
                 style={{ border: '1px solid #E2E2E8', borderRadius: 10, padding: '0 13px', height: 46, fontSize: 12.5, fontFamily: 'inherit', color: '#17171B', outline: 'none' }}
@@ -429,11 +478,12 @@ export default function TeamPage() {
               <label className="flex items-center gap-1.5">
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: '#3C3C46' }}>소개</span>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#B0B0BB' }}>선택</span>
+                {mark('intro')}
               </label>
               <textarea
                 value={intro}
                 onChange={(e) => setIntro(e.target.value)}
-                onBlur={() => persistProfile({ intro: intro.trim() || null })}
+                onBlur={() => saveField('intro', intro)}
                 placeholder="어떤 일을 하는 곳인지 적어주세요."
                 className="w-full mt-1.5"
                 style={{ border: '1px solid #E2E2E8', borderRadius: 10, padding: '12px 13px', minHeight: 110, fontSize: 12.5, fontFamily: 'inherit', color: '#17171B', outline: 'none', resize: 'vertical' }}
@@ -445,11 +495,12 @@ export default function TeamPage() {
               <label className="flex items-center gap-1.5">
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: '#3C3C46' }}>함께 일하는 브랜드</span>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#B0B0BB' }}>선택</span>
+                {mark('brands')}
               </label>
               <textarea
                 value={brands}
                 onChange={(e) => setBrands(e.target.value)}
-                onBlur={() => persistProfile({ brands: brands.trim() || null })}
+                onBlur={() => saveField('brands', brands)}
                 placeholder="한 줄에 하나씩 적어주세요."
                 className="w-full mt-1.5"
                 style={{ border: '1px solid #E2E2E8', borderRadius: 10, padding: '12px 13px', minHeight: 90, fontSize: 12.5, fontFamily: 'inherit', color: '#17171B', outline: 'none', resize: 'vertical' }}
@@ -464,11 +515,12 @@ export default function TeamPage() {
               <label className="flex items-center gap-1.5">
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: '#3C3C46' }}>주요 이력</span>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#B0B0BB' }}>선택</span>
+                {mark('history')}
               </label>
               <textarea
                 value={history}
                 onChange={(e) => setHistory(e.target.value)}
-                onBlur={() => persistProfile({ history: history.trim() || null })}
+                onBlur={() => saveField('history', history)}
                 placeholder="한 줄에 하나씩 적어주세요."
                 className="w-full mt-1.5"
                 style={{ border: '1px solid #E2E2E8', borderRadius: 10, padding: '12px 13px', minHeight: 110, fontSize: 12.5, fontFamily: 'inherit', color: '#17171B', outline: 'none', resize: 'vertical' }}

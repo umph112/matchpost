@@ -9,6 +9,7 @@ import { computeEnabledStages, stageHintLine } from '@/lib/campaign-stages'
 import { PartyPopper, ClipboardList, Search, Paperclip } from 'lucide-react'
 import { dateWithDow } from '@/lib/date'
 import { resolveCompany } from '@/lib/team/company'
+import SaveButton, { useSaveState } from '@/components/SaveButton'
 
 const CHANNELS = ['블로그', '유튜브', '인스타그램', '틱톡']
 // 채널별 콘텐츠 단위 (수량 입력 라벨)
@@ -144,7 +145,9 @@ export default function NewCampaignPage() {
   const [coverImageUrl, setCoverImageUrl] = useState('')
   const [imageUploading, setImageUploading] = useState(false)
 
-  const [loading, setLoading] = useState(false)
+  // D31 [4] — 등록 버튼의 상태(하기/중/실패)는 SaveButton 이 들고 있다.
+  // error 는 폼 중간에서 나는 것들(사진 업로드 · 일정 30일 초과)이 계속 쓴다 — 그건 그 자리 이야기다.
+  const save = useSaveState()
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const router = useRouter()
@@ -465,24 +468,37 @@ export default function NewCampaignPage() {
 
   const hasWeekend = dates.some(isWeekend) // 선택 일정에 주말 포함 여부
 
-  const handleSubmit = async () => {
-    if (channels.length === 0) return setError('원하는 채널을 하나 이상 선택해주세요.')
-    if (!campaignType) return setError('캠페인 구분(제품/지역/기자단)을 선택해주세요.')
-    if (!title) return setError('캠페인 제목을 입력해주세요.')
-    if (isRegion && dates.length === 0) return setError('캠페인 진행일정을 하나 이상 지정해주세요.')
-    if (isRegion && !locationAddress) return setError('지역 캠페인은 장소(주소)가 필요해요.')
-    if (!budgetManwon || parseInt(budgetManwon) <= 0) return setError('캠페인 예산을 입력해주세요.')
+  // 아직 못 누르는 이유. 있으면 버튼은 회색이고, 이 문장을 버튼 아래에 적는다.
+  // (전에는 다 채우고 누른 뒤에야 무엇이 빈지 알려줬다)
+  const missing =
+    channels.length === 0
+      ? '원하는 채널을 하나 이상 선택해주세요'
+      : !campaignType
+        ? '캠페인 구분(제품/지역/기자단)을 선택해주세요'
+        : !title
+          ? '캠페인 제목을 입력해주세요'
+          : isRegion && dates.length === 0
+            ? '캠페인 진행일정을 하나 이상 지정해주세요'
+            : isRegion && !locationAddress
+              ? '지역 캠페인은 장소(주소)가 필요해요'
+              : !budgetManwon || parseInt(budgetManwon) <= 0
+                ? '캠페인 예산을 입력해주세요'
+                : null
 
-    setLoading(true)
-    setError('')
+  const handleSubmit = () =>
+    save.run(async () => {
+      if (missing) return `${missing}.`
+      setError('')
+      return await insertCampaign()
+    })
 
+  // 실패하면 이유를 돌려준다 — SaveButton 이 그걸 버튼 아래 빨간 줄로 적는다.
+  const insertCampaign = async (): Promise<string | null> => {
     const {
       data: { user },
     } = await supabase.auth.getUser()
-    if (!user) {
-      setLoading(false)
-      return
-    }
+    // 전에는 여기서 조용히 멈췄다 — 버튼만 되돌아오고 아무 말이 없었다.
+    if (!user) return '로그인이 풀렸어요. 새로고침 후 다시 로그인해주세요.'
 
     // 회사(대표) 해석 — 팀원이 만들면 회사(owner_id) 소유로, 담당자(manager_id)는 본인.
     // 대표가 만들면 둘 다 대표 id (무변경).
@@ -554,14 +570,11 @@ export default function NewCampaignPage() {
       stage_post_edit: stagePostEdit,
     })
 
-    if (insertError) {
-      setError('캠페인 등록에 실패했어요. 다시 시도해주세요.')
-      setLoading(false)
-      return
-    }
+    if (insertError) return '캠페인 등록에 실패했어요. 다시 시도해주세요.'
 
     setSuccess(true)
     setTimeout(() => router.push('/advertiser/dashboard'), 1500)
+    return null
   }
 
   if (success) {
@@ -591,6 +604,8 @@ export default function NewCampaignPage() {
         <h1 className="text-xl font-bold text-gray-900">캠페인 등록</h1>
       </div>
 
+      {/* 등록 실패는 이제 버튼 옆(아래)에 붙는다. 여기 남은 건 폼 중간에서 나는 것들 —
+          사진 업로드 실패, 일정 30일 초과 같은. */}
       {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>}
 
       {/* 이전 캠페인 불러오기 (복사 재등록) */}
@@ -1380,22 +1395,34 @@ export default function NewCampaignPage() {
         </div>
 
         {/* PC 등록 버튼 */}
-        <button
+        <SaveButton
+          status={save.status}
+          error={save.error}
           onClick={handleSubmit}
-          disabled={loading}
-          className="w-full bg-amber-500 text-white py-3 rounded-xl font-bold text-[14px] hover:bg-amber-600 transition disabled:opacity-50 shadow-[0_1px_2px_rgba(245,158,11,.35)]"
-        >
-          {loading ? '등록 중...' : '캠페인 등록하기'}
-        </button>
+          label="캠페인 등록하기"
+          savingLabel="등록 중…"
+          savedLabel="등록했어요 ✓"
+          failedLabel="등록 실패"
+          disabled={!!missing}
+          disabledHint={missing ?? undefined}
+        />
       </div>
 
       </div>{/* /그리드 래퍼 */}
 
       {/* 모바일 전용 등록 버튼 */}
-      <button onClick={handleSubmit} disabled={loading}
-        className="w-full bg-amber-500 text-white py-3 rounded-xl font-medium hover:bg-amber-600 transition disabled:opacity-50 [.adv-pc_&]:hidden">
-        {loading ? '등록 중...' : '캠페인 등록하기'}
-      </button>
+      <SaveButton
+        status={save.status}
+        error={save.error}
+        onClick={handleSubmit}
+        label="캠페인 등록하기"
+        savingLabel="등록 중…"
+        savedLabel="등록했어요 ✓"
+        failedLabel="등록 실패"
+        disabled={!!missing}
+        disabledHint={missing ?? undefined}
+        className="[.adv-pc_&]:hidden"
+      />
     </div>
   )
 }

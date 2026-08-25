@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
-import { CircleCheck, BarChart3 } from 'lucide-react'
+import { BarChart3 } from 'lucide-react'
+import SaveButton, { useSaveState } from '@/components/SaveButton'
 import { unregisterConnection } from '@/lib/connections/actions'
 import { firstReportLabel } from '@/lib/blogAnalyzer/schedule'
 import { INFLUENCER_CATEGORIES, CATEGORY_ETC } from '@/lib/categories'
@@ -54,9 +55,10 @@ export default function InfluencerProfilePage() {
   // 빈 폼이 먼저 뜨면 사람은 그게 「내 값이 없는 것」인 줄 알고 그대로 저장을 누르고,
   // 그 순간 이름·전화번호가 빈 문자열로 덮인다(봇이 실제로 그렇게 날렸다).
   const [ready, setReady] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
+  // D31 [4] — 저장 버튼의 네 상태(하기/중/했어요/실패)는 SaveButton 이 들고 있다.
+  const save = useSaveState()
+  // 「값이 안 바뀌었으면 회색」을 판단할 기준값. 불러온 직후와 저장 성공 직후에 찍는다.
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null)
   // 나를 친구등록한 광고주 (해제 가능, 해제해도 광고주에게 알리지 않는다)
   const [advConns, setAdvConns] = useState<{ otherId: string; name: string; source: string | null }[]>([])
   const [unregBusy, setUnregBusy] = useState<string | null>(null)
@@ -188,35 +190,53 @@ export default function InfluencerProfilePage() {
     return [major, ...subs].filter(Boolean)
   }
 
-  const handleSave = async () => {
-    setLoading(true)
-    setError('')
+  // 저장하는 값 전부를 한 줄로 — 이것이 달라지면 바뀐 것이다.
+  const formSnapshot = () =>
+    JSON.stringify([
+      activityName, realName, phone, bio, selectedPlatforms, buildCategories(),
+      followerCount, instagramUrl, youtubeUrl, blogUrl, portfolioUrl,
+    ])
 
-    if (etcSelected && !etcText.trim()) {
-      setError('기타 분야를 직접 입력해주세요.')
-      setLoading(false)
-      return
-    }
+  // 불러오기가 끝난 첫 렌더에서 기준값을 찍는다(그 전에 찍으면 빈 폼이 기준이 된다).
+  useEffect(() => {
+    if (ready && savedSnapshot === null) setSavedSnapshot(formSnapshot())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready])
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      setError('로그인이 풀렸어요. 새로고침 후 다시 로그인해주세요.')
-      setLoading(false)
-      return
-    }
+  const snapshot = formSnapshot()
+  const dirty = savedSnapshot !== null && snapshot !== savedSnapshot
 
+  // 실패한 뒤 값을 고치면 「저장 실패」를 지운다 — 고쳤는데도 빨간 채로 있으면
+  // 방금 고친 것 때문에 또 실패한 줄 안다.
+  useEffect(() => {
+    if (save.status === 'failed') save.reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot])
+
+  const handleSave = () =>
+    save.run(async () => {
+      if (etcSelected && !etcText.trim()) return '기타 분야를 직접 입력해주세요.'
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return '로그인이 풀렸어요. 새로고침 후 다시 로그인해주세요.'
+
+      return await persist(user.id)
+    })
+
+  // 실제로 쓰는 부분. 실패 이유를 문자열로 돌려주면 버튼이 「저장 실패」가 된다.
+  const persist = async (userId: string): Promise<string | null> => {
     // ⚠️ UPDATE 가 RLS 에 걸려 한 행도 못 고치면 error 는 null 이고 data 는 [] 로 온다.
     // error 만 보면 「성공」으로 읽힌다 — 실제로 influencer_profiles 저장이 통째로
     // 버려지는 동안 화면엔 「저장됐어요!」가 떴다. 그래서 .select() 로 돌아온 행을 센다.
     const { data: profileRows, error: profileError } = await supabase
       .from('profiles')
       .update({ name: activityName })
-      .eq('id', user.id)
+      .eq('id', userId)
       .select('id')
 
     const { data: privRows, error: privError } = await supabase
       .from('user_private')
-      .upsert({ user_id: user.id, phone, real_name: realName }, { onConflict: 'user_id' })
+      .upsert({ user_id: userId, phone, real_name: realName }, { onConflict: 'user_id' })
       .select('user_id')
 
     const { data: ipRows, error: ipError } = await supabase
@@ -231,27 +251,24 @@ export default function InfluencerProfilePage() {
         blog_url: blogUrl,
         portfolio_url: portfolioUrl,
       })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .select('user_id')
 
-    // 「저장됐어요!」보다 먼저 확인한다 — 순서가 바뀌면 안내가 거짓말이 된다.
+    // 「저장했어요 ✓」보다 먼저 확인한다 — 순서가 바뀌면 안내가 거짓말이 된다.
     const failed: string[] = []
     if (profileError || !profileRows?.length) failed.push('활동명')
     if (privError || !privRows?.length) failed.push('이름 · 전화번호')
     if (ipError || !ipRows?.length) failed.push('소개 · 플랫폼 · 분야 · 채널')
 
     if (failed.length > 0) {
-      setError(`저장되지 않았어요 — ${failed.join(', ')}. 새로고침 후 다시 시도해주세요.`)
-      setLoading(false)
-      return
+      return `저장되지 않았어요 — ${failed.join(', ')}. 새로고침 후 다시 시도해주세요.`
     }
 
-    setSuccess(true)
-    setTimeout(() => setSuccess(false), 2000)
     // D28 §4 — 비어 있던 채널이 이번 저장으로 채워졌으면 첫 등록이다.
     setJustRegistered(savedBlogUrl.trim() === '' && blogUrl.trim() !== '')
     setSavedBlogUrl(blogUrl) // D25 §2 — 저장이 끝난 뒤에만 안내 카드가 뜨도록
-    setLoading(false)
+    setSavedSnapshot(formSnapshot()) // 방금 저장한 값이 새 기준 — 버튼이 다시 회색이 된다
+    return null
   }
 
   return (
@@ -277,12 +294,8 @@ export default function InfluencerProfilePage() {
 
       {ready && <>
 
-      {error && (
-        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">{error}</div>
-      )}
-      {success && (
-        <div className="bg-green-50 text-green-600 text-sm p-3 rounded-lg mb-4 flex items-center gap-1"><CircleCheck size={16} strokeWidth={1.75} className="text-[#15803D]" /> 저장됐어요!</div>
-      )}
+      {/* D31 [4] — 알림 배너를 화면 맨 위에 두지 않는다. 폼이 길어서 저장을 누른 사람은
+          여기를 못 본다(눌러도 아무 일 없는 것처럼 보였다). 성공도 실패도 버튼 자리에서 말한다. */}
 
       {/* 기본 정보 */}
       <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
@@ -473,14 +486,14 @@ export default function InfluencerProfilePage() {
         />
       </div>
 
-      {/* 저장 버튼 */}
-      <button
+      {/* 저장 버튼 — 상태 네 가지와 「바뀐 값이 없으면 회색」은 SaveButton 안에 있다 */}
+      <SaveButton
+        status={save.status}
+        error={save.error}
         onClick={handleSave}
-        disabled={loading}
-        className="w-full bg-[#F59E0B] text-white py-3 rounded-xl font-medium hover:bg-[#D97706] transition disabled:opacity-50"
-      >
-        {loading ? '저장 중...' : '저장하기'}
-      </button>
+        disabled={!dirty}
+        disabledHint={dirty ? undefined : '바뀐 값이 없어요'}
+      />
 
       {/* 나를 친구등록한 광고주 */}
       {advConns.length > 0 && (
