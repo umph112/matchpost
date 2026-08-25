@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { test, type Page } from '@playwright/test'
-import { PASSWORD, ROOT, botEmail, loginAs } from './_helpers'
+import { PASSWORD, ROOT, botEmail, latestScheduleId, loginAs } from './_helpers'
 
 // D23 ③ — 인플루언서 화면 전부가 PC 셸 안에서 제대로 나오는지 눈으로 볼 캡처.
 //
@@ -25,7 +25,9 @@ const SCREENS: { file: string; url: string; wait?: (p: Page) => Promise<unknown>
   { file: 'inf-channel-analytics', url: '/influencer/channel-analytics' },
   { file: 'inf-schedule-new', url: '/influencer/schedule' },
   { file: 'inf-schedule-list', url: '/influencer/schedule/list' },
-  { file: 'inf-schedule-detail', url: '/influencer/schedule/83f331e7-9dea-45b7-b4e4-04bec48c11cc' },
+  // 오픈 상세는 id 가 필요하다. 박아두면 그 오픈이 사라진 뒤 404 를 찍는데,
+  // 404 에는 사이드바가 없어 「셸이 깨졌다」로 잘못 읽힌다 — 실행할 때 찾는다(D30 [2]).
+  { file: 'inf-schedule-detail', url: '/influencer/schedule/[id]' },
   { file: 'inf-messages', url: '/influencer/messages' },
 ]
 
@@ -34,8 +36,15 @@ test('[③] 인플루언서 화면 PC 셸 캡처', async ({ browser }) => {
   const { ctx, page } = await loginAs(browser, botEmail('inf-pc'), PASSWORD, '**/influencer/**')
   try {
     await page.setViewportSize(VIEWPORT)
+    const openId = await latestScheduleId(botEmail('inf-pc'))
     for (const s of SCREENS) {
-      await page.goto(s.url, { waitUntil: 'networkidle' })
+      const url = s.url.replace('[id]', openId ?? '')
+      if (s.url.includes('[id]') && !openId) {
+        // 없는 화면을 404 로 찍어 목록에 끼워두면 「11개 다 봤다」가 거짓이 된다.
+        console.log(`[③] ${s.file}  건너뜀 — 이 계정에 오픈이 없어요 (미검증)`)
+        continue
+      }
+      await page.goto(url, { waitUntil: 'networkidle' })
       // 셸은 클라이언트에서 userAgent 로 PC/모바일을 정한다 — 사이드바가 붙을 때까지 기다린다.
       await page.waitForSelector('main.inf-pc', { timeout: 20_000 }).catch(() => {})
       await page.waitForTimeout(600)

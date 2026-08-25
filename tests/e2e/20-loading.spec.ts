@@ -1,6 +1,15 @@
 import fs from 'node:fs'
 import { test, expect, type Page, type Locator } from '@playwright/test'
-import { ADMIN, FINDINGS_FILE, PASSWORD, botEmail, findings, loginAs, shot } from './_helpers'
+import {
+  ADMIN,
+  FINDINGS_FILE,
+  PASSWORD,
+  botEmail,
+  findings,
+  latestScheduleId,
+  loginAs,
+  shot,
+} from './_helpers'
 
 // D23 [로딩] — 화면이 「언제」 쓸 수 있게 되는지 잰다.
 //
@@ -22,15 +31,14 @@ const EARLY_ACTION = 300 // 데이터보다 이만큼 먼저 눌리면 「누를
 const ADV = botEmail('adv')
 const INF = botEmail('inf-pc')
 
-// 이 오픈은 3-1 에서 인플루언서가 직접 만든 것이다. 없으면 그 블록부터 다시 돌려야 한다.
-const SCHEDULE_ID = '83f331e7-9dea-45b7-b4e4-04bec48c11cc'
-
 type Who = 'adv' | 'inf' | 'admin'
 
 type Screen = {
   name: string
   who: Who
   url: string
+  /** 화면 주소가 실행할 때 정해지는 경우(오픈 id 등). 없으면 url 을 그대로 연다. */
+  resolveUrl?: () => Promise<string | null>
   /** 이 화면이 존재하는 이유 — 숫자·목록·빈 상태 안내 */
   data: (p: Page) => Locator
   /** 사람이 이 화면에서 제일 먼저 누를 것 */
@@ -63,7 +71,12 @@ const SCREENS: Screen[] = [
   {
     name: '오픈 묶음 보기',
     who: 'inf',
-    url: `/influencer/schedule/${SCHEDULE_ID}`,
+    // 이 오픈은 3-1 에서 인플루언서가 직접 만든 것이다. id 를 박지 않고 실행할 때 찾는다.
+    url: '/influencer/schedule/[id]',
+    resolveUrl: async () => {
+      const id = await latestScheduleId(INF)
+      return id ? `/influencer/schedule/${id}` : null
+    },
     data: (p) => p.getByText(/받을 순서/).first(),
     action: (p) => p.getByRole('link', { name: '내 일정으로' }).first(),
   },
@@ -128,6 +141,11 @@ function recordLoading(where: string, text: string) {
 test.describe('[로딩] 화면이 언제 쓸 수 있게 되나', () => {
   for (const s of SCREENS) {
     test(`${s.name} — ${s.url}`, async ({ browser }) => {
+      // 전제(앞 단계가 만든 오픈)가 없으면 skip 이다. 그냥 넘어가 ok 로 찍으면
+      // 「재보고 통과했다」로 읽히는데 실은 아무것도 안 잰 것이다(D30 PROMPT-3).
+      const url = s.resolveUrl ? await s.resolveUrl() : s.url
+      test.skip(!url, `${s.name}: 잴 대상이 없어요 — 3-1 오픈 등록이 먼저 성공해야 합니다 (미검증)`)
+
       const { ctx, page } =
         s.who === 'admin'
           ? await loginAs(browser, ADMIN.email, ADMIN.password, '**/admin/**')
@@ -137,7 +155,7 @@ test.describe('[로딩] 화면이 언제 쓸 수 있게 되나', () => {
 
       try {
         // commit 으로 멈춰야 시계가 이 문서의 것이 된다. load 까지 기다리면 이미 늦다.
-        await page.goto(s.url, { waitUntil: 'commit' })
+        await page.goto(url!, { waitUntil: 'commit' })
 
         const [ttfb, fcp] = [await ttfbMs(page), await fcpMs(page)]
 

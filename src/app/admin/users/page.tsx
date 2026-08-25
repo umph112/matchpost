@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { initial } from '@/lib/initial'
-import { signupCreditAmount } from '@/lib/creditConfig'
 import { listTime } from '@/lib/date'
 import { formatBizNo } from '@/lib/business-number'
 import { cancelStage, type Role } from '@/lib/cancellation/thresholds'
@@ -210,9 +209,12 @@ function UsersContent() {
 
               {user.status === 'pending' && (
                 <div>
-                  {/* D6 E2 — 승인 즉시 무엇이 되는지 미리 알린다 */}
+                  {/* D6 E2 — 승인 즉시 무엇이 되는지 미리 알린다.
+                      ⚠️ 가입 축하금은 여기서 언급하지 않는다. 원장을 보면 가입 시점(api/signup)에
+                         이미 지급돼 있고 승인과는 무관하다 — 이미 받은 것을 앞으로 받을 것처럼
+                         쓰면 관리자가 잘못 판단한다(D30 PROMPT-3). */}
                   <p className="text-[11px] text-gray-400 mb-2">
-                    승인하면 가입 축하금 {signupCreditAmount(user.role).toLocaleString()}C가 지급됩니다.
+                    승인하면 캠페인을 열 수 있습니다.
                   </p>
                   {user.role === 'advertiser' && (
                     <button

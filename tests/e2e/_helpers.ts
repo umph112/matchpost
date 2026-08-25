@@ -4,7 +4,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Browser, BrowserContext, Page } from '@playwright/test'
 
 export const ROOT = path.resolve(__dirname, '../..')
-export const SHOTS = path.join(ROOT, 'tests', 'screenshots')
+// 스크린샷은 핸드오프 폴더로 남긴다 — tests/screenshots/ 는 .gitignore 에 걸려 커밋이 안 된다(D30 [2]).
+export const SHOTS = path.join(ROOT, 'docs', 'design', 'd30', 'screens')
 export const FIXTURES = path.join(ROOT, 'tests', 'fixtures')
 export const ACCOUNTS_FILE = path.join(ROOT, 'tests', '.accounts.json')
 
@@ -82,6 +83,14 @@ export const RUN = process.env.BOT_RUN ?? String(Date.now()).slice(-8)
 export const PASSWORD = 'BotTest!2026'
 export const botEmail = (tag: string) => `bot+${tag}-${RUN}@matchpost.kr`
 
+// 인플루언서 봇의 활동명(profiles.name). RUN 번호를 붙인다.
+//
+// ⚠️ 고정 문자열을 쓰면 안 된다. 봇 계정은 실행마다 새로 생기는데 활동명이 같으면
+//    광고주 검색에 「봇여행자」가 여덟 개씩 쌓여 어느 게 이번 것인지 못 고른다
+//    (D30 [2] 에서 실제로 그랬다 — strict mode 위반, 그리고 4-1 이 지난 실행 계정에
+//    대시를 보내 모달에 이번 날짜 칩이 없었다).
+export const INF_NICK = `봇여행자-${RUN}`
+
 // ── 봇 전용 관리자 ─────────────────────────────────────────────────
 // 기존 운영 관리자로는 로그인조차 하지 않는다(사용자 지시). 봇은 자기 계정을 쓴다.
 // RUN 접미어를 안 붙인다 — 승인 이력이 실행마다 흩어지면 관리자 화면을 못 읽는다.
@@ -114,7 +123,9 @@ export async function ensureBotAdmin(): Promise<string> {
 // 「고쳐야 할 버그」와 「사람이 헷갈리는 자리」는 다르다. 후자를 테스트 실패로 만들면
 // 거기서 흐름이 끊겨 뒤를 못 본다. 그래서 파일에 쌓고 실행이 끝난 뒤 한 번에 읽는다.
 // (워커가 갈려도 남아야 해서 메모리가 아니라 파일이다 — 계정 목록에서 이미 겪었다)
-export type FindingKind = '결함' | '직관' | '로딩'
+// 「화면이 거짓을 말함」은 결함보다 위다. 결함은 기능이 안 되는 것이고, 이건 안 되는 채로
+// 「됐다」고 사람에게 알리는 것이라 사람이 그걸 믿고 다음 판단을 한다(D30 — /credits 베타 절약액).
+export type FindingKind = '화면이 거짓을 말함' | '결함' | '직관' | '로딩'
 export type Finding = { kind: FindingKind; where: string; text: string; at: string }
 export const FINDINGS_FILE = path.join(ROOT, 'tests', '.findings.json')
 
@@ -144,6 +155,23 @@ export async function userIdByEmail(email: string): Promise<string> {
   const id = data?.users.find((u) => (u.email ?? '').toLowerCase() === email.toLowerCase())?.id
   if (!id) throw new Error(`계정을 못 찾았어요: ${email} — 00-signup 을 같은 BOT_RUN 으로 먼저 돌렸나요?`)
   return id
+}
+
+// 이번 RUN 인플루언서가 만든 오픈 중 가장 최근 것. 없으면 null.
+//
+// ⚠️ 스펙에 오픈 id 를 박아두지 말 것. 지난 실행 계정의 id 라 그 오픈이 사라진 다음
+//    실행부터 404 를 찍는데, 404 화면에는 사이드바도 「받을 순서」도 없어서
+//    셸 회귀·로딩 지연으로 오해하게 된다(D30 [2] 에서 실제로 그랬다).
+export async function latestScheduleId(email: string): Promise<string | null> {
+  const db = serviceClient()
+  const { data, error } = await db
+    .from('schedules')
+    .select('id')
+    .eq('influencer_id', await userIdByEmail(email))
+    .order('created_at', { ascending: false })
+    .limit(1)
+  if (error) throw new Error(`오픈 조회 실패: ${error.message}`)
+  return data?.[0]?.id ?? null
 }
 
 export type LedgerRow = { id: string; delta: number; kind: string; reason_code: string; memo: string | null; created_at: string }

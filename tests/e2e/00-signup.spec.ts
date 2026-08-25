@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { test, expect, type BrowserContext, type Page } from '@playwright/test'
 import { signupCreditAmount } from '../../src/lib/creditConfig'
-import { FIXTURES, PASSWORD, RUN, botEmail, loginAs, makeBizNo, remember, serviceClient, shot } from './_helpers'
+import { FIXTURES, INF_NICK, PASSWORD, RUN, botEmail, loginAs, makeBizNo, remember, serviceClient, shot } from './_helpers'
 
 // ── 시나리오 0 — 가입 (D23 + PROMPT-2) ────────────────────────────────
 // 0-1 PC 광고주 3단계 · 0-2 PC 인플루언서 · 0-3 모바일 인플루언서
@@ -22,7 +22,7 @@ const ADV = {
   companyPhone: '02-555-0000',
 }
 const TEAM_EMAIL = botEmail('team')
-const INF_PC = { email: botEmail('inf-pc'), name: '봇인플', activity: '봇여행자', phone: '010-5555-6666' }
+const INF_PC = { email: botEmail('inf-pc'), name: '봇인플', activity: INF_NICK, phone: '010-5555-6666' }
 const INF_MO = { email: botEmail('inf-mo'), name: '봇모바일', activity: '봇모바일러', phone: '010-7777-8888' }
 const MEMBER = { name: '봇팀원', phone: '010-9999-0000' }
 

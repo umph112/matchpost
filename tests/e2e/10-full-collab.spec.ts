@@ -11,7 +11,7 @@
 // 흐름이 실제로 막히는 자리(승인이 안 되면 다음 단계가 없다)만 hard expect.
 import { test, expect } from '@playwright/test'
 import {
-  ADMIN, PASSWORD, botEmail, ensureBotAdmin, finding, ledger, loginAs, serviceClient, shot, userIdByEmail,
+  ADMIN, INF_NICK, PASSWORD, botEmail, ensureBotAdmin, finding, ledger, loginAs, serviceClient, shot, userIdByEmail,
 } from './_helpers'
 
 const ADV = botEmail('adv')
@@ -53,8 +53,16 @@ test('2-1 관리자 승인 — 대기 −1 · 승인 +1 · 서류 원본 삭제 
   const row = page.locator('div.bg-white.rounded-2xl').filter({ hasText: ADV })
   await expect(row, '대기 목록에 이 광고주가 보여야 해요').toBeVisible()
 
-  // 「승인하면 가입 축하금 …C가 지급됩니다」 — 실제로는 가입 시점에 이미 줬다(아래에서 확인)
-  const noticeText = (await row.locator('p').filter({ hasText: '가입 축하금' }).textContent()) ?? ''
+  // 이 자리에 원래 「승인하면 가입 축하금 …C가 지급됩니다」가 있었다. 원장을 보면 축하금은
+  // 가입(api/signup) 시점에 이미 들어와 있어서 승인과 무관한데, 관리자는 「승인해야 주는 줄」
+  // 알고 누르게 된다 — D30 PROMPT-3 에서 문구를 고쳤다. 되돌아오면 여기서 잡는다.
+  const notice = row.locator('p').filter({ hasText: '승인하면' }).first()
+  await expect(notice, '승인하면 무엇이 되는지 안내가 있어야 해요').toBeVisible()
+  const noticeText = (await notice.textContent()) ?? ''
+  expect(
+    noticeText,
+    '대기 카드가 다시 축하금을 말하고 있어요 — 이미 받은 돈을 앞으로 받을 것처럼 읽힙니다',
+  ).not.toContain('축하금')
 
   const clickedAt = Date.now()
   await row.getByRole('button', { name: '승인', exact: true }).click()
@@ -81,17 +89,13 @@ test('2-1 관리자 승인 — 대기 −1 · 승인 +1 · 서류 원본 삭제 
   const rows = await ledger(advId)
   const welcome = rows.filter((r) => r.reason_code === 'welcome')
   expect.soft(welcome.length, '가입 축하금 원장 행이 있어야 해요').toBeGreaterThan(0)
-  // 축하금은 승인이 아니라 가입(api/signup) 시점에 이미 들어온다. 버그는 아니지만
-  // 관리자가 읽는 문장과 실제가 다르다 — 「승인해야 주는 줄」 알고 누르는 자리다.
+  // 축하금은 승인이 아니라 가입(api/signup) 시점에 이미 들어온다. 이게 사실이어야
+  // 위의 「축하금을 말하지 않는다」 문구가 맞는 문구다 — 둘을 같이 잡아둔다.
   const grantedAtSignup = welcome.some((r) => new Date(r.created_at).getTime() < clickedAt)
-  if (grantedAtSignup) {
-    finding(
-      '직관',
-      '/admin/users 대기 카드',
-      `안내는 "${noticeText.trim()}" 인데 원장을 보면 가입 시점(api/signup)에 이미 지급돼 있어요. ` +
-        '승인은 지급과 무관합니다 — 문구를 「가입 시 지급된 축하금 20,000C」처럼 바꿔야 관리자가 오해하지 않아요.',
-    )
-  }
+  expect.soft(
+    grantedAtSignup,
+    `축하금이 승인보다 먼저 들어와 있어야 해요(현재 안내: "${noticeText.trim()}")`,
+  ).toBe(true)
 
   await ctx.close()
 })
@@ -111,7 +115,8 @@ test('3-1 오픈 등록 — schedules 행 · 원장 · 광고주 검색 노출',
   await page.goto('/influencer/schedule')
 
   await page.getByPlaceholder('예: 강남 카페 방문 포스팅').fill(OPEN_TITLE)
-  await page.locator('input[type=date]').fill(OPEN_DATE)
+  // D29 에서 종료일 칸이 생겨 date 칸이 둘이다 — 앞이 시작일. 비워두면 하루 오픈.
+  await page.locator('input[type=date]').first().fill(OPEN_DATE)
   await page.getByPlaceholder('예: 서울 강남구').fill('서울 강남구')
   await page.getByPlaceholder('예: 역삼동').fill('역삼동')
   await page.getByRole('button', { name: '블로그', exact: true }).click()
@@ -150,7 +155,11 @@ test('3-1 오픈 등록 — schedules 행 · 원장 · 광고주 검색 노출',
   const adv = await loginAs(browser, ADV, PASSWORD, '**/advertiser/**')
   await adv.page.goto('/advertiser/search')
   await adv.page.getByRole('button', { name: '검색하기' }).click()
-  await expect(adv.page.getByText(OPEN_TITLE).or(adv.page.getByText('봇여행자'))).toBeVisible({ timeout: 20_000 })
+  // 활동명에 RUN 번호가 붙어 있어 이번 실행 카드만 잡힌다 — 지난 실행 계정이 몇 개든 상관없다.
+  await expect(
+    adv.page.locator('div.bg-white.p-4').filter({ hasText: INF_NICK }).first(),
+    '이번에 등록한 오픈이 광고주 검색에 안 나와요',
+  ).toBeVisible({ timeout: 20_000 })
   await shot(adv.page, 'S3-1c-광고주검색노출')
   await adv.ctx.close()
 })
@@ -174,7 +183,11 @@ test('4-1 대시 보내기 — 날짜 필수 · proposals 행 · 원장 · 날�
   await page.goto('/advertiser/search')
   await page.getByRole('button', { name: '검색하기' }).click()
 
-  const dashBtn = page.getByRole('button', { name: '이 날짜로 대시 →' }).first()
+  // ⚠️ 아무 카드나 .first() 로 집으면 안 된다. 지난 실행 계정의 카드가 먼저 올 수 있고,
+  //    그러면 그 사람에게 대시가 나가서 아래 DB 검증(이번 인플루언서)이 어긋난다(D30 [2]).
+  const myCard = page.locator('div.bg-white.p-4').filter({ hasText: INF_NICK }).first()
+  await expect(myCard, '이번 인플루언서의 오픈 카드가 검색에 있어야 해요').toBeVisible({ timeout: 20_000 })
+  const dashBtn = myCard.getByRole('button', { name: '이 날짜로 대시 →' })
   await expect(dashBtn, '검색 결과 카드에 대시 버튼이 있어야 해요').toBeVisible({ timeout: 20_000 })
   await dashBtn.click()
 
@@ -232,12 +245,16 @@ test('4-1 대시 보내기 — 날짜 필수 · proposals 행 · 원장 · 날�
   const added = (await ledger(advId)).filter((r) => !ledgerBefore.some((b) => b.id === r.id))
   console.log(`[크레딧] 대시 발송으로 늘어난 원장 행: ${added.map((r) => `${r.reason_code} ${r.delta}`).join(', ') || '없음'}`)
   if (!added.some((r) => r.reason_code === 'send_proposal')) {
+    // 등급이 「결함」이 아니라 「화면이 거짓을 말함」인 이유: 기능이 안 되는 데서 끝나지 않고,
+    // /credits 가 사람에게 틀린 숫자를 보여준다. 사람은 그걸 믿고 「베타 동안 얼마나 아꼈나」를 센다.
     finding(
-      '결함',
+      '화면이 거짓을 말함',
       '대시 보내기 원장',
-      '대시를 보냈는데 원장에 send_proposal 행이 없어요(send_dash RPC 가 안 남김). 베타 무료라도 ' +
-        '「원래 금액을 남긴다」가 약관 ③ 이고, /credits 의 「베타 기간이라 NC가 청구되지 않았어요」는 ' +
-        'reason_code=send_proposal 행을 세어 만듭니다 — 행이 없으니 그 숫자는 영원히 0 입니다.',
+      '대시를 보냈는데 원장에 send_proposal 행이 없어요(send_dash RPC 가 안 남김). 그 결과 /credits 가 ' +
+        '틀린 숫자를 보여줍니다 — 단가표는 「대시 보내기 500C · 베타 무료」라고 알리는데, 아래의 ' +
+        '「베타 기간이라 NC가 청구되지 않았어요」는 reason_code=send_proposal 행을 세어 만들기 때문에 ' +
+        '대시를 아무리 보내도 0 이고, saved 가 0 이면 그 줄은 아예 사라집니다(credits/page.tsx:86·145). ' +
+        '베타 무료라도 「원래 금액을 남긴다」가 약관 ③ 이라, 행이 없는 것 자체가 약관과도 어긋납니다.',
     )
   }
 
