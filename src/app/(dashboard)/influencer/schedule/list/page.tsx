@@ -90,7 +90,7 @@ export default async function ScheduleListPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
-          <Link href="/influencer/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">
+          <Link href="/influencer/dashboard" className="hidden [.inf-pc_&]:inline-block mr-4 text-gray-400 hover:text-gray-600">
             ← 뒤로
           </Link>
           <h1 className="text-xl font-bold text-gray-900">내 일정</h1>

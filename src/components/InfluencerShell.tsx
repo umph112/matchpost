@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Home, CalendarDays, MessageSquare, BarChart3, Wallet, Search, Bell, ChevronLeft } from 'lucide-react'
@@ -46,6 +46,35 @@ const SCREENS: { match: (p: string) => boolean; title: string; parent?: string }
   { match: (p) => p === '/influencer/notifications', title: '알림', parent: '/influencer/dashboard' },
 ]
 const screenOf = (p: string) => SCREENS.find((s) => s.match(p))
+
+// D31 2절 — 누른 즉시 「먹었다」를 보여준다.
+// pathname 은 화면이 실제로 바뀐 뒤에야 바뀐다 — 그게 3초 뒤였고, 그동안 탭은 아무 반응이 없었다.
+// useLinkStatus 는 Link 의 자손에서만 읽을 수 있어서 안쪽을 따로 뺐다.
+function TabInner({
+  Icon,
+  label,
+  active,
+  badge,
+}: {
+  Icon: typeof Home
+  label: string
+  active: boolean
+  badge: number
+}) {
+  const { pending } = useLinkStatus()
+  const on = active || pending
+  return (
+    <span className={`w-full h-full flex flex-col items-center justify-center gap-0.5 relative transition-colors ${on ? 'text-[#F59E0B]' : 'text-[#9A9AA5]'}`}>
+      <Icon size={17} strokeWidth={on ? 2.25 : 1.75} />
+      <span className={`text-[10.5px] ${on ? 'font-bold' : 'font-medium'}`}>{label}</span>
+      {badge > 0 && (
+        <span className="absolute top-1.5 right-[26%] w-[15px] h-[15px] text-[9px] font-bold bg-[#EF4444] text-white rounded-full flex items-center justify-center">
+          {badge}
+        </span>
+      )}
+    </span>
+  )
+}
 const TAB_HREFS = new Set(['/influencer/dashboard', '/influencer/schedule/list', '/influencer/messages', '/influencer/search', '/influencer/earnings'])
 const LAST_TAB_KEY = 'inf:lastTab'
 
@@ -171,27 +200,14 @@ export default function InfluencerShell({
         </header>
         <main className={fullBleed ? 'h-[calc(100vh-52px-58px)] flex flex-col' : 'max-w-lg mx-auto px-4 py-5 pb-24 space-y-6'}>{children}</main>
         <nav className="fixed bottom-0 left-0 right-0 h-[58px] bg-white border-t border-gray-100 flex items-center z-40">
-          {MOBILE_TABS.map((t) => {
-            const active = isActive(t.href)
-            const b = t.badge ? badgeVal(t.badge) : 0
-            return (
-              <Link
-                key={t.href}
-                href={t.href}
-                className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 relative ${
-                  active ? 'text-[#F59E0B]' : 'text-[#9A9AA5]'
-                }`}
-              >
-                <t.Icon size={17} strokeWidth={active ? 2.25 : 1.75} />
-                <span className="text-[10.5px] font-medium">{t.label}</span>
-                {b > 0 && (
-                  <span className="absolute top-1.5 right-[26%] w-[15px] h-[15px] text-[9px] font-bold bg-[#EF4444] text-white rounded-full flex items-center justify-center">
-                    {b}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
+          {MOBILE_TABS.map((t) => (
+            // prefetch="auto" — 다음 화면 「코드」를 미리 받아둔다.
+            // 이 라우트들은 전부 동적이라 auto 는 loading.tsx 경계까지만 가져온다(데이터는 안 건드린다).
+            // true 로 두면 화면을 열 때마다 탭 다섯 곳의 서버 렌더가 같이 돌아간다.
+            <Link key={t.href} href={t.href} prefetch="auto" className="flex-1 h-full active:bg-[#FAFAFB]">
+              <TabInner Icon={t.Icon} label={t.label} active={isActive(t.href)} badge={t.badge ? badgeVal(t.badge) : 0} />
+            </Link>
+          ))}
         </nav>
       </div>
     )

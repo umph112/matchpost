@@ -9,6 +9,7 @@ import PaidConfirmModal from '@/components/PaidConfirmModal'
 import InfluencerPaidReceivedModal from '@/components/InfluencerPaidReceivedModal'
 import { kstDateString, dDayLabel, listDateLabel } from '@/lib/date'
 import { settlementDateOf } from '@/lib/deals/settlementDate'
+import { SkelBar } from '@/components/Skeleton'
 
 type OverdueRow = {
   campaignId: string
@@ -335,7 +336,7 @@ export default function EarningsPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <Link href="/influencer/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">
+          <Link href="/influencer/dashboard" className="hidden [.inf-pc_&]:inline-block mr-4 text-gray-400 hover:text-gray-600">
             ← 뒤로
           </Link>
           <h1 className="text-xl font-bold text-gray-900">매출 관리</h1>
@@ -490,7 +491,15 @@ export default function EarningsPage() {
 
       {/* 매출 목록 — 기간 스코프 */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {loading && <p className="text-center text-gray-400 py-8">불러오는 중...</p>}
+        {/* D31 2절 — loading.tsx 골격에서 이어지도록 여기도 골격으로 둔다.
+            글자로 바꾸면 「골격 → 글자 → 값」으로 두 번 깜빡인다. */}
+        {loading && (
+          <div className="p-4 space-y-3">
+            <SkelBar w="100%" h={44} />
+            <SkelBar w="100%" h={44} />
+            <SkelBar w="72%" h={44} />
+          </div>
+        )}
 
         {!loading && listRows.length === 0 && (
           <div className="text-center py-12">
