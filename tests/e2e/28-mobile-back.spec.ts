@@ -1,7 +1,7 @@
 import { devices, expect, test, type Browser, type Page } from '@playwright/test'
 import fs from 'fs'
 import path from 'path'
-import { PASSWORD, ROOT, finding, serviceClient } from './_helpers'
+import { PASSWORD, ROOT, serviceClient } from './_helpers'
 
 // D31 [1] — 「뒤로가기를 누르면 로그인 페이지로 튄다」.
 //
@@ -128,21 +128,10 @@ test('[D31-1] 로그인 없이 공개 인플루언서 페이지가 열린다', a
     // ① 미들웨어가 삼키지 않는다 — 고쳤다.
     expect(page.url(), '공개 프로필인데 로그인으로 보내면 결함이다').not.toContain('/login')
 
-    // ② 그런데 화면이 실제로 나오지는 않는다 — 여기는 아직 실패한다(고치면 통과로 바뀐다).
-    //    이 페이지만 params 를 Promise 로 안 받는다: `params: { id: string }` 로 선언하고
-    //    params.id 를 그대로 쓴다(influencer/[id]/page.tsx:12,19,28). Next 16 에서 params 는
-    //    Promise 라 .id 가 undefined 가 되고, 조회가 빈손이 되어 notFound() 로 떨어진다.
-    //    같은 id 로 /profile/[id](Promise 로 받음)는 200 이다 — 데이터 문제가 아니라 이 선언 하나다.
-    if (res?.status() !== 200) {
-      finding(
-        '결함',
-        '공개 인플루언서 프로필 /influencer/[id]',
-        '로그인 여부와 무관하게 404 입니다. 이 페이지만 params 를 Promise 로 받지 않아 ' +
-          '(influencer/[id]/page.tsx:12) params.id 가 undefined 가 되고, 조회가 빈손이라 notFound() 로 갑니다. ' +
-          '같은 id 로 /profile/[id] 는 200 입니다 — 데이터가 아니라 선언 한 줄 차이입니다. ' +
-          '결과: 인플루언서가 자기 프로필 링크를 밖에 뿌려도 받는 쪽엔 「없는 페이지」가 뜹니다.',
-      )
-    }
+    // ② 화면이 실제로 그려진다.
+    //    전에는 이 페이지만 params 를 동기로 받아(`params: { id: string }`) .id 가 undefined 였고,
+    //    조회가 빈손이라 notFound() 로 떨어졌다. Promise 로 받고 await 하게 고쳤다.
+    //    이 두 줄이 다시 동기로 돌아가면 여기서 404 로 잡힌다.
     expect(res?.status(), '공개 프로필이 404 다 — params 를 await 하지 않아서다').toBe(200)
     if (name) await expect(page.getByRole('heading', { name })).toBeVisible()
   } finally {

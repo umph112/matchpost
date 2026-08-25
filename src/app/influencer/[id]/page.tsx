@@ -9,14 +9,17 @@ import DashSendButton from '@/components/DashSendButton'
 export default async function InfluencerProfilePage({
   params,
 }: {
-  params: { id: string }
+  // Next 16 에서 params 는 Promise 다. 이 페이지만 동기로 받아 params.id 가 undefined 였고,
+  // 조회가 늘 빈손이라 로그인 여부와 무관하게 notFound() — 밖에 뿌린 프로필 링크가 「없는 페이지」였다.
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const supabase = await createClient()
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('role', 'influencer')
     .single()
 
@@ -25,13 +28,13 @@ export default async function InfluencerProfilePage({
   const { data: influencerProfile } = await supabase
     .from('influencer_profiles')
     .select('*')
-    .eq('user_id', params.id)
+    .eq('user_id', id)
     .single()
 
   const { data: schedules } = await supabase
     .from('schedules')
     .select('*')
-    .eq('influencer_id', params.id)
+    .eq('influencer_id', id)
     .eq('is_public', true)
     .eq('status', 'open')
     .gte('date', new Date().toISOString().split('T')[0])
