@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
 import { BarChart3 } from 'lucide-react'
@@ -62,7 +61,6 @@ export default function InfluencerProfilePage() {
   // 나를 친구등록한 광고주 (해제 가능, 해제해도 광고주에게 알리지 않는다)
   const [advConns, setAdvConns] = useState<{ otherId: string; name: string; source: string | null }[]>([])
   const [unregBusy, setUnregBusy] = useState<string | null>(null)
-  const router = useRouter()
   const supabase = createClient()
 
   const loadAdvConns = async () => {
@@ -276,9 +274,11 @@ export default function InfluencerProfilePage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
-          <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">
+          {/* D31 4절 — 모바일 뒤로가기는 셸 상단바가 갖는다(여기 두면 두 개가 된다).
+              PC 는 온 길(back)이 아니라 정해진 상위 화면으로 간다 — 어디서 왔든 같은 곳. */}
+          <Link href="/influencer/dashboard" className="hidden [.inf-pc_&]:inline-block mr-4 text-gray-400 hover:text-gray-600">
             ← 뒤로
-          </button>
+          </Link>
           <h1 className="text-xl font-bold text-gray-900">내 정보 수정</h1>
         </div>
         <LogoutButton />

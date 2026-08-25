@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Home, CalendarDays, MessageSquare, BarChart3, Wallet, Search, Bell } from 'lucide-react'
+import { Home, CalendarDays, MessageSquare, BarChart3, Wallet, Search, Bell, ChevronLeft } from 'lucide-react'
 import LogoutButton from './LogoutButton'
 import MatchScore from './MatchScore'
 import Logo from './Logo'
@@ -22,6 +22,32 @@ const MOBILE_TABS = [
   { href: '/influencer/search', label: '캠페인 찾기', Icon: Search },
   { href: '/influencer/earnings', label: '매출', Icon: Wallet },
 ]
+
+// D31 4절 — 모바일 상단바의 「현재 화면 이름」과 뒤로가기가 갈 곳.
+// 하위 화면의 상위는 「어디서 왔든 같은 곳」으로 고정한다 — back() 은 온 길에 따라 달라져 예측할 수 없다.
+// 이름은 하단 탭 라벨과 같은 말을 쓴다(홈·오픈·대시·캠페인 찾기·매출) — 다른 말을 쓰면 같은 곳인지 알 수 없다.
+const SCREENS: { match: (p: string) => boolean; title: string; parent?: string }[] = [
+  { match: (p) => p === '/influencer/dashboard', title: '홈' },
+  { match: (p) => p === '/influencer/schedule/list', title: '오픈' },
+  { match: (p) => p === '/influencer/messages', title: '대시' },
+  { match: (p) => p === '/influencer/search', title: '캠페인 찾기' },
+  { match: (p) => p === '/influencer/earnings', title: '매출' },
+  { match: (p) => p === '/influencer/schedule', title: '오픈 등록', parent: '/influencer/schedule/list' },
+  { match: (p) => p.startsWith('/influencer/schedule/'), title: '오픈 상세', parent: '/influencer/schedule/list' },
+  { match: (p) => p.startsWith('/influencer/messages/'), title: '대화', parent: '/influencer/messages' },
+  // 딜시트만 예외 — 뒤로가기를 셸이 갖지 않는다(parent 없음).
+  // DealSheet 안 빵부스러기가 데이터를 보고 갈라진다: 오픈에서 온 딜이면 「이 날 일정」으로 돌아간다.
+  // 셸은 화면 이름만 알 뿐 그 협업이 오픈에서 왔는지 캠페인에서 왔는지 모른다 —
+  // 여기서 받은 대시로 보내면 방금 보던 하루 일정에서 튕겨 나간다.
+  { match: (p) => p.startsWith('/influencer/deals/'), title: '딜시트' },
+  { match: (p) => p === '/influencer/proposals', title: '받은 대시', parent: '/influencer/messages' },
+  { match: (p) => p === '/influencer/channel-analytics', title: '내 채널 분석', parent: '/influencer/dashboard' },
+  { match: (p) => p === '/influencer/profile', title: '내 정보 수정', parent: '/influencer/dashboard' },
+  { match: (p) => p === '/influencer/notifications', title: '알림', parent: '/influencer/dashboard' },
+]
+const screenOf = (p: string) => SCREENS.find((s) => s.match(p))
+const TAB_HREFS = new Set(['/influencer/dashboard', '/influencer/schedule/list', '/influencer/messages', '/influencer/search', '/influencer/earnings'])
+const LAST_TAB_KEY = 'inf:lastTab'
 
 const PC_NAV_GROUPS: {
   group: string
@@ -82,6 +108,20 @@ export default function InfluencerShell({
   const badgeVal = (key?: 'msg' | 'notif') => (key === 'msg' ? msgCount : key === 'notif' ? notifCount : 0)
   const [subLine1, subLine2] = sub.split(' · ')
 
+  // D31 4절 — 탭에서의 뒤로가기는 「직전에 있던 탭」. 이력 전체가 아니라 하나만 담아둔다.
+  // 셸은 layout 이라 화면을 옮겨도 살아 있지만 새로고침에는 죽는다 — sessionStorage 로 받친다.
+  const [prevTab, setPrevTab] = useState<string | null>(null)
+  useEffect(() => {
+    if (!TAB_HREFS.has(pathname)) return
+    const stored = sessionStorage.getItem(LAST_TAB_KEY)
+    // 첫 화면이거나 같은 탭으로 되돌아온 것이면 갈 곳이 없다 — 뒤로가기를 감춘다
+    setPrevTab(stored && stored !== pathname ? stored : null)
+    sessionStorage.setItem(LAST_TAB_KEY, pathname)
+  }, [pathname])
+
+  const screen = screenOf(pathname)
+  const backHref = screen?.parent ?? (TAB_HREFS.has(pathname) ? prevTab : null)
+
   useEffect(() => {
     const detectMobile = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
     setMode(detectMobile() ? 'mobile' : 'pc')
@@ -97,11 +137,35 @@ export default function InfluencerShell({
   if (mode === 'mobile') {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="h-[52px] bg-white border-b border-gray-100 flex items-center gap-2 px-4 sticky top-0 z-40">
-          <Link href="/influencer/dashboard">
-            <Logo size={14} />
+        {/* D31 4절 — [←] 로고 | 현재 화면 이름 … [계정].
+            높이 52px 은 아래 main 의 h-calc 이 그대로 쓴다 — 바꾸려면 두 곳을 같이 바꿔야 한다. */}
+        <header className="h-[52px] bg-white border-b border-gray-100 flex items-center px-1.5 sticky top-0 z-40">
+          {backHref ? (
+            <Link
+              href={backHref}
+              aria-label="뒤로"
+              className="w-11 h-11 shrink-0 flex items-center justify-center text-[#5C5C68] active:bg-[#F6F6F7] rounded-lg"
+            >
+              <ChevronLeft size={20} strokeWidth={2} />
+            </Link>
+          ) : (
+            <div className="w-[10px] shrink-0" />
+          )}
+          <Link href="/influencer/dashboard" className="shrink-0 flex items-center" aria-label="MATCHPOST 홈">
+            <Logo size={20} markOnly />
           </Link>
-          <div className="ml-auto flex items-center gap-2">
+          {screen && (
+            <>
+              <span aria-hidden className="shrink-0 w-px h-[14px] bg-[#EAEAEE] mx-[9px]" />
+              <span className="min-w-0 truncate text-[13px] font-bold text-[#17171B] tracking-[-0.01em]">
+                {screen.title}
+              </span>
+            </>
+          )}
+          <div className="ml-auto flex items-center gap-2 pr-2.5 pl-2">
+            <div className="w-7 h-7 shrink-0 rounded-full bg-[#FEF3C7] text-[#B45309] text-[11.5px] font-extrabold flex items-center justify-center">
+              {initial(name)}
+            </div>
             <LogoutButton />
           </div>
         </header>

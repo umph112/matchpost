@@ -11,11 +11,14 @@ export default function Logo({
   size = 19,
   dark = false,
   beta = false,
+  markOnly = false,
   className = '',
 }: {
   size?: 14 | 19 | 20 | 41
   dark?: boolean
   beta?: boolean
+  /** 마크(사각형)만. 모바일 상단바처럼 폭이 아까운 자리에 쓴다 — 워드마크는 이름값을 못 한다 */
+  markOnly?: boolean
   className?: string
 }) {
   const { dot, gap, mark } = DOT_SPEC[size]
@@ -32,6 +35,7 @@ export default function Logo({
         <rect x="24.3" width="1.9" height="64" fill={lineColor} opacity={lineOpacity} />
         <circle cx="25.3" cy="38.1" r="8.3" fill="#F59E0B" />
       </svg>
+      {!markOnly && (
       <span
         className="inline-flex items-center"
         style={{
@@ -59,6 +63,7 @@ export default function Logo({
         />
         POST
       </span>
+      )}
       {beta && (
         <span
           className="ml-[3px] rounded-[5px] px-2 py-1"

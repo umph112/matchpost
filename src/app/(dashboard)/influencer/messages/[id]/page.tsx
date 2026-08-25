@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Link from 'next/link'
-import { ArrowLeft, Paperclip, Loader2 } from 'lucide-react'
+import { Paperclip, Loader2 } from 'lucide-react'
 import DealConfirmBar from '@/components/DealConfirmBar'
 import MessageBubble from '@/components/messages/MessageBubble'
 import ReportModal from '@/components/ReportModal'
@@ -205,9 +204,7 @@ export default function InfluencerMessageRoomPage() {
     <div className="flex flex-col [.inf-pc_&]:flex-row flex-1 min-h-0 [.inf-pc_&]:h-full">
      <div className="flex flex-col flex-1 min-w-0 min-h-0">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-[#EAEAEE] [.inf-pc_&]:px-5">
-        <Link href="/influencer/messages" className="text-gray-400 hover:text-gray-600 [.inf-pc_&]:hidden">
-          <ArrowLeft size={18} strokeWidth={1.75} />
-        </Link>
+        {/* D31 4절 — 뒤로가기는 셸 상단바 한 곳으로 모았다(여기 있으면 모바일에서 두 개가 보인다) */}
         <div className="w-9 h-9 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold shrink-0">
           {initial(advertiserName)}
         </div>
