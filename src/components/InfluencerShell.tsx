@@ -17,7 +17,9 @@ const MOBILE_TABS = [
   { href: '/influencer/dashboard', label: '홈', Icon: Home },
   { href: '/influencer/schedule/list', label: '오픈', Icon: CalendarDays },
   { href: '/influencer/messages', label: '대시', Icon: MessageSquare, badge: 'msg' as const },
-  { href: '/influencer/channel-analytics', label: '내 채널', Icon: BarChart3 },
+  // D31 8절 — 「내 채널」 자리에 「캠페인 찾기」. 인플루언서에게 가장 중요한 건 일을 찾는 것이고,
+  // 내 채널은 밤 10시 배치라 하루 한 번 갱신된다(매일 볼 화면이 아니다 — 홈 카드로 들어간다).
+  { href: '/influencer/search', label: '캠페인 찾기', Icon: Search },
   { href: '/influencer/earnings', label: '매출', Icon: Wallet },
 ]
 

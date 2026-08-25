@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { roleHome } from '@/lib/auth/roleHome'
 
 // D7 부록 3-3/5 — 랜딩 우측 패널과 /login이 공유하는 로그인 UI(역할 탭 + 소셜 + 이메일).
 const ROLE_COPY = {
@@ -41,11 +42,10 @@ export default function RoleLoginPanel() {
       setLoading(false)
       return
     }
-    const { data: profile } = await supabase.from('profiles').select('role, status').eq('id', data.user.id).single()
-    if (profile?.status === 'pending') { router.push('/pending'); return }
-    if (profile?.role === 'influencer') router.push('/influencer/dashboard')
-    else if (profile?.role === 'advertiser') router.push('/advertiser/dashboard')
-    else if (profile?.role === 'admin') router.push('/admin/dashboard')
+    // D31 [1] — push 가 아니라 replace 다.
+    // push 면 /login 이 이력에 남아, 첫 화면에서 뒤로가기 한 번에 로그인 폼으로 돌아간다.
+    // replace 면 로그인 화면이 도착 화면으로 덮여 사라진다. (랜딩(/)에서 로그인해도 같다)
+    router.replace(await roleHome(supabase, data.user.id))
   }
 
   const copy = ROLE_COPY[role]
