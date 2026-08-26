@@ -11,8 +11,14 @@ export type StageToggles = {
 }
 
 // 방문은 지역 캠페인일 때만 자동. 원고는 사전 컨펌에 딸린다.
+//
+// D32 3절 — '가이드'는 어떤 조합에서도 안 나오고 있었다. ALL_STAGES·STAGE_OWNER·
+// LEGACY_STAGE_MAP·체크포인트 키('guide')·인플루언서 대시보드 문구까지 다 갖춰져
+// 있는데 이 함수만 안 넣어서, 대화창의 「가이드로 등록」이 자동 완료시킬 단계가
+// 캠페인 딜시트엔 아예 없었다. 끄고 켤 항목이 아니라 늘 거치는 단계라 항상 넣는다 —
+// 가이드 없이 진행되는 캠페인은 없고, 취소 점수도 「가이드 이후냐」로 갈린다.
 export function computeEnabledStages(t: StageToggles): Stage[] {
-  const stages: Stage[] = ['협의', '수락']
+  const stages: Stage[] = ['협의', '수락', '가이드']
   if (t.campaignType === '지역') stages.push('방문')
   if (t.preConfirm) stages.push('원고', '수정/컨펌')
   stages.push('게재')

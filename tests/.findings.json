@@ -27,7 +27,8 @@
     "kind": "결함",
     "where": "캠페인 협업 — 만들 수가 없음",
     "text": "캠페인에 연결된 협업(proposals.campaign_id)을 만드는 화면이 한 곳도 없습니다. 대시를 만드는 통로는 DashSendButton → ConfirmDashModal → sendDash → send_dash RPC 하나뿐인데, DashSendButton 을 쓰는 8곳 전부가 campaignId 를 안 넘깁니다(connections 209·257, advertiser/search 435·782, day/[date] 172, influencer/[id] 142, profile/[id] 81, CampaignCalendar 238). campaignId 없이 부르면 send_dash 는 p_kind='personal' 로 campaign_id=null 행을 만듭니다(ConfirmDashModal 91~92). 인플루언서 쪽 캠페인 검색에도 신청 버튼이 없어 /influencer/messages?receiverId= 개인 대화로만 갑니다. DB·RPC 는 캠페인 협업을 완전히 지원하는데(send_dash 78~90행에 campaign_id 분기가 이미 있음) 그걸 부르는 화면이 없는 상태입니다. 실측: campaigns 0행, campaign_id 있는 proposals 0행. 결과로 딜시트(가이드·원고·게재·정산·평가)는 지금 어떤 경로로도 열리지 않습니다.",
-    "at": "2026-08-24T04:13:06.548Z"
+    "at": "2026-08-24T04:13:06.548Z",
+    "fixed": "2026-08-26 — D32 1절. /influencer/search 캠페인 카드에 「지원하기」가 생겼고, apply_to_campaign RPC(0098)가 campaign_id 붙은 proposals 를 만듭니다. 30-campaign-apply.spec.ts 가 실제 계정으로 지원→확정까지 돌며 딜시트가 열리는 것을 확인합니다."
   },
   {
     "kind": "결함",
@@ -111,7 +112,8 @@
     "kind": "결함",
     "where": "캠페인 딜시트 「가이드」 단계",
     "text": "캠페인은 등록 때 고른 조합으로 딜시트가 열리는데(computeEnabledStages), 그 함수가 「가이드」를 어떤 조합에서도 안 내보냅니다 — 캠페인 구분 5가지 × 사전컨펌 × 게재뒤수정 20조합 전수 확인. 가이드는 ALL_STAGES 에 있고 STAGE_OWNER 에도 advertiser 로 적혀 있어 쓰려던 단계가 맞습니다. 오픈 협업은 9단계 고정이라 가이드가 나오는데(deals/openDeal.ts:9) 캠페인만 빠집니다. 결과: 광고주가 가이드를 주는 칸이 캠페인에서는 통째로 없습니다(campaign-stages.ts:17).",
-    "at": "2026-08-25T07:01:19.223Z"
+    "at": "2026-08-25T07:01:19.223Z",
+    "fixed": "2026-08-26 — D32 3절. computeEnabledStages 가 '가이드'를 항상 넣습니다(끄고 켤 항목이 아니라 늘 거치는 단계). 27-campaign-stages.spec.ts 의 결함 고정 테스트를 뒤집어 「어떤 조합에서도 나온다」로 바꿨고, 조합 표 8줄에도 '가이드'를 넣었습니다. DealSheet.stageColor 가 자리 번호(idx>=2)로 재던 것도 '수락' 이름 기준으로 고쳤습니다 — 목록에 한 칸이 끼면서 번호가 밀렸을 것이라서."
   },
   {
     "kind": "결함",

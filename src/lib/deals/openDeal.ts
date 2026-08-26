@@ -6,7 +6,8 @@ import type { DealSheetCampaign } from '@/components/DealSheet'
 //
 // 단계는 기본 9단계다 — 협의·수락·가이드·방문·원고·수정/컨펌·게재·게재뒤수정·정산.
 // 오픈엔 켜고 끌 캠페인 설정이 없으니 DealSheet 가 dealKind='open' 일 때 ALL_STAGES 를 그대로 쓴다.
-// (computeEnabledStages 는 어떤 조합에서도 '가이드'를 내놓지 않는다 — 캠페인 쪽 별건이라 여기선 손대지 않는다.)
+// (D32 3절에서 computeEnabledStages 도 '가이드'를 항상 넣도록 고쳤다. 이제 캠페인 딜시트와
+//  오픈 딜시트의 단계 이름이 어긋나지 않는다 — 여기는 그대로 ALL_STAGES 를 쓴다.)
 export type OpenScheduleRow = {
   id: string
   title: string | null

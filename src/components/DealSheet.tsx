@@ -159,10 +159,15 @@ function stageIndex(stage: string | null, stages: readonly Stage[]): number {
   return idx >= 0 ? idx : 0
 }
 
+// D32 3절 — 예전엔 `idx >= 2` 로 잰다. 그때 두 번째 자리는 '수락' 다음 칸이었지만
+// 단계 목록은 캠페인마다 길이가 달라서 같은 번호가 늘 같은 단계를 가리키지 않는다
+// (바로 위 stageIndex 주석의 그 버그와 같은 종류다 — 자리 번호로 재면 목록이 바뀔 때 어긋난다).
+// 뜻하는 바는 「'수락'을 넘겼는가」이니 이름으로 잰다.
 function stageColor(stage: string | null, stages: readonly Stage[]): string {
   const idx = stageIndex(stage, stages)
   if (idx >= stages.length - 1) return '#22C55E'
-  if (idx >= 2) return '#F59E0B'
+  const accepted = stages.indexOf('수락')
+  if (accepted >= 0 && idx > accepted) return '#F59E0B'
   return '#C4C4CE'
 }
 
