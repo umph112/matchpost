@@ -189,12 +189,15 @@ export default function HandoverView({
                   : '딜시트와 대화를 열어 확인한 뒤 옮겨주세요. 옮긴 건에는 「이관」 꼬리표가 남습니다.'}
             </div>
           </div>
-          <span
+          <button
+            type="button"
+            aria-expanded={logOpen}
             onClick={() => setLogOpen((v) => !v)}
-            style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: '#B45309', cursor: 'pointer', borderBottom: '1px solid rgba(180,83,9,0.28)', paddingBottom: 1 }}
+            // button 기본값 제거 — span 이었을 때와 겉모습이 같아야 한다. 밑줄은 유지.
+            style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, color: '#B45309', cursor: 'pointer', background: 'none', border: 'none', borderBottom: '1px solid rgba(180,83,9,0.28)', padding: 0, paddingBottom: 1, fontFamily: 'inherit' }}
           >
             {logOpen ? '기록 접기' : '이관 기록'}
-          </span>
+          </button>
         </div>
 
         {logOpen && (

@@ -11,7 +11,7 @@ import { listTime, kstDateString } from '@/lib/date'
 import { getTodayQueue } from '@/lib/admin/todayQueue'
 import { getTodayStats } from '@/lib/admin/todayStats'
 import { BATCH_ROUTES } from '@/lib/admin/batchRoutes'
-import { createServiceClient } from '@/lib/supabase/service'
+import { createClient } from '@/lib/supabase/server'
 import TrafficPanel from '@/components/admin/TrafficPanel'
 
 export const dynamic = 'force-dynamic'
@@ -44,7 +44,9 @@ const SEP = <span className="mx-[9px] text-[11.5px] text-[#E2E2E8]">|</span>
 export default async function AdminTodayPage() {
   const [queue, stats] = await Promise.all([getTodayQueue(), getTodayStats()])
 
-  const db = createServiceClient()
+  // 0102 로 관리자 SELECT 정책이 생겼다 — service 키로 우회하지 않는다.
+  // 이 화면은 admin/layout.tsx:32 에서 role='admin' 을 확인하고 들어온다.
+  const db = await createClient()
   const { data: openReports } = await db
     .from('reports')
     .select(

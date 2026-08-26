@@ -7,6 +7,7 @@
 //    한 글자라도 달라지면 "관리자 화면에는 5건인데 내 화면엔 4건"이 된다.
 
 import { createServiceClient } from '@/lib/supabase/service'
+import { createClient } from '@/lib/supabase/server'
 import { settlementDateOf } from '@/lib/deals/settlementDate'
 import { kstDateString } from '@/lib/date'
 import { unregisteredBatches, type BatchRoute } from '@/lib/admin/batchRoutes'
@@ -35,9 +36,19 @@ export type TodayQueue = {
 export async function getTodayQueue(): Promise<TodayQueue> {
   const db = createServiceClient()
 
+  // 신고만 로그인한 관리자 자격으로 읽는다(0102 로 관리자 SELECT 정책이 생겼다).
+  // 정책이 맞으면 우회할 이유가 없고, 우회가 남아 있으면 다음에 또
+  // 「건수는 보이는데 눌러도 못 읽는」 상태가 생긴다.
+  // 호출부는 admin/layout.tsx:34 · admin/dashboard/page.tsx:45 둘뿐이고 둘 다 관리자 확인을 지난다.
+  //
+  // 아래 셋(advertiser_profiles · proposals · campaigns)은 그대로 둔다 —
+  // advertiser_profiles 는 관리자 정책이 있지만(0095:70) 나머지 둘은 확인하지 못했다.
+  // 확인 없이 되돌리면 건수가 조용히 0 이 된다(별도 건).
+  const me = await createClient()
+
   const [openRes, unpaidRes, bizRes, propRes] = await Promise.all([
-    db.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open'),
-    db.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open').eq('type', 'unpaid'),
+    me.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open'),
+    me.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open').eq('type', 'unpaid'),
     db
       .from('advertiser_profiles')
       .select('user_id', { count: 'exact', head: true })

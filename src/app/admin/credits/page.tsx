@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { CREDIT_ACTION_LABELS } from '@/lib/creditConfig'
 import { initial } from '@/lib/initial'
 
@@ -32,7 +31,6 @@ type RawLedgerRow = {
 }
 
 export default function AdminCreditsPage() {
-  const supabase = createClient()
   const [users, setUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -48,51 +46,27 @@ export default function AdminCreditsPage() {
     fetchUsers()
   }, [])
 
+  // 남의 잔액·이력은 브라우저에서 직접 읽지 않는다 — 관리자 확인을 서버에서 하는 라우트를 거친다.
+  // credit_balances 는 0104 로 security_invoker 라 브라우저 자격에서는 「내 행」만 나온다.
   const fetchUsers = async () => {
     setLoading(true)
-
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, name, role')
-      .neq('role', 'admin')
-      .order('created_at', { ascending: false })
-
-    const { data: privs } = await supabase
-      .from('user_private')
-      .select('user_id, email')
-
-    const { data: balances } = await supabase
-      .from('credit_balances')
-      .select('user_id, balance')
-
-    const privMap = Object.fromEntries((privs ?? []).map(p => [p.user_id, p.email]))
-    const balMap = Object.fromEntries((balances ?? []).map(b => [b.user_id, b.balance]))
-
-    const rows: UserRow[] = (profiles ?? []).map(p => ({
-      id: p.id,
-      name: p.name,
-      email: privMap[p.id] ?? '',
-      role: p.role,
-      balance: balMap[p.id] ?? 0,
-    }))
-
-    setUsers(rows)
+    const res = await fetch('/api/admin/credits')
+    const json = await res.json()
+    setUsers(res.ok ? (json.users ?? []) : [])
     setLoading(false)
   }
 
-  const openUser = async (user: UserRow) => {
+  // keepMsg: 지급/차감 직후 다시 열 때 「지급 완료」 문구를 지우지 않기 위한 것.
+  const openUser = async (user: UserRow, keepMsg = false) => {
     setSelected(user)
-    setMsg('')
+    if (!keepMsg) setMsg('')
     setGrantAmount('')
     setGrantDesc('')
     setTxLoading(true)
-    const { data } = await supabase
-      .from('credit_ledger')
-      .select('id, delta, reason_code, memo, ref_id, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(50)
-    setTxs(((data ?? []) as RawLedgerRow[]).map(row => ({
+    const res = await fetch(`/api/admin/credits?userId=${user.id}`)
+    const json = await res.json()
+    const data: RawLedgerRow[] = res.ok ? (json.ledger ?? []) : []
+    setTxs(data.map(row => ({
       id: row.id,
       amount: row.delta,
       action: row.reason_code,
@@ -125,7 +99,7 @@ export default function AdminCreditsPage() {
       setMsg(amount > 0 ? `${amount.toLocaleString()} C 지급 완료` : `${Math.abs(amount).toLocaleString()} C 차감 완료`)
       setGrantAmount('')
       setGrantDesc('')
-      await openUser(updated)
+      await openUser(updated, true)
     }
     setSubmitting(false)
   }

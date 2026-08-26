@@ -379,8 +379,10 @@ export default function LeavesView(props: {
 
                 {/* 신청 버튼 (신규/대기) */}
                 {(stage === 'new' || stage === 'pending') && (
-                  <div
-                    onClick={stage === 'new' && !busy ? submit : undefined}
+                  <button
+                    type="button"
+                    onClick={submit}
+                    disabled={stage !== 'new' || busy}
                     style={{
                       minHeight: 46,
                       borderRadius: 11,
@@ -389,13 +391,18 @@ export default function LeavesView(props: {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      // button 기본값 제거 — div 였을 때와 겉모습이 같아야 한다
+                      width: '100%',
+                      padding: 0,
+                      border: 'none',
+                      fontFamily: 'inherit',
                       ...(stage === 'new'
                         ? { background: '#F59E0B', color: '#17171B', cursor: 'pointer' }
                         : { background: '#F1F1F4', color: '#7C7C88' }),
                     }}
                   >
                     {stage === 'new' ? '휴무 신청' : '신청했어요 · 수락 대기'}
-                  </div>
+                  </button>
                 )}
               </div>
             </div>

@@ -5,7 +5,6 @@ import { getBalance } from '@/lib/credits/ledger'
 import {
   CREDIT_ACTION_LABELS,
   CREDIT_POLICY,
-  creditAmount,
   type CreditPolicyItem,
 } from '@/lib/creditConfig'
 import CreditsHistoryClient from '@/components/CreditsHistoryClient'
@@ -81,12 +80,6 @@ export default async function CreditsPage() {
   const monthIn = monthRows.filter((r) => r.delta > 0).reduce((s, r) => s + r.delta, 0)
   const monthOut = monthRows.filter((r) => r.delta < 0).reduce((s, r) => s + Math.abs(r.delta), 0)
 
-  // 베타 무료로 청구되지 않은 누계(원래 금액 기준) — 원장 reason_code 가 beta_free 항목인 것
-  const BETA_KEYS = new Set(CREDIT_POLICY.filter((p) => p.status === 'beta_free').map((p) => p.key))
-  const saved = (ledger ?? [])
-    .filter((r) => BETA_KEYS.has(r.reason_code))
-    .reduce((s, r) => s + creditAmount(r.reason_code), 0)
-
   const rows = (ledger ?? []).map((r) => ({
     ...r,
     label: CREDIT_ACTION_LABELS[r.reason_code] ?? r.reason_code,
@@ -141,12 +134,6 @@ export default async function CreditsPage() {
               <span className="ml-auto text-[12.5px] font-bold text-white tabular-nums">{balance.balance.toLocaleString()} 남음</span>
             </div>
           </div>
-
-          {saved > 0 && (
-            <p className="text-[11px] text-white/[0.42] mt-4">
-              베타 기간이라 {saved.toLocaleString()}C 가 청구되지 않았어요
-            </p>
-          )}
         </div>
 
         {/* 우 — 단가표 + 이력 */}
