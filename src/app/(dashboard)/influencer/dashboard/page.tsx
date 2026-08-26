@@ -25,6 +25,7 @@ const NOTIF_ICON: Record<string, LucideIcon> = {
   open_created: CalendarPlus, open_completed: CheckCircle2, open_cancelled: Ban,
   deal_made: Handshake, dash_received: MessageSquare, settlement_due: Wallet,
   deal_confirm_request: Hourglass, deal_confirm_self: CheckSquare,
+  campaign_rejected: Ban, // D32 2절 — 지원 반려
 }
 
 // 딜시트와 같은 9단계(D6 B1) — "다음 할 일" 라벨 파생용

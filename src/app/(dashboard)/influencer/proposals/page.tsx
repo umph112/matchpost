@@ -155,6 +155,19 @@ export default function InfluencerProposalsPage() {
             {/* 메시지 */}
             <p className="text-sm text-gray-600 mb-4 line-clamp-3">{proposal.message}</p>
 
+            {/* 반려 사유 (D32 2절) —
+                알림은 지나가면 사라지는데 사유는 다음 지원에 참고할 값이라 줄에 붙여 둔다.
+                사유는 선택이라 안 적고 반려한 건도 있다 — 그때는 이 줄 자체를 안 띄운다.
+                (reject_reason 은 광고주가 지원을 반려할 때만 찬다. 인플루언서가 받은 대시를
+                 거절한 줄도 status 는 'rejected' 지만 사유는 비어 있어 여기 안 걸린다.) */}
+            {proposal.status === 'rejected' && proposal.reject_reason && (
+              <p className="text-sm text-[#B91C1C] bg-[#FEF2F2] border border-[#FECACA] rounded-xl px-3 py-2 mb-4">
+                <span className="font-semibold">반려</span>
+                <span className="text-[#DC2626]"> · </span>
+                <span className="text-[#7F1D1D]">{proposal.reject_reason}</span>
+              </p>
+            )}
+
             {/* 수락/거절 버튼 */}
             {proposal.status === 'pending' && (
               <div className="grid grid-cols-2 gap-2">

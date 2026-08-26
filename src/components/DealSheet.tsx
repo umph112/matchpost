@@ -25,6 +25,8 @@ import {
 } from '@/lib/campaign-stages'
 // D29 PROMPT-2 — 진행 기록 세 가지는 서버액션으로. 브라우저 update 는 RLS 에 막혀도 조용했다.
 import { advanceStage as advanceStageAction, setTaxDocReceived, setSettlementStatus } from '@/lib/deals/progress'
+// D32 2절 — 지원자 확정·반려·모집마감. 여기도 서버액션이다(브라우저 update 는 조용히 0행이 된다).
+import { confirmApplicant, rejectApplicant, closeRecruiting } from '@/lib/deals/applicants'
 import { CalendarDays, MapPin, AlertTriangle } from 'lucide-react'
 import { dDayLabel, monthDayKo } from '@/lib/date'
 import { isSettlementDateChanged, settlementDateOf } from '@/lib/deals/settlementDate'
@@ -102,6 +104,13 @@ type Proposal = {
   budget: number | null
   advertiser_confirmed: boolean
   influencer_confirmed: boolean
+  // D32 2절 — 지원자 줄을 딜시트 표에서 갈라내는 데 쓰는 칸들
+  initiated_by: string | null
+  status: string | null
+  message: string | null
+  proposed_date: string | null
+  created_at: string | null
+  reject_reason: string | null
   // dealsheet fields (may be null if migration not yet applied)
   stage: string | null
   visit_at: string | null
@@ -138,6 +147,8 @@ export type DealSheetCampaign = {
   status: string | null
   stage_pre_confirm?: boolean
   stage_post_edit?: boolean
+  // D32 2절 — 광고주가 모집을 닫은 시각. 인원이 차도 자동으로 채워지지 않는다.
+  recruit_closed_at?: string | null
 }
 
 // D6 B3 — 인덱스는 항상 그 캠페인의 활성 단계 목록(stages) 기준으로만 계산한다.
@@ -201,6 +212,12 @@ export default function DealSheet({
   const [connectionError, setConnectionError] = useState('')
   // 진행 기록(단계·세무자료·정산상태)이 서버에서 거절당하면 여기 담아 화면에 띄운다 — 조용히 넘어가지 않는다.
   const [progressError, setProgressError] = useState('')
+  // D32 2절 — 지원자 카드
+  const [applicantBusy, setApplicantBusy] = useState<string | null>(null)
+  const [applicantError, setApplicantError] = useState('')
+  const [rejecting, setRejecting] = useState<string | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
+  const [closedAt, setClosedAt] = useState<string | null>(campaign.recruit_closed_at ?? null)
 
   const loadConnections = () => {
     supabase
@@ -332,8 +349,8 @@ export default function DealSheet({
     })
   }
   const toggleAll = () => {
-    if (selected.size === proposals_.length) setSelected(new Set())
-    else setSelected(new Set(proposals_.map((p) => p.id)))
+    if (selected.size === sheetRows.length) setSelected(new Set())
+    else setSelected(new Set(sheetRows.map((p) => p.id)))
   }
 
   // D29 PROMPT-4 — 넘길 단계가 남아 있나 / 지금 내 차례인가.
@@ -376,10 +393,67 @@ export default function DealSheet({
     )
   }
 
+  // D32 2절 — 지원자와 딜시트를 가른다.
+  // 지원자 = 인플루언서가 걸어온 줄인데 광고주가 아직 답을 안 한 것.
+  // 광고주가 보낸 대시는 여기 들어오지 않는다(그건 인플루언서가 답할 차례라 성격이 다르다).
+  // 반려한 줄도 빠진다 — 표에도, 지원자 목록에도 남기지 않는다(사유는 줄에 남아 있다).
+  const isApplicant = (p: Proposal) =>
+    p.initiated_by === 'influencer' && !p.advertiser_confirmed && p.status !== 'rejected'
+  const applicants = proposals_.filter(isApplicant)
+  // 표에 그릴 줄. 반려한 줄은 확정도 진행도 없으므로 표에서도 뺀다.
+  const sheetRows = proposals_.filter((p) => !isApplicant(p) && p.status !== 'rejected')
+
+  // 확정 — 광고주 칸만 켠다(인플루언서 칸은 지원할 때 이미 켜져 있다).
+  // 화면에서는 이 줄이 지원자 목록에서 빠지고 딜시트 표로 내려간다. 같은 배열을 나눠 보는 것이라
+  // 플래그만 바꾸면 두 곳이 함께 움직인다 — 다시 불러오지 않는다.
+  const onConfirmApplicant = async (proposalId: string) => {
+    setApplicantError('')
+    setApplicantBusy(proposalId)
+    const res = await confirmApplicant(proposalId)
+    setApplicantBusy(null)
+    if (!res.ok) { setApplicantError(`확정 실패 — ${res.error}`); return }
+    setProposals((prev) =>
+      prev.map((x) =>
+        x.id === proposalId ? { ...x, advertiser_confirmed: true, status: 'accepted' } : x,
+      ),
+    )
+  }
+
+  // 반려. 사유는 선택이라 비워도 그대로 보낸다.
+  const onRejectApplicant = async (proposalId: string) => {
+    setApplicantError('')
+    setApplicantBusy(proposalId)
+    const reason = rejectReason.trim()
+    const res = await rejectApplicant(proposalId, reason)
+    setApplicantBusy(null)
+    if (!res.ok) { setApplicantError(`반려 실패 — ${res.error}`); return }
+    setRejecting(null)
+    setRejectReason('')
+    setProposals((prev) =>
+      prev.map((x) =>
+        x.id === proposalId ? { ...x, status: 'rejected', reject_reason: reason || null } : x,
+      ),
+    )
+  }
+
+  // 모집 마감. 인원이 차도 자동으로 부르지 않는다 — 광고주가 눌러야 여기 온다.
+  const onCloseRecruiting = async () => {
+    setApplicantError('')
+    setApplicantBusy('__close__')
+    const res = await closeRecruiting(campaign.id)
+    setApplicantBusy(null)
+    if (!res.ok) { setApplicantError(`모집 마감 실패 — ${res.error}`); return }
+    setClosedAt(new Date().toISOString())
+  }
+
+  // 모집 인원에 닿았나. 닿아도 닫지 않고 알리기만 한다.
+  const reachedTarget =
+    campaign.recruit_target != null && confirmedCount >= campaign.recruit_target
+
   // group proposals by channel (platforms[0] or '기타')
   const byChannel: Record<string, Proposal[]> = {}
   const channelOrder = Object.keys(CH_GROUP)
-  for (const p of proposals_) {
+  for (const p of sheetRows) {
     const ch = p.influencer_profile?.platforms?.[0] ?? '기타'
     ;(byChannel[ch] ??= []).push(p)
   }
@@ -413,7 +487,7 @@ export default function DealSheet({
       {isAdv ? (
         <input
           type="checkbox"
-          checked={selected.size === proposals_.length && proposals_.length > 0}
+          checked={selected.size === sheetRows.length && sheetRows.length > 0}
           onChange={toggleAll}
           className="w-[14px] h-[14px] cursor-pointer accent-amber-500"
         />
@@ -969,8 +1043,155 @@ export default function DealSheet({
         </div>
       )}
 
+      {/* ── 지원자 (D32 2절) ──
+          딜시트 위에 따로 둔다. 아래 표는 「같이 하기로 한 사람들의 진행」이고
+          여기는 「아직 답을 안 한 사람들」이라, 한 표에 섞이면 확정 전후가 구분되지 않았다.
+          인플루언서에게는 보이지 않는다 — 남의 지원 여부를 볼 자리가 아니다. */}
+      {isAdv && dealKind === 'campaign' && (applicants.length > 0 || (reachedTarget && !closedAt)) && (
+        <div className="bg-white border border-[#EAEAEE] rounded-[14px] overflow-hidden mb-4">
+          <div className="px-4 py-3 border-b border-[#F1F1F4] flex items-center gap-2 flex-wrap">
+            <span className="text-[13px] font-extrabold text-[#17171B]">
+              지원자 {applicants.length}명
+            </span>
+            <span className="text-[12px] font-semibold text-[#9A9AA5]">
+              {confirmedCount} / {campaign.recruit_target ?? '—'}명
+            </span>
+            {closedAt && (
+              <span className="text-[10.5px] font-bold bg-[#F1F1F4] text-[#7C7C88] rounded px-2 py-0.5">
+                모집 마감
+              </span>
+            )}
+          </div>
+
+          {/* 인원이 찼다고 자동으로 닫지 않는다 — 한 명 더 받고 싶은 경우가 있어서
+              알리기만 하고 닫는 것은 광고주가 고른다. */}
+          {reachedTarget && !closedAt && (
+            <div className="px-4 py-3 bg-[#FFFBEB] border-b border-[#FCD34D] flex items-center gap-2 flex-wrap">
+              <AlertTriangle size={15} strokeWidth={1.75} className="text-[#B45309] shrink-0" />
+              <p className="text-[12.5px] text-[#B45309] font-semibold">
+                {confirmedCount}명 확정 · 모집 인원 도달
+              </p>
+              <button
+                onClick={onCloseRecruiting}
+                disabled={applicantBusy !== null}
+                className="ml-auto text-[12px] font-bold bg-[#17171B] hover:bg-[#000] disabled:opacity-40 text-white rounded-lg px-3 py-1.5 transition whitespace-nowrap"
+              >
+                {applicantBusy === '__close__' ? '마감 중…' : '모집 마감'}
+              </button>
+            </div>
+          )}
+
+          {applicantError && (
+            <p className="px-4 py-2.5 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border-b border-[#FEE2E2]">
+              {applicantError}
+            </p>
+          )}
+
+          {applicants.length === 0 ? (
+            <p className="px-4 py-6 text-center text-[12.5px] text-[#B0B0BB]">
+              아직 답을 기다리는 지원자가 없어요.
+            </p>
+          ) : (
+            applicants.map((p) => {
+              const ch = p.influencer_profile?.platforms?.[0] ?? null
+              const chStyle = ch ? CH_GROUP[ch] : null
+              const busy = applicantBusy === p.id
+              return (
+                <div key={p.id} className="px-4 py-3 border-b border-[#F5F5F7] last:border-b-0">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-[#FEF3C7] text-[#B45309] text-[13px] font-bold flex items-center justify-center shrink-0">
+                      {initial(p.profile?.name)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="text-[13px] font-bold text-[#17171B] truncate">
+                          {p.profile?.name ?? '인플루언서'}
+                        </p>
+                        {ch && (
+                          <span
+                            className="text-[10.5px] font-semibold rounded px-1.5 py-0.5 whitespace-nowrap"
+                            style={{
+                              background: chStyle?.bg ?? '#F1F1F4',
+                              color: chStyle?.text ?? '#5C5C68',
+                            }}
+                          >
+                            {ch}
+                          </span>
+                        )}
+                        <span className="text-[11.5px] text-[#7C7C88] whitespace-nowrap">
+                          팔로워 {p.influencer_profile?.follower_count?.toLocaleString() ?? '—'}명
+                        </span>
+                        <MatchScore
+                          score={p.influencer_profile?.match_score ?? null}
+                          reviewCount={p.influencer_profile?.review_count ?? 0}
+                        />
+                      </div>
+                      <p className="text-[11.5px] text-[#9A9AA5] mt-0.5 truncate">
+                        {p.created_at ? `${formatMD(p.created_at)} 지원` : '지원'}
+                        {p.message ? ` · ${p.message}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => {
+                          setApplicantError('')
+                          setRejectReason('')
+                          setRejecting(rejecting === p.id ? null : p.id)
+                        }}
+                        disabled={busy}
+                        className="text-[12px] font-semibold text-[#9A9AA5] hover:text-[#DC2626] disabled:opacity-40 px-2 py-2 transition whitespace-nowrap"
+                      >
+                        반려
+                      </button>
+                      <Link
+                        href={`/influencer/${p.influencer_id}`}
+                        className="text-[12px] font-semibold text-[#5C5C68] border border-[#E2E2E8] rounded-lg px-3 py-2 hover:bg-[#F6F6F7] transition whitespace-nowrap"
+                      >
+                        프로필
+                      </Link>
+                      <button
+                        onClick={() => onConfirmApplicant(p.id)}
+                        disabled={busy}
+                        className="text-[12px] font-bold bg-[#17171B] hover:bg-[#000] disabled:opacity-40 text-white rounded-lg px-3 py-2 transition whitespace-nowrap"
+                      >
+                        {busy ? '처리 중…' : '확정'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 반려 사유는 선택이다. 안 적고 눌러도 반려된다. */}
+                  {rejecting === p.id && (
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <input
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="반려 사유 (선택) — 안 적어도 됩니다"
+                        className="flex-1 min-w-0 text-[12.5px] border border-[#E2E2E8] rounded-lg px-3 py-2 outline-none focus:border-[#B0B0BB]"
+                      />
+                      <button
+                        onClick={() => onRejectApplicant(p.id)}
+                        disabled={busy}
+                        className="text-[12px] font-bold bg-[#DC2626] hover:bg-[#B91C1C] disabled:opacity-40 text-white rounded-lg px-3 py-2 transition whitespace-nowrap"
+                      >
+                        반려하기
+                      </button>
+                      <button
+                        onClick={() => { setRejecting(null); setRejectReason('') }}
+                        className="text-[12px] font-semibold text-[#9A9AA5] px-2 py-2 whitespace-nowrap"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
+            })
+          )}
+        </div>
+      )}
+
       {/* ── 참여자 없음 ── */}
-      {proposals_.length === 0 ? (
+      {sheetRows.length === 0 ? (
         <div className="bg-white border border-[#EAEAEE] rounded-[14px] py-16 text-center">
           <p className="text-[14px] text-[#B0B0BB]">아직 참여한 인플루언서가 없어요.</p>
           <p className="text-[12px] text-[#C4C4CE] mt-1.5">

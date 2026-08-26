@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { listTime } from '@/lib/date'
-import { Megaphone, PencilLine, CircleCheck, CircleSlash, CalendarDays, Handshake, MessageSquare, Wallet, Clock, SquareCheck, Bell, type LucideIcon } from 'lucide-react'
+import { Megaphone, PencilLine, CircleCheck, CircleSlash, CalendarDays, Handshake, MessageSquare, Wallet, Clock, SquareCheck, Bell, UserPlus, type LucideIcon } from 'lucide-react'
 
 const ICON: Record<string, { Comp: LucideIcon; className: string }> = {
   campaign_created: { Comp: Megaphone, className: '' },
@@ -17,6 +17,8 @@ const ICON: Record<string, { Comp: LucideIcon; className: string }> = {
   open_cancelled: { Comp: CircleSlash, className: 'text-[#9A9AA5]' },
   deal_made: { Comp: Handshake, className: 'text-[#15803D]' },
   dash_received: { Comp: MessageSquare, className: 'text-[#F59E0B]' },
+  // D32 1절 — 인플루언서가 캠페인에 지원했다(대시와 방향이 반대라 아이콘도 다르게)
+  campaign_applied: { Comp: UserPlus, className: 'text-[#F59E0B]' },
   settlement_due: { Comp: Wallet, className: 'text-[#F59E0B]' },
   deal_confirm_request: { Comp: Clock, className: 'text-[#F59E0B]' },
   deal_confirm_self: { Comp: SquareCheck, className: '' },

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { INFLUENCER_CATEGORIES } from '@/lib/categories'
 import CancelBadge from '@/components/CancelBadge'
 import { dateWithDow } from '@/lib/date'
+import ApplyCampaignModal, { type ApplyCampaign } from '@/components/ApplyCampaignModal'
 import { Building2, CalendarDays, Search, MapPin, Clock } from 'lucide-react'
 
 export default function InfluencerSearchPage() {
@@ -18,6 +19,10 @@ export default function InfluencerSearchPage() {
   const [results, setResults] = useState<any[]>([])
   const [searched, setSearched] = useState(false)
   const [loading, setLoading] = useState(false)
+  // 이미 줄이 있는 캠페인 — 내가 지원한 것과 광고주가 먼저 대시를 보낸 것을 구분한다
+  // reapply = 지원했다가 반려당한 것. 다시 지원할 수 있어서 눌리기는 하지만 글자가 다르다.
+  const [mine, setMine] = useState<Record<string, 'applied' | 'dashed' | 'reapply'>>({})
+  const [applying, setApplying] = useState<ApplyCampaign | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -32,7 +37,7 @@ export default function InfluencerSearchPage() {
     let query = supabase
       .from('campaigns')
       .select(
-        'id, title, brand_name, date, location_city, location_district, start_time, end_time, predefined_categories, free_tags, details, advertiser_id'
+        'id, title, brand_name, date, location_city, location_district, start_time, end_time, predefined_categories, free_tags, details, advertiser_id, campaign_type, dates, content_start, recruit_end, recruit_closed_at'
       )
       .eq('is_public', true)
       .eq('status', 'open')
@@ -73,9 +78,39 @@ export default function InfluencerSearchPage() {
       })
     )
 
+    // 이미 지원한 캠페인은 버튼을 「지원함」으로 바꾼다.
+    // 화면 표시일 뿐이고, 실제로 막는 것은 0098 의 유니크 인덱스다 — 창 두 개는 여기서 못 막는다.
+    //
+    // ⚠️ status 를 같이 읽는다. 전에는 줄이 있기만 하면 「지원함」이라, 반려당한 사람도
+    //    버튼이 죽어 있어 다시 지원할 길이 없었다. 반려는 그 캠페인이 끝났다는 뜻이 아니다 —
+    //    조건을 바꿔 다시 지원할 수 있어야 한다(0101).
+    const ids = enriched.map((c) => c.id)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user && ids.length > 0) {
+      const { data: rows } = await supabase
+        .from('proposals')
+        .select('campaign_id, initiated_by, status')
+        .eq('influencer_id', user.id)
+        .in('campaign_id', ids)
+      setMine(Object.fromEntries(
+        (rows ?? []).map((r) => [
+          r.campaign_id as string,
+          r.status === 'rejected'
+            ? 'reapply'
+            : r.initiated_by === 'influencer'
+              ? 'applied'
+              : 'dashed',
+        ])
+      ))
+    } else {
+      setMine({})
+    }
+
     setResults(enriched)
     setLoading(false)
   }
+
+  const today = new Date().toISOString().slice(0, 10)
 
   const inputCls =
     'w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500'
@@ -179,15 +214,59 @@ export default function InfluencerSearchPage() {
 
               {c.details && <p className="text-sm text-gray-600 mb-3 whitespace-pre-wrap">{c.details}</p>}
 
-              <button
-                onClick={() => router.push(`/influencer/messages?receiverId=${c.advertiser_id}`)}
-                className="w-full bg-amber-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-amber-600 transition"
-              >
-                대시하기
-              </button>
+              {/* D32 1절 — 캠페인은 조건이 이미 정해져 있으니 「지원하기」다.
+                  조건을 제안하는 「대시 보내기」는 광고주가 인플루언서 오픈에 거는 쪽 말이다. */}
+              {mine[c.id] === 'applied' ? (
+                <button disabled className="w-full bg-gray-100 text-gray-400 py-2 rounded-lg text-sm font-medium cursor-not-allowed">
+                  지원함
+                </button>
+              ) : mine[c.id] === 'dashed' ? (
+                <button
+                  onClick={() => router.push(`/influencer/messages?receiverId=${c.advertiser_id}`)}
+                  className="w-full border border-gray-200 text-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                >
+                  대화 보기
+                </button>
+              ) : c.recruit_closed_at || (c.recruit_end && c.recruit_end < today) ? (
+                /* 광고주가 「모집 마감」을 눌렀거나(recruit_closed_at), 적어 둔 신청 마감일이 지난 경우.
+                   눌러도 서버(apply_to_campaign)가 같은 이유로 막지만, 여기서 먼저 닫아 헛걸음을 줄인다. */
+                <button disabled className="w-full bg-gray-100 text-gray-400 py-2 rounded-lg text-sm font-medium cursor-not-allowed">
+                  모집 종료
+                </button>
+              ) : mine[c.id] === 'reapply' ? (
+                /* 반려당한 뒤. 눌리기는 「지원하기」와 같지만 글자를 바꿔 둔다 —
+                   전에 한 번 반려됐다는 것을 모르고 같은 조건으로 또 내면
+                   광고주에게 같은 알림이 반복될 뿐이다. 사유는 「받은 대시」 목록의
+                   그 줄에 「반려 · 사유」로 붙어 있다.
+                   모집 종료 검사보다 뒤에 둔다 — 닫힌 캠페인엔 다시도 없다. */
+                <button
+                  onClick={() => setApplying(c)}
+                  className="w-full border border-amber-500 text-amber-600 py-2 rounded-lg text-sm font-medium hover:bg-amber-50 transition"
+                >
+                  다시 지원
+                </button>
+              ) : (
+                <button
+                  onClick={() => setApplying(c)}
+                  className="w-full bg-amber-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-amber-600 transition"
+                >
+                  지원하기
+                </button>
+              )}
             </div>
           ))}
         </div>
+      )}
+
+      {applying && (
+        <ApplyCampaignModal
+          campaign={applying}
+          onClose={() => setApplying(null)}
+          onApplied={() => {
+            setMine((prev) => ({ ...prev, [applying.id]: 'applied' }))
+            setApplying(null)
+          }}
+        />
       )}
     </div>
   )

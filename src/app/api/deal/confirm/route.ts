@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 
 // 협업 확정 토글: 내 쪽 confirmed를 현재값의 반대로 업데이트.
 // 양쪽 모두 각자 확정 버튼을 눌러야 하며, 개시자 자동 확정 없음.
-// ⚠️ 진행일(캠페인 date 또는 오픈 date)이 없으면 확정 불가.
+// ⚠️ 진행일(지역 캠페인 date 또는 오픈 date)이 없으면 확정 불가. 방문 없는 캠페인은 예외.
 // ⚠️ 양쪽 모두 true가 되는 순간 DB 트리거가 축하 크레딧 처리.
 export async function POST(req: Request) {
   const { proposalId } = await req.json()
@@ -34,16 +34,22 @@ export async function POST(req: Request) {
   }
 
   // 진행일 체크 — 특정일(date) 또는 기간(start/end) 중 하나라도 있어야 확정 가능
-  // campaigns: date | dates[]길이>0 | content_start
+  // campaigns: (지역만) date | dates[]길이>0 | content_start
   // schedules: date | date_end
   let hasDate = false
   if (proposal.campaign_id) {
     const { data: c } = await admin
       .from('campaigns')
-      .select('date, dates, content_start')
+      .select('date, dates, content_start, campaign_type')
       .eq('id', proposal.campaign_id)
       .single()
-    hasDate = !!c?.date || (Array.isArray(c?.dates) && c.dates.length > 0) || !!c?.content_start
+    // D32 — 방문이 있는 지역 캠페인만 진행일을 요구한다.
+    // 제품·기자단은 방문 자체가 없어 진행일이 없는 것이 정상이고, content_start 도 등록 폼에서
+    // 선택이다(원고 마감이 안 정해진 채 시작하는 건이 있다). 여기서 날짜를 요구하면
+    // 그런 캠페인은 확정 버튼이 영영 422 를 뱉는다 — 참여는 됐는데 확정이 안 된다.
+    if (!c) hasDate = false
+    else if (c.campaign_type !== '지역') hasDate = true
+    else hasDate = !!c.date || (Array.isArray(c.dates) && c.dates.length > 0) || !!c.content_start
   } else if (proposal.schedule_id) {
     const { data: s } = await admin
       .from('schedules')

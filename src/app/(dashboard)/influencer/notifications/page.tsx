@@ -20,6 +20,8 @@ const ICON: Record<string, { Comp: LucideIcon; className: string }> = {
   settlement_due: { Comp: Wallet, className: 'text-[#F59E0B]' },
   deal_confirm_request: { Comp: Clock, className: 'text-[#F59E0B]' },
   deal_confirm_self: { Comp: SquareCheck, className: '' },
+  // D32 2절 — 광고주가 지원을 반려했을 때. 나쁜 소식이라 색은 빼고 회색으로 둔다.
+  campaign_rejected: { Comp: CircleSlash, className: 'text-[#9A9AA5]' },
 }
 
 function timeAgo(iso: string) {
