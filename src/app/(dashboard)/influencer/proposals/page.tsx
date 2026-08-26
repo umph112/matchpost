@@ -36,13 +36,14 @@ export default function InfluencerProposalsPage() {
     // 고르는 화면 계열이라 브랜드가 있으면 그대로 노출 — 비면 회사 상호, 그것도 없으면 개인명
     // (구현 schedule 기반 옛 제안은 campaign_id 가 없어 null 이 정상값 → 폴백이 처리한다)
     const campIds = [...new Set(rows.map((r) => r.campaign_id).filter(Boolean))]
-    const brandByCamp: Record<string, string | null> = {}
+    const campById: Record<string, any> = {}
     if (campIds.length > 0) {
+      // brand_name 만 읽던 것을 제목·지역까지 넓혔다(D32 3절 후속) — 아래 displayTitle 참고.
       const { data: camps } = await supabase
         .from('campaigns')
-        .select('id, brand_name')
+        .select('id, brand_name, title, location_city, location_district')
         .in('id', campIds)
-      ;(camps ?? []).forEach((c) => { brandByCamp[c.id] = c.brand_name })
+      ;(camps ?? []).forEach((c) => { campById[c.id] = c })
     }
     const advIds = [...new Set(rows.map((r) => r.advertiser_id).filter(Boolean))]
     const companyByAdv: Record<string, string | null> = {}
@@ -54,8 +55,23 @@ export default function InfluencerProposalsPage() {
         .in('user_id', advIds)
       ;(aps ?? []).forEach((a) => { companyByAdv[a.user_id] = a.company_name })
     }
+    // 이 목록엔 두 종류가 섞여 있다 — 광고주가 보낸 오픈 대시(schedule_id)와
+    // 내가 캠페인에 넣은 지원(campaign_id). 카드는 그동안 schedules 만 읽어서,
+    // 캠페인 지원 줄은 제목·날짜·지역이 통째로 비어 아이콘만 남은 상자로 보였다.
+    // 반려 사유를 붙여도 무엇에 대한 반려인지 알 수 없었다(D32 2절 후속).
+    //
+    //   오픈 대시   제목=오픈 제목    날짜=오픈 날짜        지역=오픈 지역
+    //   캠페인 지원 제목=캠페인 제목  날짜=내가 낸 희망일   지역=캠페인 지역
+    //
+    // 캠페인 날짜만 캠페인이 아닌 proposals 에서 읽는다 — 캠페인은 기간(dates)으로 열리고
+    // 그중 어느 날에 가겠다고 적은 값이 proposed_date 라, 지원한 사람이 볼 날짜는 이쪽이다.
     rows.forEach((r) => {
-      r.displayName = brandByCamp[r.campaign_id] ?? companyByAdv[r.advertiser_id] ?? r.profiles?.name ?? '광고주'
+      const camp = r.campaign_id ? campById[r.campaign_id] : null
+      r.displayName = camp?.brand_name ?? companyByAdv[r.advertiser_id] ?? r.profiles?.name ?? '광고주'
+      r.displayTitle = camp ? camp.title : r.schedules?.title
+      r.displayDate = camp ? r.proposed_date : r.schedules?.date
+      r.displayCity = camp ? camp.location_city : r.schedules?.location_city
+      r.displayDistrict = camp ? camp.location_district : r.schedules?.location_district
     })
 
     setProposals(rows)
@@ -136,14 +152,29 @@ export default function InfluencerProposalsPage() {
               </span>
             </div>
 
-            {/* 일정 정보 */}
-            <div className="bg-gray-50 rounded-xl p-3 mb-3 text-sm">
-              <p className="font-medium text-gray-700">{proposal.schedules?.title}</p>
-              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                <CalendarDays size={16} strokeWidth={1.75} /> {dateWithDow(proposal.schedules?.date)}
-                <MapPin size={16} strokeWidth={1.75} className="ml-1.5" /> {proposal.schedules?.location_city} {proposal.schedules?.location_district}
-              </p>
-            </div>
+            {/* 일정 정보 — 오픈이면 오픈의 것, 캠페인 지원이면 캠페인의 것(위 fetchProposals 참고).
+                값이 없으면 그 줄을 아예 안 그린다 — 아이콘만 남은 껍데기는 빠뜨린 것처럼 읽힌다. */}
+            {(proposal.displayTitle || proposal.displayDate || proposal.displayCity) && (
+              <div className="bg-gray-50 rounded-xl p-3 mb-3 text-sm">
+                {proposal.displayTitle && (
+                  <p className="font-medium text-gray-700">{proposal.displayTitle}</p>
+                )}
+                {(proposal.displayDate || proposal.displayCity) && (
+                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                    {proposal.displayDate && (
+                      <>
+                        <CalendarDays size={16} strokeWidth={1.75} /> {dateWithDow(proposal.displayDate)}
+                      </>
+                    )}
+                    {proposal.displayCity && (
+                      <>
+                        <MapPin size={16} strokeWidth={1.75} className={proposal.displayDate ? 'ml-1.5' : undefined} /> {proposal.displayCity} {proposal.displayDistrict}
+                      </>
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* 예산 */}
             {proposal.budget && (
