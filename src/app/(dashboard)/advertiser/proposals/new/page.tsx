@@ -90,7 +90,7 @@ function NewProposalForm() {
 
   if (success) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center lg:[.adv-pc_&]:max-w-none">
+      <div className="max-w-lg mx-auto px-4 py-16 text-center lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:mx-0">
         <Send size={32} strokeWidth={1.5} className="text-[#C4C4CE] mx-auto mb-4" />
         <h2 className="text-xl font-bold text-gray-800">제안을 보냈어요!</h2>
         <p className="text-gray-500 text-sm mt-2">인플루언서의 답변을 기다려주세요.</p>
@@ -99,7 +99,7 @@ function NewProposalForm() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:px-0 lg:[.adv-pc_&]:py-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:mx-0 lg:[.adv-pc_&]:px-0 lg:[.adv-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center mb-8">
         <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">

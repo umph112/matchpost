@@ -5,7 +5,11 @@
 
 - **본문** — `main` 폭. 그게 없는 화면은 body 아래에서 폭을 가진 첫 칸
 - **내용** — `main` 이 없는 화면에서 스스로 폭을 제한한 가장 바깥 칸. 바깥 래퍼만 보면 갇힌 화면이 안 갇힌 것처럼 보인다
-- **첫칸** — 본문의 첫 자식. PC 에서 이 값이 작으면 「한 줄에 항목 하나」인지 캡처로 볼 자리
+- **첫칸** — `main` 의 첫 자식(대개 화면 최상위 래퍼) 폭
+  - 본문 안쪽 폭(좌우 패딩 뺀 값)과 **같으면 정상**
+  - 그보다 **좁으면 버그** — `mx-auto` 가 flex 안에서 쪼그라든 것이다. PC 해제에 `mx-0` 이 빠졌다
+  - ⚠️ 이 값으로 「PC 구성이 있는지」는 판단할 수 없다. 그건 캡처를 보고
+    「가로로 긴 줄이 세로로 쌓였는지」로 판단한다 (D33 에서 이 해석을 두 번 틀렸다)
 
 추측이 아니라 `getBoundingClientRect()` 값입니다.
 
@@ -21,13 +25,13 @@
 | adv-dashboard | /advertiser/dashboard | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
 | adv-campaigns | /advertiser/campaigns | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
 | adv-campaign-new | /advertiser/campaigns/new | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
-| adv-connections | /advertiser/connections | 1204px | 1204px | 399px | 236px | 390px | 358px | — |  |
+| adv-connections | /advertiser/connections | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
 | adv-messages | /advertiser/messages | 1204px | 1204px | 1148px | 236px | 390px | 390px | — |  |
-| adv-notifications | /advertiser/notifications | 1204px | 1204px | 439px | 236px | 390px | 358px | — |  |
-| adv-proposal-new | /advertiser/proposals/new | 1204px | 1204px | 275px | 236px | 390px | 358px | — |  |
+| adv-notifications | /advertiser/notifications | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
+| adv-proposal-new | /advertiser/proposals/new | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
 | adv-search | /advertiser/search | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
 | adv-settlements | /advertiser/settlements | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
-| adv-team | /advertiser/team | 1204px | 1204px | 756px | 236px | 390px | 358px | — |  |
+| adv-team | /advertiser/team | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
 | adv-team-leaves | /advertiser/team/leaves | 1204px | 1204px | 1148px | 236px | 390px | 358px | — | ⚠️ div. →398px |
 | adv-team-workload | /advertiser/team/workload | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
 | adv-day | /day/2026-09-07 | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
@@ -36,14 +40,14 @@
 | adv-profile | /profile | 1440px | 1440px | — | — | 390px | — | — |  |
 | adv-message-detail | /advertiser/messages/502d50c5-6bf7-442e-b856-e0bfa0ee0700 | 1204px | 1204px | 1148px | 236px | 390px | 390px | — |  |
 | inf-dashboard | /influencer/dashboard | 1204px | 1204px | — | 236px | 390px | 358px | 390px |  |
-| inf-earnings | /influencer/earnings | 1204px | 1204px | 634px | 236px | 390px | 358px | 390px |  |
-| inf-proposals | /influencer/proposals | 1204px | 1204px | 289px | 236px | 390px | 358px | 390px |  |
+| inf-earnings | /influencer/earnings | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
+| inf-proposals | /influencer/proposals | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
 | inf-profile | /influencer/profile | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
-| inf-notifications | /influencer/notifications | 1204px | 1204px | 439px | 236px | 390px | 358px | 390px |  |
+| inf-notifications | /influencer/notifications | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
 | inf-search | /influencer/search | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
 | inf-channel-analytics | /influencer/channel-analytics | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
-| inf-schedule-new | /influencer/schedule | 1204px | 1204px | 771px | 236px | 390px | 358px | 390px |  |
-| inf-schedule-list | /influencer/schedule/list | 1204px | 1204px | 234px | 236px | 390px | 358px | 390px |  |
+| inf-schedule-new | /influencer/schedule | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
+| inf-schedule-list | /influencer/schedule/list | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
 | inf-messages | /influencer/messages | 1204px | 1204px | 1148px | 236px | 390px | 390px | 390px |  |
 | inf-day | /day/2026-09-07 | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
 | inf-schedule-detail | /influencer/schedule/7b241376-fe8d-4c95-a8bd-3c164448952d | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |

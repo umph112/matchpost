@@ -98,7 +98,7 @@ export default function InfluencerProposalsPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:mx-0 lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center mb-8">
         <Link href="/influencer/dashboard" className="hidden lg:[.inf-pc_&]:inline-block mr-4 text-gray-400 hover:text-gray-600">

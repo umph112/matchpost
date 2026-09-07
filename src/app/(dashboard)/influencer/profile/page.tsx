@@ -270,7 +270,7 @@ export default function InfluencerProfilePage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:mx-0 lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">

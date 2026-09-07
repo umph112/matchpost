@@ -96,6 +96,7 @@ type Row = {
   주소: string
   도착: string
   본문폭: number
+  본문안쪽: number
   콘텐츠폭: number
   첫칸폭: number
   창폭: number
@@ -133,8 +134,17 @@ async function capture(page: Page, s: Screen, dir: string) {
       if (capped) inner = capped
     }
 
+    // 첫칸이 본문을 다 쓰는지 보려면 본문의 「안쪽 폭」(패딩 뺀 값)과 견줘야 한다.
+    // 본문폭과 그냥 비교하면 정상인 화면도 좌우 패딩(px-7=56px)만큼 늘 좁게 나온다.
+    const inset = (el: Element | null) => {
+      if (!el) return -1
+      const cs = getComputedStyle(el)
+      return Math.round(el.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight))
+    }
+
     return {
       본문폭: w(box),
+      본문안쪽: inset(box),
       콘텐츠폭: w(inner),
       첫칸폭: w(box?.firstElementChild),
       창폭: window.innerWidth,
@@ -292,9 +302,21 @@ test('[D33] 전 화면 두 폭 캡처', async ({ browser }, info) => {
   const 결함넘침 = 넘침
     .filter((r) => !r.화면.startsWith('admin-') && !PC_ONLY.includes(r.화면))
     .map((r) => `${r.화면} [${r.범인[0] ?? '?'}]`)
-  console.log(`\n[D33] ${rows.length}개 화면 · 512 갇힘 ${갇힘.length} · 가로스크롤 ${결함넘침.length}`)
+  // 첫칸이 본문 안쪽보다 좁으면 래퍼가 쪼그라든 것이다 — PC 해제에 mx-0 이 빠졌을 때 나온다.
+  // 셸의 <main> 은 PC 에서 flex flex-col 이라, 래퍼에 mx-auto 가 남아 있으면
+  // auto 가로여백이 align-items: stretch 를 무력화해 내용 폭으로 줄어든다.
+  // 증상이 「갇힘」이 아니라 「가운데 좁은 기둥」이라 512 검사로는 안 잡혔다(D33).
+  // 셸이 있는 화면(adv-·inf-)만 본다 — 마커 셸 밖에는 이 함정이 없다.
+  const 쪼그라듦 = rows
+    .filter((r) => pc && /^(adv|inf)-/.test(r.화면) && r.본문안쪽 > 0 && r.첫칸폭 > 0 && r.첫칸폭 < r.본문안쪽 - 1)
+    .map((r) => `${r.화면}(본문 안쪽 ${r.본문안쪽}px 인데 첫칸 ${r.첫칸폭}px)`)
+  console.log(`\n[D33] ${rows.length}개 화면 · 512 갇힘 ${갇힘.length} · 쪼그라듦 ${쪼그라듦.length} · 가로스크롤 ${결함넘침.length}`)
   if (알려진.length) console.log(`[D33] PC 전용이라 셈에서 뺀 것 ${알려진.length}개: ${알려진.join(', ')}`)
   console.log('')
   expect(갇힘, `PC 폭인데 본문이 512px 에 갇힘: ${갇힘.join(', ')}`).toEqual([])
+  expect(
+    쪼그라듦,
+    `PC 해제에 mx-0 이 빠져 래퍼가 쪼그라듦(max-w-none · mx-0 · px-0 이 한 벌이다): ${쪼그라듦.join(', ')}`,
+  ).toEqual([])
   expect(결함넘침, `모바일 폭에서 가로 스크롤: ${결함넘침.join(', ')}`).toEqual([])
 })

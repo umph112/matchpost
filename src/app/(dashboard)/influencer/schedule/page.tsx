@@ -157,7 +157,7 @@ function ScheduleForm() {
 
   if (success) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center lg:[.inf-pc_&]:max-w-none">
+      <div className="max-w-lg mx-auto px-4 py-16 text-center lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:mx-0">
         <h2 className="text-xl font-bold text-gray-800">일정이 등록됐어요!</h2>
         <p className="text-gray-500 text-sm mt-2">광고주들에게 노출되기 시작했어요.</p>
       </div>
@@ -165,7 +165,7 @@ function ScheduleForm() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:mx-0 lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center mb-8">
         {/* D31 4절 — 모바일 뒤로가기는 셸 상단바가 갖는다(여기 두면 두 개가 된다).

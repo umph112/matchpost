@@ -579,7 +579,7 @@ export default function NewCampaignPage() {
 
   if (success) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center lg:[.adv-pc_&]:max-w-none">
+      <div className="max-w-lg mx-auto px-4 py-16 text-center lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:mx-0">
         <PartyPopper size={40} strokeWidth={1.5} className="mx-auto mb-4 text-[#F59E0B]" />
         <h2 className="text-xl font-bold text-gray-800">캠페인이 등록됐어요!</h2>
         <p className="text-gray-500 text-sm mt-2">인플루언서들에게 노출되기 시작했어요.</p>
@@ -596,7 +596,7 @@ export default function NewCampaignPage() {
     'w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500'
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:px-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:mx-0 lg:[.adv-pc_&]:px-0">
       <div className="flex items-center mb-8">
         <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">
           ← 뒤로

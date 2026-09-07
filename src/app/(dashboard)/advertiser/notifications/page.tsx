@@ -80,7 +80,7 @@ export default function AdvertiserNotificationsPage() {
   const unread = items.filter((n) => !n.is_read).length
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:px-0 lg:[.adv-pc_&]:py-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:mx-0 lg:[.adv-pc_&]:px-0 lg:[.adv-pc_&]:py-0">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Link href="/advertiser/dashboard" className="mr-4 text-gray-400 hover:text-gray-600">← 뒤로</Link>
