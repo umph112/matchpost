@@ -30,7 +30,7 @@
 | adv-team | /advertiser/team | 1204px | 1204px | 756px | 236px | 390px | 358px | — |  |
 | adv-team-leaves | /advertiser/team/leaves | 1204px | 1204px | 1148px | 236px | 390px | 358px | — | ⚠️ div. →398px |
 | adv-team-workload | /advertiser/team/workload | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
-| adv-day | /day/2026-09-07 | 1440px | 512px | 512px | — | 390px | 390px | — |  |
+| adv-day | /day/2026-09-07 | 1204px | 1204px | 1148px | 236px | 390px | 358px | — |  |
 | adv-credits | /credits | 1100px | 1100px | 1068px | — | 390px | 358px | — |  |
 | adv-credits-about | /credits/about | 920px | 920px | 888px | — | 375px | 343px | — |  |
 | adv-profile | /profile | 1440px | 1440px | — | — | 390px | — | — |  |
@@ -45,7 +45,7 @@
 | inf-schedule-new | /influencer/schedule | 1204px | 1204px | 771px | 236px | 390px | 358px | 390px |  |
 | inf-schedule-list | /influencer/schedule/list | 1204px | 1204px | 234px | 236px | 390px | 358px | 390px |  |
 | inf-messages | /influencer/messages | 1204px | 1204px | 1148px | 236px | 390px | 390px | 390px |  |
-| inf-day | /day/2026-09-07 | 1440px | 512px | 512px | — | 390px | 390px | — |  |
+| inf-day | /day/2026-09-07 | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
 | inf-schedule-detail | /influencer/schedule/7b241376-fe8d-4c95-a8bd-3c164448952d | 1204px | 1204px | 1148px | 236px | 390px | 358px | 390px |  |
 | inf-message-detail | /influencer/messages/502d50c5-6bf7-442e-b856-e0bfa0ee0700 | 1204px | 1204px | 1148px | 236px | 390px | 390px | 390px |  |
 | pub-influencer-detail | /influencer/2ae784fe-60cf-4801-8c2a-dff7f8d63cff | 672px | 672px | 117px | — | 390px | 117px | — |  |

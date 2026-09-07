@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BarChart3 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import TopBar from '@/components/TopBar'
 import { BlogAnalyticsFull } from '@/components/BlogAnalyticsCard'
 import { firstReportLabel } from '@/lib/blogAnalyzer/schedule'
 
@@ -50,9 +49,9 @@ export default async function ChannelAnalyticsPage() {
   const missingMetrics = (blogAnalytics?.missing_metrics as number | null) ?? 0
 
   return (
+    // 셸이 두 폭 다 상단바를 준다(모바일·PC 각각) — 화면이 자기 헤더를 들면 이중 헤더가 된다.
+    // 화면 이름은 셸의 이름 표에 있다(InfluencerShell — '내 채널 분석'). D33
     <div className="min-h-screen bg-gray-50">
-      <TopBar name={profile?.name} />
-
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
         {/* 뒤로가기 */}
         <Link href="/influencer/dashboard" className="hidden lg:[.inf-pc_&]:inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition">
