@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
@@ -23,6 +24,7 @@ const inputCls =
   'focus:outline-none focus:ring-2 focus:ring-amber-400'
 
 export default function InfluencerProfilePage() {
+  const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
   const [influencerProfile, setInfluencerProfile] = useState<any>(null)
   // profiles.name = 활동명(광고주에게 보이는 이름), user_private.real_name = 실명.
@@ -266,6 +268,13 @@ export default function InfluencerProfilePage() {
     setJustRegistered(savedBlogUrl.trim() === '' && blogUrl.trim() !== '')
     setSavedBlogUrl(blogUrl) // D25 §2 — 저장이 끝난 뒤에만 안내 카드가 뜨도록
     setSavedSnapshot(formSnapshot()) // 방금 저장한 값이 새 기준 — 버튼이 다시 회색이 된다
+
+    // 상단바 별명·아바타는 「기본 정보」의 활동명과 항상 같은 값이어야 한다.
+    // 셸(InfluencerShellServer)이 profiles.name 을 서버에서 읽어 내려주므로,
+    // 여기서 활동명을 고쳐도 새로고침 전까지 상단바엔 옛 이름이 그대로 남아 있었다.
+    // (아바타도 initial(name) 이라 같이 어긋난다.) 저장이 끝난 뒤 서버 렌더만 다시 받는다 —
+    // 이 화면은 클라이언트 컴포넌트라 입력값 상태는 그대로 유지된다.
+    router.refresh()
     return null
   }
 
@@ -297,10 +306,26 @@ export default function InfluencerProfilePage() {
       {/* D31 [4] — 알림 배너를 화면 맨 위에 두지 않는다. 폼이 길어서 저장을 누른 사람은
           여기를 못 본다(눌러도 아무 일 없는 것처럼 보였다). 성공도 실패도 버튼 자리에서 말한다. */}
 
+      {/* D34 1절 — PC 2단. 탭으로 가르지 않는다.
+          세로 1900px 은 탭이 없어서가 아니라 2단 배치가 없어서 생긴 것이고,
+          탭으로 가르면 「정산 계좌」(폼도 컬럼도 없다)·「크레딧」(/credits 가 원본)
+          두 탭이 빈 채로 남거나 원본이 둘이 된다.
+          DOM 순서는 모바일 순서 그대로다 — 좌(기본 정보·자기 소개)가 앞,
+          우(활동 플랫폼·분야·팔로워·포트폴리오)가 뒤라 두 칸으로 갈라도 순서가 그대로다. */}
+      <div className="lg:[.inf-pc_&]:grid lg:[.inf-pc_&]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:[.inf-pc_&]:gap-[14px] lg:[.inf-pc_&]:items-stretch">
+
+      {/* 좌 — 두 칸의 바닥선을 맞춘다(프로젝트 규칙): flex-col + min-w-0,
+          마지막 카드가 남는 높이를 먹는다 */}
+      <div className="lg:[.inf-pc_&]:flex lg:[.inf-pc_&]:flex-col lg:[.inf-pc_&]:gap-[14px] lg:[.inf-pc_&]:min-w-0">
+
       {/* 기본 정보 */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4 lg:[.inf-pc_&]:mb-0">
         <h2 className="font-semibold text-gray-800 mb-4">기본 정보</h2>
-        <div className="mb-3">
+        {/* 짧은 값(활동명 · 전화번호)은 카드 안에서 2열로 — 한 줄에 하나씩 쌓으면
+            카드 폭만큼 늘어난다. 이름은 안내줄이 붙어 있어 한 줄을 다 쓴다.
+            DOM 순서(이름 → 활동명 → 전화번호)는 그대로라 모바일이 안 바뀐다. */}
+        <div className="lg:[.inf-pc_&]:grid lg:[.inf-pc_&]:grid-cols-2 lg:[.inf-pc_&]:gap-x-3">
+        <div className="mb-3 lg:[.inf-pc_&]:col-span-2">
           <label className="block text-sm text-gray-500 mb-1">
             이름 <span className="text-gray-400">(실명)</span>
           </label>
@@ -313,7 +338,7 @@ export default function InfluencerProfilePage() {
           />
           <p className="text-xs text-gray-400 mt-1">공개되지 않아요. 정산·세금 처리에만 쓰입니다.</p>
         </div>
-        <div className="mb-3">
+        <div className="mb-3 lg:[.inf-pc_&]:mb-0">
           <label className="block text-sm text-gray-500 mb-1">
             활동명 <span className="text-gray-400">(공개 표시 이름)</span>
           </label>
@@ -335,22 +360,28 @@ export default function InfluencerProfilePage() {
             className={inputCls}
           />
         </div>
+        </div>
       </div>
 
       {/* 소개 */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4 lg:[.inf-pc_&]:mb-0 lg:[.inf-pc_&]:flex-1 lg:[.inf-pc_&]:flex lg:[.inf-pc_&]:flex-col">
         <h2 className="font-semibold text-gray-800 mb-4">자기 소개</h2>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={4}
-          className={`${inputCls} resize-none`}
+          className={`${inputCls} resize-none lg:[.inf-pc_&]:flex-1`}
           placeholder="광고주에게 보여질 자기 소개를 작성해주세요."
         />
       </div>
 
+      </div>
+
+      {/* 우 */}
+      <div className="lg:[.inf-pc_&]:flex lg:[.inf-pc_&]:flex-col lg:[.inf-pc_&]:gap-[14px] lg:[.inf-pc_&]:min-w-0">
+
       {/* 플랫폼 */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4 lg:[.inf-pc_&]:mb-0">
         <h2 className="font-semibold text-gray-800 mb-4">활동 플랫폼</h2>
         <div className="flex flex-wrap gap-2 mb-4">
           {PLATFORMS.map(p => (
@@ -405,7 +436,7 @@ export default function InfluencerProfilePage() {
 
       {/* 카테고리 — 가입 화면과 같은 어휘·같은 모양(메이저 1 + 서브 2).
           한쪽만 바꾸면 광고주 검색이 못 찾는 값이 저장된다. */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
+      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4 lg:[.inf-pc_&]:mb-0">
         <h2 className="font-semibold text-gray-800 mb-4">활동 분야</h2>
         <label className="block text-sm text-gray-500 mb-2">
           메이저 분야 <span className="text-[#B45309]">(1개 필수)</span>
@@ -462,20 +493,21 @@ export default function InfluencerProfilePage() {
         )}
       </div>
 
-      {/* 팔로워 수 */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
+      {/* 팔로워 수 — 이 카드엔 칸이 하나뿐이라 2열로 가를 짝이 없다.
+          대신 짧은 값이 카드 폭만큼 늘어나지 않게 PC 에서만 폭을 잡아둔다. */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm mb-4 lg:[.inf-pc_&]:mb-0">
         <h2 className="font-semibold text-gray-800 mb-4">팔로워 수</h2>
         <input
           type="number"
           value={followerCount}
           onChange={(e) => setFollowerCount(e.target.value)}
-          className={inputCls}
+          className={`${inputCls} lg:[.inf-pc_&]:max-w-[260px]`}
           placeholder="총 팔로워 수 입력"
         />
       </div>
 
       {/* 포트폴리오 */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
+      <div className="bg-white rounded-2xl p-5 shadow-sm mb-6 lg:[.inf-pc_&]:mb-0">
         <h2 className="font-semibold text-gray-800 mb-4">포트폴리오 URL</h2>
         <input
           type="text"
@@ -486,8 +518,13 @@ export default function InfluencerProfilePage() {
         />
       </div>
 
+      </div>
+      </div>
+
       {/* 저장 버튼 — 상태 네 가지와 「바뀐 값이 없으면 회색」은 SaveButton 안에 있다 */}
+      {/* PC 는 두 칸 카드가 mb-0 이라 여기서 간격을 준다(모바일은 포트폴리오 카드의 mb-6 이 준다) */}
       <SaveButton
+        className="lg:[.inf-pc_&]:mt-[14px]"
         status={save.status}
         error={save.error}
         onClick={handleSave}
