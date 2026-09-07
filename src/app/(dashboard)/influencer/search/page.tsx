@@ -145,7 +145,10 @@ export default function InfluencerSearchPage() {
 
         {/* DOM 순서는 모바일 순서 그대로 둔다(날짜 → 지역 → 키워드 → 분야 → 버튼).
             PC 두 칸은 order 가 아니라 grid 자리지정(col-start/row-start)으로 만든다 —
-            order 로 옮기면 탭 순서가 눈에 보이는 순서와 어긋난다. */}
+            order 로 옮기면 탭 순서가 눈에 보이는 순서와 어긋난다.
+
+            좌 380px  지역 + 분야         ← 좁히는 조건. 성격이 같아 함께 둔다
+            우 나머지  날짜 + 키워드 + 검색 ← 날짜가 이 화면의 주 조건이라 우측 위다 */}
         <div className="lg:[.inf-pc_&]:grid lg:[.inf-pc_&]:grid-cols-[380px_minmax(0,1fr)] lg:[.inf-pc_&]:gap-x-[22px] lg:[.inf-pc_&]:gap-y-4 lg:[.inf-pc_&]:items-start lg:[.inf-pc_&]:px-[18px] lg:[.inf-pc_&]:pt-4 lg:[.inf-pc_&]:pb-[18px]">
           {/* 날짜 — PC 우측 첫 줄 */}
           <div className="mb-3 lg:[.inf-pc_&]:mb-0 lg:[.inf-pc_&]:col-start-2 lg:[.inf-pc_&]:row-start-1">
@@ -170,15 +173,15 @@ export default function InfluencerSearchPage() {
             </div>
           </div>
 
-          {/* 키워드 — PC 우측 셋째 줄 */}
-          <div className="mb-4 lg:[.inf-pc_&]:mb-0 lg:[.inf-pc_&]:col-start-2 lg:[.inf-pc_&]:row-start-3">
+          {/* 키워드 — PC 우측 둘째 줄 */}
+          <div className="mb-4 lg:[.inf-pc_&]:mb-0 lg:[.inf-pc_&]:col-start-2 lg:[.inf-pc_&]:row-start-2">
             <label className="block text-sm text-gray-500 mb-1 lg:[.inf-pc_&]:text-[11px] lg:[.inf-pc_&]:font-bold lg:[.inf-pc_&]:text-[#9A9AA5] lg:[.inf-pc_&]:mb-[7px]">키워드</label>
             <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)}
               className={inputCls} placeholder="예: 팝업스토어, 신제품" />
           </div>
 
-          {/* 분야 — PC 우측 둘째 줄 */}
-          <div className="mb-4 lg:[.inf-pc_&]:mb-0 lg:[.inf-pc_&]:col-start-2 lg:[.inf-pc_&]:row-start-2">
+          {/* 분야 — PC 좌측 둘째 줄. 지역과 같은 「좁히는 조건」이라 아래에 붙인다 */}
+          <div className="mb-4 lg:[.inf-pc_&]:mb-0 lg:[.inf-pc_&]:col-start-1 lg:[.inf-pc_&]:row-start-2 lg:[.inf-pc_&]:min-w-0">
             <label className="block text-sm text-gray-500 mb-2 lg:[.inf-pc_&]:text-[11px] lg:[.inf-pc_&]:font-bold lg:[.inf-pc_&]:text-[#9A9AA5] lg:[.inf-pc_&]:mb-[7px]">분야</label>
             <div className="flex flex-wrap gap-1.5">
               {INFLUENCER_CATEGORIES.map((cat) => (
@@ -190,8 +193,8 @@ export default function InfluencerSearchPage() {
             </div>
           </div>
 
-          {/* 검색 — PC 우측 넷째 줄 */}
-          <div className="lg:[.inf-pc_&]:col-start-2 lg:[.inf-pc_&]:row-start-4">
+          {/* 검색 — PC 우측 셋째 줄 */}
+          <div className="lg:[.inf-pc_&]:col-start-2 lg:[.inf-pc_&]:row-start-3">
             <button onClick={handleSearch} disabled={loading}
               className="w-full bg-amber-500 text-white py-2.5 rounded-lg font-medium hover:bg-amber-600 transition disabled:opacity-50 lg:[.inf-pc_&]:w-auto lg:[.inf-pc_&]:px-6">
               {loading ? '검색 중...' : <span className="inline-flex items-center gap-1"><Search size={16} strokeWidth={1.75} /> 캠페인 검색</span>}
