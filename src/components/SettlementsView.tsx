@@ -155,12 +155,12 @@ export default function SettlementsView({
   const fmt = (n: number) => n.toLocaleString()
 
   return (
-    <div className="flex flex-col gap-[14px] [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1fr)_300px] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-start">
-      <div className="flex flex-col gap-5 [.adv-pc_&]:gap-[14px] min-w-0">
+    <div className="flex flex-col gap-[14px] lg:[.adv-pc_&]:grid lg:[.adv-pc_&]:grid-cols-[minmax(0,1fr)_300px] lg:[.adv-pc_&]:gap-[14px] lg:[.adv-pc_&]:items-start">
+      <div className="flex flex-col gap-5 lg:[.adv-pc_&]:gap-[14px] min-w-0">
         <h1 className="text-[23px] font-extrabold tracking-[-0.03em] text-[#17171B]">정산</h1>
 
         {/* 요약 4칸 */}
-        <div className="grid grid-cols-2 [.adv-pc_&]:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 lg:[.adv-pc_&]:grid-cols-4 gap-3.5">
           <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4 flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-[2px] bg-[#F59E0B]" />

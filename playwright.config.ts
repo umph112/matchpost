@@ -39,8 +39,25 @@ export default defineConfig({
     video: 'off',
   },
 
+  // D33 — 캡처만 두 폭으로 가른다. 폭을 한 실행 안에서 바꾸지 않는다:
+  // 같은 창에서 폭만 줄이면 이미 마운트된 화면이 남아 실제로는 없는 상태를 찍는다.
+  //
+  // ⚠️ 시나리오 스펙까지 두 프로젝트로 돌리지 않는다. 00-signup 이 계정을 만드는지라
+  //    두 폭으로 돌면 실행마다 봇 계정이 두 배로 쌓인다. 범위는 캡처를 보고 정하기로 했다.
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', testIgnore: /29-width-shots\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'pc',
+      testMatch: /29-width-shots\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      name: 'mobile',
+      testMatch: /29-width-shots\.spec\.ts/,
+      // 폭만 바꾼다. 셸이 더 이상 user-agent 를 안 보므로 모바일 UA 로 위장할 이유가 없고,
+      // 오히려 UA 없이도 모바일 셸이 나오는지가 이번에 확인할 것이다.
+      use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 } },
+    },
   ],
 
   // 이미 dev 서버가 떠 있으면 그걸 쓴다. 없으면 띄운다(첫 컴파일이 느려 넉넉히 잡음).

@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { test, type Page } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { PASSWORD, ROOT, botEmail, latestScheduleId, loginAs } from './_helpers'
 
 // D23 ③ — 인플루언서 화면 전부가 PC 셸 안에서 제대로 나오는지 눈으로 볼 캡처.
@@ -34,6 +34,8 @@ const SCREENS: { file: string; url: string; wait?: (p: Page) => Promise<unknown>
 test('[③] 인플루언서 화면 PC 셸 캡처', async ({ browser }) => {
   fs.mkdirSync(OUT, { recursive: true })
   const { ctx, page } = await loginAs(browser, botEmail('inf-pc'), PASSWORD, '**/influencer/**')
+  // 캡처를 끝까지 남긴 뒤에 한 번에 따진다 — 첫 화면에서 멈추면 나머지를 못 본다.
+  const bad: string[] = []
   try {
     await page.setViewportSize(VIEWPORT)
     const openId = await latestScheduleId(botEmail('inf-pc'))
@@ -45,24 +47,35 @@ test('[③] 인플루언서 화면 PC 셸 캡처', async ({ browser }) => {
         continue
       }
       await page.goto(url, { waitUntil: 'networkidle' })
-      // 셸은 클라이언트에서 userAgent 로 PC/모바일을 정한다 — 사이드바가 붙을 때까지 기다린다.
-      await page.waitForSelector('main.inf-pc', { timeout: 20_000 }).catch(() => {})
+      // D33 — 셸은 이제 CSS(lg=1024px)로 갈린다. 모바일 껍데기도 DOM 에 남아 있으므로
+      // main.inf-pc 의 「존재」로는 아무것도 판정되지 않는다(폭과 무관하게 항상 붙는다).
+      // PC 사이드바가 실제로 보이는지로 기다리고, 판정도 그걸로 한다.
+      await page.locator('aside:visible').first().waitFor({ timeout: 20_000 }).catch(() => {})
       await page.waitForTimeout(600)
       await page.screenshot({ path: path.join(OUT, `${s.file}.png`), fullPage: true })
-      // 판단 근거를 로그로도 남긴다: 사이드바가 있나, 내용이 480px 에 갇혀 있나.
+      // 판단 근거: PC 사이드바가 보이나, 본문이 512px 에 갇혀 있나.
       const info = await page.evaluate(() => {
-        const aside = document.querySelector('aside')
+        const w = (el: Element | null) => (el ? Math.round(el.getBoundingClientRect().width) : -1)
+        const aside = [...document.querySelectorAll('aside')].find((a) => a.getBoundingClientRect().width > 0)
         const main = document.querySelector('main.inf-pc')
-        const first = main?.firstElementChild as HTMLElement | null
         return {
-          사이드바: !!aside,
-          본문폭: main ? Math.round(main.getBoundingClientRect().width) : -1,
-          첫칸폭: first ? Math.round(first.getBoundingClientRect().width) : -1,
+          사이드바: w(aside ?? null),
+          본문폭: w(main),
+          첫칸폭: w(main?.firstElementChild ?? null),
         }
       })
-      console.log(`[③] ${s.file}  사이드바 ${info.사이드바 ? '있음' : '없음'} · 본문폭 ${info.본문폭}px · 첫칸폭 ${info.첫칸폭}px`)
+      const 갇힘 = info.본문폭 > 0 && info.본문폭 <= 512
+      const 셸없음 = info.사이드바 <= 0
+      if (갇힘 || 셸없음) bad.push(`${s.file}(사이드바 ${info.사이드바}px · 본문 ${info.본문폭}px)`)
+      console.log(
+        `[③] ${s.file}  사이드바 ${info.사이드바 > 0 ? `${info.사이드바}px` : '안 보임'} · 본문폭 ${info.본문폭}px · 첫칸폭 ${info.첫칸폭}px${
+          갇힘 || 셸없음 ? '  ⚠️' : ''
+        }`,
+      )
     }
   } finally {
     await ctx.close()
   }
+  // 1440px 에서 사이드바가 안 보이거나 본문이 512px 이면 PC 셸이 안 걸린 것이다.
+  expect(bad, `PC 폭인데 모바일 셸: ${bad.join(', ')}`).toEqual([])
 })

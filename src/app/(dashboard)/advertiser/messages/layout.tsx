@@ -136,8 +136,8 @@ export default async function AdvertiserMessagesLayout({ children }: { children:
     .sort((a, b) => b.time.localeCompare(a.time))
 
   return (
-    <div className="flex flex-col gap-3 [.adv-pc_&]:h-full">
-      <h1 className="text-xl font-bold text-gray-900 [.adv-pc_&]:text-[19px] [.adv-pc_&]:font-extrabold px-1">대시</h1>
+    <div className="flex flex-col gap-3 lg:[.adv-pc_&]:h-full">
+      <h1 className="text-xl font-bold text-gray-900 lg:[.adv-pc_&]:text-[19px] lg:[.adv-pc_&]:font-extrabold px-1">대시</h1>
       <MessagesSplit
         basePath="/advertiser/messages"
         pcClass="adv-pc"

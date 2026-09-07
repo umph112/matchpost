@@ -10,7 +10,9 @@ import Logo from './Logo'
 import { creditAmount } from '@/lib/creditConfig'
 import { initial } from '@/lib/initial'
 
-// 인플루언서 셸 — 광고주 AdvertiserShell과 같은 PC/모바일 자동 감지 패턴(D7 4-8, 토글 없음).
+// 인플루언서 셸 — 광고주 AdvertiserShell과 같은 PC/모바일 자동 분기 패턴(D7 4-8, 토글 없음).
+// D33 — UA 감지를 걷어내고 화면 폭(lg = 1024px)으로 가른다. 서버는 폭을 모르므로 JS 상태로 가르면
+// 초기값이 필요하고, 여기 초기값이 'mobile' 이라 PC 로 열면 512px 이 한 번 번쩍인 뒤 바뀌었다.
 // influencer/layout.tsx 가 /influencer/** 전체에 씌운다 — 페이지에서 이걸 직접 부르면 두 겹이 된다.
 // (전에는 dashboard·messages 두 곳만 직접 불렀고, 나머지 9개 화면은 사이드바도 [.inf-pc_&] 변형도 없었다.)
 const MOBILE_TABS = [
@@ -131,7 +133,6 @@ export default function InfluencerShell({
 }) {
   const pathname = usePathname()
   const fullBleed = pathname.startsWith('/influencer/messages')
-  const [mode, setMode] = useState<'pc' | 'mobile'>('mobile')
   const [creditBalance, setCreditBalance] = useState<number | null>(null)
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
   const badgeVal = (key?: 'msg' | 'notif') => (key === 'msg' ? msgCount : key === 'notif' ? notifCount : 0)
@@ -152,71 +153,21 @@ export default function InfluencerShell({
   const backHref = screen?.parent ?? (TAB_HREFS.has(pathname) ? prevTab : null)
 
   useEffect(() => {
-    const detectMobile = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-    setMode(detectMobile() ? 'mobile' : 'pc')
-  }, [])
-
-  useEffect(() => {
     fetch('/api/credits/balance')
       .then((r) => r.json())
       .then((d) => setCreditBalance(d.balance ?? 0))
       .catch(() => {})
   }, [])
 
-  if (mode === 'mobile') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* D31 4절 — [←] 로고 | 현재 화면 이름 … [계정].
-            높이 52px 은 아래 main 의 h-calc 이 그대로 쓴다 — 바꾸려면 두 곳을 같이 바꿔야 한다. */}
-        <header className="h-[52px] bg-white border-b border-gray-100 flex items-center px-1.5 sticky top-0 z-40">
-          {backHref ? (
-            <Link
-              href={backHref}
-              aria-label="뒤로"
-              className="w-11 h-11 shrink-0 flex items-center justify-center text-[#5C5C68] active:bg-[#F6F6F7] rounded-lg"
-            >
-              <ChevronLeft size={20} strokeWidth={2} />
-            </Link>
-          ) : (
-            <div className="w-[10px] shrink-0" />
-          )}
-          <Link href="/influencer/dashboard" className="shrink-0 flex items-center" aria-label="MATCHPOST 홈">
-            <Logo size={20} markOnly />
-          </Link>
-          {screen && (
-            <>
-              <span aria-hidden className="shrink-0 w-px h-[14px] bg-[#EAEAEE] mx-[9px]" />
-              <span className="min-w-0 truncate text-[13px] font-bold text-[#17171B] tracking-[-0.01em]">
-                {screen.title}
-              </span>
-            </>
-          )}
-          <div className="ml-auto flex items-center gap-2 pr-2.5 pl-2">
-            <div className="w-7 h-7 shrink-0 rounded-full bg-[#FEF3C7] text-[#B45309] text-[11.5px] font-extrabold flex items-center justify-center">
-              {initial(name)}
-            </div>
-            <LogoutButton />
-          </div>
-        </header>
-        <main className={fullBleed ? 'h-[calc(100vh-52px-58px)] flex flex-col' : 'max-w-lg mx-auto px-4 py-5 pb-24 space-y-6'}>{children}</main>
-        <nav className="fixed bottom-0 left-0 right-0 h-[58px] bg-white border-t border-gray-100 flex items-center z-40">
-          {MOBILE_TABS.map((t) => (
-            // prefetch="auto" — 다음 화면 「코드」를 미리 받아둔다.
-            // 이 라우트들은 전부 동적이라 auto 는 loading.tsx 경계까지만 가져온다(데이터는 안 건드린다).
-            // true 로 두면 화면을 열 때마다 탭 다섯 곳의 서버 렌더가 같이 돌아간다.
-            <Link key={t.href} href={t.href} prefetch="auto" className="flex-1 h-full active:bg-[#FAFAFB]">
-              <TabInner Icon={t.Icon} label={t.label} active={isActive(t.href)} badge={t.badge ? badgeVal(t.badge) : 0} />
-            </Link>
-          ))}
-        </nav>
-      </div>
-    )
-  }
-
-  // ── PC 버전 ──
+  // ── 폭으로 가른다 (D33) ──
+  // 두 껍데기를 모두 렌더하고 CSS(lg = 1024px)로 한쪽만 보인다 — 첫 페인트부터 맞는다.
+  // ⚠️ children 은 아래 <main> 한 곳에만 있다. 두 곳에 넣으면 화면이 두 번 마운트돼
+  //    데이터를 두 번 부르고 폼 상태가 갈린다. 껍데기(사이드바·상단바·하단탭)만 둘로 갈랐다.
+  // ⚠️ 그래서 .inf-pc 마커는 폭과 무관하게 늘 붙어 있다. 화면 쪽 PC 조건이
+  //    lg:[.inf-pc_&]: 로 폭에 묶여 있는 이유다 — 마커만 보고 갈리면 모바일에서 PC 표가 나온다.
   return (
-    <div className="flex min-h-screen min-w-[1360px] bg-[#F6F6F7] text-[#1A1A1F]">
-      <aside className="w-[236px] shrink-0 bg-white border-r border-[#EAEAEE] sticky top-0 h-screen flex flex-col">
+    <div className="flex min-h-screen bg-gray-50 lg:min-w-[1360px] lg:bg-[#F6F6F7] lg:text-[#1A1A1F]">
+      <aside className="hidden lg:flex w-[236px] shrink-0 bg-white border-r border-[#EAEAEE] sticky top-0 h-screen flex-col">
         <div className="h-16 flex items-center px-5 border-b border-[#F1F1F4]">
           <Logo size={19} />
         </div>
@@ -266,7 +217,41 @@ export default function InfluencerShell({
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="h-16 bg-white/[.88] backdrop-blur-[10px] border-b border-[#EAEAEE] flex items-center gap-3.5 px-7 sticky top-0 z-30">
+        {/* 모바일 상단바 — D31 4절 [←] 로고 | 현재 화면 이름 … [계정].
+            높이 52px 은 아래 main 의 h-calc 이 그대로 쓴다 — 바꾸려면 두 곳을 같이 바꿔야 한다. */}
+        <header className="lg:hidden h-[52px] bg-white border-b border-gray-100 flex items-center px-1.5 sticky top-0 z-40">
+          {backHref ? (
+            <Link
+              href={backHref}
+              aria-label="뒤로"
+              className="w-11 h-11 shrink-0 flex items-center justify-center text-[#5C5C68] active:bg-[#F6F6F7] rounded-lg"
+            >
+              <ChevronLeft size={20} strokeWidth={2} />
+            </Link>
+          ) : (
+            <div className="w-[10px] shrink-0" />
+          )}
+          <Link href="/influencer/dashboard" className="shrink-0 flex items-center" aria-label="MATCHPOST 홈">
+            <Logo size={20} markOnly />
+          </Link>
+          {screen && (
+            <>
+              <span aria-hidden className="shrink-0 w-px h-[14px] bg-[#EAEAEE] mx-[9px]" />
+              <span className="min-w-0 truncate text-[13px] font-bold text-[#17171B] tracking-[-0.01em]">
+                {screen.title}
+              </span>
+            </>
+          )}
+          <div className="ml-auto flex items-center gap-2 pr-2.5 pl-2">
+            <div className="w-7 h-7 shrink-0 rounded-full bg-[#FEF3C7] text-[#B45309] text-[11.5px] font-extrabold flex items-center justify-center">
+              {initial(name)}
+            </div>
+            <LogoutButton />
+          </div>
+        </header>
+
+        {/* PC 상단바 64px */}
+        <header className="hidden lg:flex h-16 bg-white/[.88] backdrop-blur-[10px] border-b border-[#EAEAEE] items-center gap-3.5 px-7 sticky top-0 z-30">
           <div className="flex flex-col">
             <span className="text-sm font-bold tracking-[-0.01em]">{subLine1}</span>
             {subLine2 && <span className="text-[11px] text-[#9A9AA5] mt-px">{subLine2}</span>}
@@ -296,8 +281,29 @@ export default function InfluencerShell({
             <LogoutButton />
           </div>
         </header>
-        <main className="inf-pc flex-1 flex flex-col gap-[14px] pt-[26px] px-7 pb-10">{children}</main>
+        {/* max-w-lg 에 w-full 을 같이 준다 — flex 아이템이라 auto 여백만으론 내용 폭으로 줄어든다 */}
+        <main
+          className={
+            fullBleed
+              ? 'inf-pc h-[calc(100vh-52px-58px)] flex flex-col lg:h-auto lg:flex-1 lg:gap-[14px] lg:pt-[26px] lg:px-7 lg:pb-10'
+              : 'inf-pc max-w-lg w-full mx-auto px-4 py-5 pb-24 space-y-6 lg:max-w-none lg:w-auto lg:mx-0 lg:flex lg:flex-col lg:flex-1 lg:gap-[14px] lg:space-y-0 lg:px-7 lg:pt-[26px] lg:pb-10'
+          }
+        >
+          {children}
+        </main>
       </div>
+
+      {/* 모바일 하단 탭 */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-[58px] bg-white border-t border-gray-100 flex items-center z-40">
+        {MOBILE_TABS.map((t) => (
+          // prefetch="auto" — 다음 화면 「코드」를 미리 받아둔다.
+          // 이 라우트들은 전부 동적이라 auto 는 loading.tsx 경계까지만 가져온다(데이터는 안 건드린다).
+          // true 로 두면 화면을 열 때마다 탭 다섯 곳의 서버 렌더가 같이 돌아간다.
+          <Link key={t.href} href={t.href} prefetch="auto" className="flex-1 h-full active:bg-[#FAFAFB]">
+            <TabInner Icon={t.Icon} label={t.label} active={isActive(t.href)} badge={t.badge ? badgeVal(t.badge) : 0} />
+          </Link>
+        ))}
+      </nav>
     </div>
   )
 }

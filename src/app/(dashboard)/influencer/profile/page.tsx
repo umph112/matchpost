@@ -270,13 +270,13 @@ export default function InfluencerProfilePage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
           {/* D31 4절 — 모바일 뒤로가기는 셸 상단바가 갖는다(여기 두면 두 개가 된다).
               PC 는 온 길(back)이 아니라 정해진 상위 화면으로 간다 — 어디서 왔든 같은 곳. */}
-          <Link href="/influencer/dashboard" className="hidden [.inf-pc_&]:inline-block mr-4 text-gray-400 hover:text-gray-600">
+          <Link href="/influencer/dashboard" className="hidden lg:[.inf-pc_&]:inline-block mr-4 text-gray-400 hover:text-gray-600">
             ← 뒤로
           </Link>
           <h1 className="text-xl font-bold text-gray-900">내 정보 수정</h1>

@@ -53,9 +53,9 @@ export default async function ChannelAnalyticsPage() {
     <div className="min-h-screen bg-gray-50">
       <TopBar name={profile?.name} />
 
-      <main className="max-w-lg mx-auto px-4 py-5 space-y-4 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
+      <main className="max-w-lg mx-auto px-4 py-5 space-y-4 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
         {/* 뒤로가기 */}
-        <Link href="/influencer/dashboard" className="hidden [.inf-pc_&]:inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition">
+        <Link href="/influencer/dashboard" className="hidden lg:[.inf-pc_&]:inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition">
           ← 대시보드
         </Link>
 

@@ -466,8 +466,8 @@ export default function AdvertiserSearchPage() {
 
   // ── Filter card (top full-width on PC, stacked on mobile) ──
   const filterSidebar = (
-    <div className="bg-white border border-[#EAEAEE] rounded-[14px] p-5 flex flex-col gap-4 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-4 [.adv-pc_&]:gap-x-5 [.adv-pc_&]:gap-y-[17px] [.adv-pc_&]:pt-4 [.adv-pc_&]:pb-[18px]">
-      <div className="flex items-center justify-between [.adv-pc_&]:col-span-full">
+    <div className="bg-white border border-[#EAEAEE] rounded-[14px] p-5 flex flex-col gap-4 lg:[.adv-pc_&]:grid lg:[.adv-pc_&]:grid-cols-4 lg:[.adv-pc_&]:gap-x-5 lg:[.adv-pc_&]:gap-y-[17px] lg:[.adv-pc_&]:pt-4 lg:[.adv-pc_&]:pb-[18px]">
+      <div className="flex items-center justify-between lg:[.adv-pc_&]:col-span-full">
         <h2 className="text-[13.5px] font-bold text-[#17171B]">필터</h2>
         <button
           onClick={resetFilters}
@@ -478,11 +478,11 @@ export default function AdvertiserSearchPage() {
       </div>
 
       {/* 날짜 — 7열 달력 (특정일/기간) */}
-      <div className="[.adv-pc_&]:col-span-full [.adv-pc_&]:pb-4 [.adv-pc_&]:border-b [.adv-pc_&]:border-[#F1F1F4]">
+      <div className="lg:[.adv-pc_&]:col-span-full lg:[.adv-pc_&]:pb-4 lg:[.adv-pc_&]:border-b lg:[.adv-pc_&]:border-[#F1F1F4]">
         <div className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em] mb-2">날짜</div>
-        <div className="flex flex-col gap-4 [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[388px_minmax(0,1fr)] [.adv-pc_&]:gap-[22px] [.adv-pc_&]:items-start">
+        <div className="flex flex-col gap-4 lg:[.adv-pc_&]:grid lg:[.adv-pc_&]:grid-cols-[388px_minmax(0,1fr)] lg:[.adv-pc_&]:gap-[22px] lg:[.adv-pc_&]:items-start">
           {/* 좌: 달력 */}
-          <div className="w-full [.adv-pc_&]:w-[388px]">
+          <div className="w-full lg:[.adv-pc_&]:w-[388px]">
             {/* 모드 토글 + 안내 문구 */}
             <div className="flex items-center gap-2 mb-2">
               <div className="flex gap-[3px] bg-[#F1F1F4] rounded-lg p-[3px]">
@@ -677,7 +677,7 @@ export default function AdvertiserSearchPage() {
       </div>
 
       {/* 분야 */}
-      <div className="[.adv-pc_&]:col-span-full">
+      <div className="lg:[.adv-pc_&]:col-span-full">
         <div className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.04em] mb-1.5">
           분야 <span className="font-normal opacity-60">({INFLUENCER_CATEGORIES.length})</span>
         </div>
@@ -736,7 +736,7 @@ export default function AdvertiserSearchPage() {
 
       {/* 친구등록만 (비활성 — favorites 미구현) */}
       <div
-        className="flex items-center justify-between opacity-40 cursor-not-allowed select-none [.adv-pc_&]:col-span-full"
+        className="flex items-center justify-between opacity-40 cursor-not-allowed select-none lg:[.adv-pc_&]:col-span-full"
         title="즐겨찾기 기능 준비 중"
       >
         <span className="text-[12.5px] font-semibold text-[#5C5C68]">☆ 친구등록만</span>
@@ -745,11 +745,11 @@ export default function AdvertiserSearchPage() {
         </div>
       </div>
 
-      <div className="[.adv-pc_&]:col-span-full [.adv-pc_&]:flex [.adv-pc_&]:justify-end">
+      <div className="lg:[.adv-pc_&]:col-span-full lg:[.adv-pc_&]:flex lg:[.adv-pc_&]:justify-end">
         <button
           onClick={handleSearch}
           disabled={loading}
-          className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold py-2.5 rounded-[9px] text-[13.5px] transition disabled:opacity-50 shadow-[0_1px_2px_rgba(245,158,11,.35)] [.adv-pc_&]:w-auto [.adv-pc_&]:h-11 [.adv-pc_&]:px-7 [.adv-pc_&]:py-0 [.adv-pc_&]:rounded-[10px] [.adv-pc_&]:text-[#17171B] [.adv-pc_&]:font-extrabold"
+          className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold py-2.5 rounded-[9px] text-[13.5px] transition disabled:opacity-50 shadow-[0_1px_2px_rgba(245,158,11,.35)] lg:[.adv-pc_&]:w-auto lg:[.adv-pc_&]:h-11 lg:[.adv-pc_&]:px-7 lg:[.adv-pc_&]:py-0 lg:[.adv-pc_&]:rounded-[10px] lg:[.adv-pc_&]:text-[#17171B] lg:[.adv-pc_&]:font-extrabold"
         >
           {loading ? '검색 중...' : '검색하기'}
         </button>
@@ -764,7 +764,7 @@ export default function AdvertiserSearchPage() {
         <h2 className="text-[13.5px] font-bold text-[#17171B]">친구등록한 인플루언서</h2>
         <span className="text-[11.5px] text-[#B0B0BB]">{friends.length}명</span>
       </div>
-      <div className="grid grid-cols-2 [.adv-pc_&]:grid-cols-4 gap-[11px]">
+      <div className="grid grid-cols-2 lg:[.adv-pc_&]:grid-cols-4 gap-[11px]">
         {friends.slice(0, 4).map((f) => (
           <div
             key={f.influencerId}
@@ -883,7 +883,7 @@ export default function AdvertiserSearchPage() {
                 <span className="text-[11.5px] text-[#B0B0BB]">{items.length}명</span>
                 <div className="flex-1 h-px bg-[#E4E4E8]" />
               </div>
-              <div className="grid grid-cols-1 [.adv-pc_&]:grid-cols-2 gap-[11px]">
+              <div className="grid grid-cols-1 lg:[.adv-pc_&]:grid-cols-2 gap-[11px]">
                 {items.map((s) => openCard(s))}
               </div>
             </div>
@@ -899,7 +899,7 @@ export default function AdvertiserSearchPage() {
                 <span className="text-[11.5px] text-[#B0B0BB]">{items.length}개 날짜</span>
                 <div className="flex-1 h-px bg-[#E4E4E8]" />
               </div>
-              <div className="grid grid-cols-1 [.adv-pc_&]:grid-cols-2 gap-[11px]">
+              <div className="grid grid-cols-1 lg:[.adv-pc_&]:grid-cols-2 gap-[11px]">
                 {items.map((s) => openCard(s))}
               </div>
             </div>
@@ -912,7 +912,7 @@ export default function AdvertiserSearchPage() {
   return (
     <div>
       {/* Page title — mobile only */}
-      <h1 className="text-xl font-bold text-[#17171B] mb-5 [.adv-pc_&]:hidden">인플루언서 찾기</h1>
+      <h1 className="text-xl font-bold text-[#17171B] mb-5 lg:[.adv-pc_&]:hidden">인플루언서 찾기</h1>
 
       {/* PC: 필터 카드(상단 전체폭) + 결과(하단 전체폭) / Mobile: stacked */}
       <div className="flex flex-col gap-[14px]">

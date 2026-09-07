@@ -201,9 +201,9 @@ export default function InfluencerMessageRoomPage() {
   }
 
   return (
-    <div className="flex flex-col [.inf-pc_&]:flex-row flex-1 min-h-0 [.inf-pc_&]:h-full">
+    <div className="flex flex-col lg:[.inf-pc_&]:flex-row flex-1 min-h-0 lg:[.inf-pc_&]:h-full">
      <div className="flex flex-col flex-1 min-w-0 min-h-0">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#EAEAEE] [.inf-pc_&]:px-5">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#EAEAEE] lg:[.inf-pc_&]:px-5">
         {/* D31 4절 — 뒤로가기는 셸 상단바 한 곳으로 모았다(여기 있으면 모바일에서 두 개가 보인다) */}
         <div className="w-9 h-9 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold shrink-0">
           {initial(advertiserName)}
@@ -222,12 +222,12 @@ export default function InfluencerMessageRoomPage() {
 
       {/* D10 §1 — 모바일에서는 대화창 상단 인라인, PC에서는 우측 aside(아래)로 이동 */}
       {proposalId && currentUser && (
-        <div className="px-4 pt-2 [.inf-pc_&]:hidden">
+        <div className="px-4 pt-2 lg:[.inf-pc_&]:hidden">
           <DealConfirmBar proposalId={proposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
         </div>
       )}
 
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-3 px-4 py-4 [.inf-pc_&]:px-5">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-3 px-4 py-4 lg:[.inf-pc_&]:px-5">
         {messages.length === 0 && (
           <p className="text-center text-gray-400 text-sm py-8">아직 대시가 없어요. 먼저 인사해보세요!</p>
         )}
@@ -246,7 +246,7 @@ export default function InfluencerMessageRoomPage() {
         ))}
       </div>
 
-      <div className="px-4 pb-4 [.inf-pc_&]:px-5">
+      <div className="px-4 pb-4 lg:[.inf-pc_&]:px-5">
         {actionError && (
           <div className="mb-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2 text-[12px] text-red-700">
             {actionError}
@@ -314,7 +314,7 @@ export default function InfluencerMessageRoomPage() {
      </div>
 
       {/* D10 §1 — PC 우측 열(300px): 협의 조건 요약 + 확정 바. 모바일에는 없음(위 인라인 유지) */}
-      <aside className="hidden [.inf-pc_&]:flex [.inf-pc_&]:flex-col [.inf-pc_&]:w-[300px] [.inf-pc_&]:shrink-0 [.inf-pc_&]:border-l [.inf-pc_&]:border-[#EAEAEE] [.inf-pc_&]:overflow-y-auto [.inf-pc_&]:p-4">
+      <aside className="hidden lg:[.inf-pc_&]:flex lg:[.inf-pc_&]:flex-col lg:[.inf-pc_&]:w-[300px] lg:[.inf-pc_&]:shrink-0 lg:[.inf-pc_&]:border-l lg:[.inf-pc_&]:border-[#EAEAEE] lg:[.inf-pc_&]:overflow-y-auto lg:[.inf-pc_&]:p-4">
         {proposalId && currentUser ? (
           <DealConfirmBar proposalId={proposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
         ) : (

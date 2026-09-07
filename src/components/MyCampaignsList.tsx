@@ -88,18 +88,18 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
   return (
     <div>
       {/* ── 상단 컨트롤 바 ── */}
-      <div className="flex flex-col gap-3 mb-4 [.adv-pc_&]:flex-row [.adv-pc_&]:items-center [.adv-pc_&]:gap-4">
+      <div className="flex flex-col gap-3 mb-4 lg:[.adv-pc_&]:flex-row lg:[.adv-pc_&]:items-center lg:[.adv-pc_&]:gap-4">
         {/* 필터 탭 */}
-        <div className="flex gap-0 border-b border-[#EAEAEE] [.adv-pc_&]:border-b-0 [.adv-pc_&]:gap-1">
+        <div className="flex gap-0 border-b border-[#EAEAEE] lg:[.adv-pc_&]:border-b-0 lg:[.adv-pc_&]:gap-1">
           {tabs.map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`px-3 py-1.5 text-[12.5px] font-semibold transition relative
-                [.adv-pc_&]:rounded-md [.adv-pc_&]:px-3 [.adv-pc_&]:py-1.5
+                lg:[.adv-pc_&]:rounded-md lg:[.adv-pc_&]:px-3 lg:[.adv-pc_&]:py-1.5
                 ${tab === t
-                  ? '[.adv-pc_&]:bg-[#FEF3C7] [.adv-pc_&]:text-[#B45309] text-[#B45309] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-amber-600 [.adv-pc_&]:after:hidden'
-                  : 'text-[#7C7C88] hover:text-[#3C3C46] [.adv-pc_&]:hover:bg-[#F6F6F7]'
+                  ? 'lg:[.adv-pc_&]:bg-[#FEF3C7] lg:[.adv-pc_&]:text-[#B45309] text-[#B45309] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-amber-600 lg:[.adv-pc_&]:after:hidden'
+                  : 'text-[#7C7C88] hover:text-[#3C3C46] lg:[.adv-pc_&]:hover:bg-[#F6F6F7]'
                 }`}
             >
               {t}
@@ -111,7 +111,7 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
         </div>
 
         {/* 검색 + 정렬 (PC only) */}
-        <div className="hidden [.adv-pc_&]:flex items-center gap-2 ml-auto">
+        <div className="hidden lg:[.adv-pc_&]:flex items-center gap-2 ml-auto">
           <input
             type="text"
             value={search}
@@ -132,7 +132,7 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
       </div>
 
       {/* ── PC: 7열 표 ── */}
-      <div className="hidden [.adv-pc_&]:block bg-white rounded-2xl border border-[#EAEAEE] overflow-hidden">
+      <div className="hidden lg:[.adv-pc_&]:block bg-white rounded-2xl border border-[#EAEAEE] overflow-hidden">
         {/* 표 헤더 */}
         <div
           className="grid text-[11px] font-bold text-[#9A9AA5] bg-[#FAFAFB] border-b border-[#F1F1F4] px-5 py-[9px]"
@@ -260,7 +260,7 @@ export default function MyCampaignsList({ campaigns }: { campaigns: Campaign[] }
       </div>
 
       {/* ── 모바일: 카드 목록 ── */}
-      <div className="space-y-2 [.adv-pc_&]:hidden">
+      <div className="space-y-2 lg:[.adv-pc_&]:hidden">
         {filtered.length === 0 ? (
           <p className="text-sm text-gray-400 bg-white rounded-2xl p-4 shadow-sm">
             {search || tab !== '전체' ? '해당 캠페인이 없어요.' : '아직 등록한 캠페인이 없어요.'}

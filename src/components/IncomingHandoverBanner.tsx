@@ -23,7 +23,7 @@ export default function IncomingHandoverBanner({ items }: { items: IncomingHando
         <div
           key={it.leaverId}
           style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 12, padding: '16px 18px' }}
-          className="flex flex-col gap-3 [.adv-pc_&]:flex-row [.adv-pc_&]:items-center [.adv-pc_&]:gap-4"
+          className="flex flex-col gap-3 lg:[.adv-pc_&]:flex-row lg:[.adv-pc_&]:items-center lg:[.adv-pc_&]:gap-4"
         >
           <div className="min-w-0">
             <span
@@ -39,7 +39,7 @@ export default function IncomingHandoverBanner({ items }: { items: IncomingHando
               {it.total}건 중 {it.received}건이 넘어왔고, 나머지는 {it.leaverName}님이 메모와 함께 보내줍니다. 기다리지 않고 직접 가져올 수도 있어요.
             </p>
           </div>
-          <div className="flex items-center gap-3 shrink-0 [.adv-pc_&]:ml-auto">
+          <div className="flex items-center gap-3 shrink-0 lg:[.adv-pc_&]:ml-auto">
             <Link
               href={`/advertiser/team/handover/${it.leaverId}`}
               style={{ height: 40, borderRadius: 10 }}

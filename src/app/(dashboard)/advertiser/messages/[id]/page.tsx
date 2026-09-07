@@ -347,10 +347,10 @@ export default function AdvertiserMessageRoomPage() {
   }
 
   return (
-    <div className="flex flex-col [.adv-pc_&]:flex-row flex-1 min-h-0 [.adv-pc_&]:h-full">
+    <div className="flex flex-col lg:[.adv-pc_&]:flex-row flex-1 min-h-0 lg:[.adv-pc_&]:h-full">
      <div className="flex flex-col flex-1 min-w-0 min-h-0">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#EAEAEE] [.adv-pc_&]:px-5">
-        <Link href="/advertiser/messages" className="text-gray-400 hover:text-gray-600 [.adv-pc_&]:hidden">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#EAEAEE] lg:[.adv-pc_&]:px-5">
+        <Link href="/advertiser/messages" className="text-gray-400 hover:text-gray-600 lg:[.adv-pc_&]:hidden">
           <ArrowLeft size={18} strokeWidth={1.75} />
         </Link>
         <div
@@ -392,7 +392,7 @@ export default function AdvertiserMessageRoomPage() {
       </div>
 
       {isCampaign && (
-        <div className="flex gap-1.5 overflow-x-auto px-4 pt-2 [.adv-pc_&]:px-5">
+        <div className="flex gap-1.5 overflow-x-auto px-4 pt-2 lg:[.adv-pc_&]:px-5">
           {participants.map((p) => (
             <button
               key={p.influencerId}
@@ -411,7 +411,7 @@ export default function AdvertiserMessageRoomPage() {
       )}
 
       {targetedId && (
-        <div className="mx-4 mt-2 [.adv-pc_&]:mx-5 bg-[#EFF6FF] border border-[#DBEAFE] rounded-xl px-3 py-2 flex items-center justify-between">
+        <div className="mx-4 mt-2 lg:[.adv-pc_&]:mx-5 bg-[#EFF6FF] border border-[#DBEAFE] rounded-xl px-3 py-2 flex items-center justify-between">
           <p className="text-[12px] text-[#1D4ED8] font-medium">
             {nameByInfluencer[targetedId]}님에게만 보냅니다 — 다른 참여자에게는 가지 않아요
           </p>
@@ -423,12 +423,12 @@ export default function AdvertiserMessageRoomPage() {
 
       {/* D10 §1 — 모바일에서는 대화창 상단 인라인, PC에서는 우측 aside(아래)로 이동 */}
       {!isCampaign && singleProposalId && currentUser && (
-        <div className="px-4 pt-2 [.adv-pc_&]:hidden">
+        <div className="px-4 pt-2 lg:[.adv-pc_&]:hidden">
           <DealConfirmBar proposalId={singleProposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
         </div>
       )}
 
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-3 px-4 py-4 [.adv-pc_&]:px-5">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-3 px-4 py-4 lg:[.adv-pc_&]:px-5">
         {messages.length === 0 && (
           <p className="text-center text-gray-400 text-sm py-8">아직 대시가 없어요. 먼저 인사해보세요!</p>
         )}
@@ -453,7 +453,7 @@ export default function AdvertiserMessageRoomPage() {
         })}
       </div>
 
-      <div className="px-4 pb-4 [.adv-pc_&]:px-5">
+      <div className="px-4 pb-4 lg:[.adv-pc_&]:px-5">
         {actionError && (
           <div className="mb-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2 text-[12px] text-red-700">
             {actionError}
@@ -554,7 +554,7 @@ export default function AdvertiserMessageRoomPage() {
      </div>
 
       {/* D10 §1 — PC 우측 열(288px): 협의 조건 요약 + 확정 바. 모바일에는 없음(위 인라인 유지) */}
-      <aside className="hidden [.adv-pc_&]:flex [.adv-pc_&]:flex-col [.adv-pc_&]:w-[288px] [.adv-pc_&]:shrink-0 [.adv-pc_&]:border-l [.adv-pc_&]:border-[#EAEAEE] [.adv-pc_&]:overflow-y-auto [.adv-pc_&]:p-4">
+      <aside className="hidden lg:[.adv-pc_&]:flex lg:[.adv-pc_&]:flex-col lg:[.adv-pc_&]:w-[288px] lg:[.adv-pc_&]:shrink-0 lg:[.adv-pc_&]:border-l lg:[.adv-pc_&]:border-[#EAEAEE] lg:[.adv-pc_&]:overflow-y-auto lg:[.adv-pc_&]:p-4">
         {reportProposalId && currentUser ? (
           <DealConfirmBar proposalId={reportProposalId} currentUserId={currentUser.id} onPrefill={setNewMessage} />
         ) : (

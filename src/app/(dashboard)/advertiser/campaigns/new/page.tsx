@@ -579,7 +579,7 @@ export default function NewCampaignPage() {
 
   if (success) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center [.adv-pc_&]:max-w-none">
+      <div className="max-w-lg mx-auto px-4 py-16 text-center lg:[.adv-pc_&]:max-w-none">
         <PartyPopper size={40} strokeWidth={1.5} className="mx-auto mb-4 text-[#F59E0B]" />
         <h2 className="text-xl font-bold text-gray-800">캠페인이 등록됐어요!</h2>
         <p className="text-gray-500 text-sm mt-2">인플루언서들에게 노출되기 시작했어요.</p>
@@ -596,7 +596,7 @@ export default function NewCampaignPage() {
     'w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500'
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:px-0">
       <div className="flex items-center mb-8">
         <button onClick={() => router.back()} className="mr-4 text-gray-400 hover:text-gray-600">
           ← 뒤로
@@ -641,7 +641,7 @@ export default function NewCampaignPage() {
       )}
 
       {/* 등록 항목들 — PC: 1fr + 320px 사이드바 그리드 */}
-      <div className="[.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1fr)_320px] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-start">
+      <div className="lg:[.adv-pc_&]:grid lg:[.adv-pc_&]:grid-cols-[minmax(0,1fr)_320px] lg:[.adv-pc_&]:gap-[14px] lg:[.adv-pc_&]:items-start">
       <div className="min-w-0">
 
       {/* ① 채널 (복수) */}
@@ -1342,7 +1342,7 @@ export default function NewCampaignPage() {
       </div>{/* /left column */}
 
       {/* RIGHT: sticky 사이드바 (PC only) */}
-      <div className="hidden [.adv-pc_&]:flex [.adv-pc_&]:flex-col [.adv-pc_&]:gap-[14px] [.adv-pc_&]:sticky [.adv-pc_&]:top-[84px]">
+      <div className="hidden lg:[.adv-pc_&]:flex lg:[.adv-pc_&]:flex-col lg:[.adv-pc_&]:gap-[14px] lg:[.adv-pc_&]:sticky lg:[.adv-pc_&]:top-[84px]">
         {/* 예산·결제 미리보기 */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EAEAEE]">
           <p className="text-[11px] font-bold text-[#9A9AA5] tracking-[0.06em] mb-3">예산 · 결제</p>
@@ -1421,7 +1421,7 @@ export default function NewCampaignPage() {
         failedLabel="등록 실패"
         disabled={!!missing}
         disabledHint={missing ?? undefined}
-        className="[.adv-pc_&]:hidden"
+        className="lg:[.adv-pc_&]:hidden"
       />
     </div>
   )

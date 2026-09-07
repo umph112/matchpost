@@ -116,7 +116,7 @@ export default function AdminCreditsPage() {
   const amtColor = (amount: bigint | number) => Number(amount) > 0 ? 'text-emerald-600' : 'text-red-500'
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div>
       <div className="flex items-center mb-8">
         <h1 className="text-xl font-bold text-gray-900">크레딧 관리</h1>
       </div>

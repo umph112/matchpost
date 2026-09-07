@@ -76,7 +76,7 @@ export default async function InfluencerMessagesLayout({ children }: { children:
   // 3단(사이드바 · 대화목록 · 대화)의 바깥 한 단은 셸이, 안쪽 두 단은 MessagesSplit 이 맡는다.
   return (
     <div className="flex flex-col gap-3 h-full">
-        <h1 className="text-lg font-bold text-gray-900 [.inf-pc_&]:text-[19px] [.inf-pc_&]:font-extrabold px-1 pt-3 [.inf-pc_&]:pt-0">대시</h1>
+        <h1 className="text-lg font-bold text-gray-900 lg:[.inf-pc_&]:text-[19px] lg:[.inf-pc_&]:font-extrabold px-1 pt-3 lg:[.inf-pc_&]:pt-0">대시</h1>
         <MessagesSplit
           basePath="/influencer/messages"
           pcClass="inf-pc"

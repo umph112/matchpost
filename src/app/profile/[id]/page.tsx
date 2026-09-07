@@ -35,7 +35,7 @@ console.log('profile:', profile)
     if (!profile) return <div>존재하지 않는 인플루언서예요</div>
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0 [.adv-pc_&]:py-0 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
+    <div className="max-w-2xl mx-auto px-4 py-8 lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:px-0 lg:[.adv-pc_&]:py-0 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
       <Link href="/advertiser/search" className="text-gray-400 hover:text-gray-600 text-sm mb-6 inline-block">
         ← 검색으로 돌아가기
       </Link>

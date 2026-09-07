@@ -290,7 +290,7 @@ export default async function AdvertiserMyPage() {
   const cardHead = 'h-[52px] flex items-center border-b border-[#F1F1F4] shrink-0'
 
   return (
-    <div className="flex flex-col gap-5 [.adv-pc_&]:gap-[14px]">
+    <div className="flex flex-col gap-5 lg:[.adv-pc_&]:gap-[14px]">
       <NotificationsRealtime userId={user.id} />
 
       {/* 5-5 받는 사람 이관 배너 — 넘어오는 담당이 있을 때만, 내 페이지 위에 한 줄. */}
@@ -299,12 +299,12 @@ export default async function AdvertiserMyPage() {
       <CancelNoticeCard role="advertiser" count={profile?.cancellation_count} />
 
       {/* 페이지 헤더 */}
-      <div className="flex flex-col gap-3 [.adv-pc_&]:flex-row [.adv-pc_&]:items-end [.adv-pc_&]:gap-4">
+      <div className="flex flex-col gap-3 lg:[.adv-pc_&]:flex-row lg:[.adv-pc_&]:items-end lg:[.adv-pc_&]:gap-4">
         <div>
           <h1 className="text-[23px] font-extrabold tracking-[-0.03em] text-[#17171B]">마이페이지</h1>
           <p className="text-[13px] text-[#7C7C88] mt-1">확정 대기 {negotiatingInf}건 · 진행중 캠페인 {ongoingCount}건이 있어요.</p>
         </div>
-        <div className="flex gap-2 [.adv-pc_&]:ml-auto">
+        <div className="flex gap-2 lg:[.adv-pc_&]:ml-auto">
           <Link href="/advertiser/search" className="flex items-center gap-1.5 h-[38px] px-[15px] rounded-[9px] border border-[#E2E2E8] bg-white text-[13px] font-semibold text-[#3C3C46] hover:bg-[#F6F6F7]">
             <Search size={14} strokeWidth={1.75} /> 인플루언서 찾기
           </Link>
@@ -318,7 +318,7 @@ export default async function AdvertiserMyPage() {
       </div>
 
       {/* KPI 행 */}
-      <div className="grid grid-cols-2 [.adv-pc_&]:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 lg:[.adv-pc_&]:grid-cols-4 gap-3.5">
         {kpis.map((k) => (
           <div key={k.label} className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4 flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5">
@@ -335,9 +335,9 @@ export default async function AdvertiserMyPage() {
       </div>
 
       {/* 2단 그리드 */}
-      <div className="flex flex-col gap-[14px] [.adv-pc_&]:grid [.adv-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] [.adv-pc_&]:gap-[14px] [.adv-pc_&]:items-stretch">
+      <div className="flex flex-col gap-[14px] lg:[.adv-pc_&]:grid lg:[.adv-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:[.adv-pc_&]:gap-[14px] lg:[.adv-pc_&]:items-stretch">
         {/* 좌 */}
-        <div className="flex flex-col gap-5 [.adv-pc_&]:gap-[14px] min-w-0">
+        <div className="flex flex-col gap-5 lg:[.adv-pc_&]:gap-[14px] min-w-0">
           {/* 캘린더 */}
           <section className={card}>
             <div className={cardHead + ' gap-3 px-5'}>
@@ -420,7 +420,7 @@ export default async function AdvertiserMyPage() {
         </div>
 
         {/* 우 */}
-        <div className="flex flex-col gap-5 [.adv-pc_&]:gap-[14px] min-w-0">
+        <div className="flex flex-col gap-5 lg:[.adv-pc_&]:gap-[14px] min-w-0">
           {/* 대시·메시지 */}
           <section className={card}>
             <div className={cardHead + ' px-[18px]'}>

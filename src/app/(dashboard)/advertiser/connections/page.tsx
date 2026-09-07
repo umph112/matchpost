@@ -131,9 +131,9 @@ export default function AdvertiserConnectionsPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 [.adv-pc_&]:max-w-none [.adv-pc_&]:px-0 [.adv-pc_&]:py-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.adv-pc_&]:max-w-none lg:[.adv-pc_&]:px-0 lg:[.adv-pc_&]:py-0">
       <div className="flex items-center mb-8">
-        <Link href="/advertiser/dashboard" className="mr-4 text-gray-400 hover:text-gray-600 [.adv-pc_&]:hidden">← 뒤로</Link>
+        <Link href="/advertiser/dashboard" className="mr-4 text-gray-400 hover:text-gray-600 lg:[.adv-pc_&]:hidden">← 뒤로</Link>
         <h1 className="text-xl font-bold text-gray-900">내 인플루언서</h1>
       </div>
 
@@ -193,7 +193,7 @@ export default function AdvertiserConnectionsPage() {
             <p className="text-center text-gray-400 text-sm py-8">이 경로로 등록된 인플루언서가 없어요</p>
           )}
           {/* 모바일: 카드 목록 (그대로 유지) */}
-          <div className="[.adv-pc_&]:hidden">
+          <div className="lg:[.adv-pc_&]:hidden">
             {activeShown.map((r) => (
               <div key={r.id} className="bg-white rounded-2xl p-4 shadow-sm mb-2 flex items-center justify-between">
                 <div className="flex items-center">
@@ -225,7 +225,7 @@ export default function AdvertiserConnectionsPage() {
 
           {/* PC: 7열 표 */}
           {activeShown.length > 0 && (
-            <div className="hidden [.adv-pc_&]:block bg-white border border-[#EAEAEE] rounded-[14px] overflow-hidden">
+            <div className="hidden lg:[.adv-pc_&]:block bg-white border border-[#EAEAEE] rounded-[14px] overflow-hidden">
               <div
                 className="grid items-center"
                 style={{ gridTemplateColumns: PC_COLS, padding: '10px 20px', background: '#FAFAFB', borderBottom: '1px solid #F1F1F4' }}

@@ -262,7 +262,7 @@ export default async function InfluencerMyPage() {
 
   const monthOpenCount = (opens ?? []).filter((o) => o.date >= start && o.date <= end).length
 
-  const card = 'bg-white [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] rounded-2xl [.inf-pc_&]:rounded-[14px] shadow-sm [.inf-pc_&]:shadow-none'
+  const card = 'bg-white lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] rounded-2xl lg:[.inf-pc_&]:rounded-[14px] shadow-sm lg:[.inf-pc_&]:shadow-none'
 
   // 셸은 influencer/layout.tsx 가 씌운다 — 여기서 또 부르면 사이드바가 두 겹이 된다.
   return (
@@ -272,7 +272,7 @@ export default async function InfluencerMyPage() {
       <CancelNoticeCard role="influencer" count={profile?.cancellation_count} />
 
       {/* 히어로: 프로필 + 매치스코어 + 블로그등급 + 크레딧 (모바일만 — PC는 헤더/사이드바에 이미 노출) */}
-      <section className="[.inf-pc_&]:hidden bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
+      <section className="lg:[.inf-pc_&]:hidden bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
         <div className="w-14 h-14 rounded-full bg-[#FEF3C7] text-[#B45309] text-xl font-extrabold flex items-center justify-center shrink-0">
           {initial(profile?.name)}
         </div>
@@ -294,7 +294,7 @@ export default async function InfluencerMyPage() {
       </section>
 
       {/* PC KPI 4칸 */}
-      <div className="hidden [.inf-pc_&]:grid grid-cols-4 gap-3.5">
+      <div className="hidden lg:[.inf-pc_&]:grid grid-cols-4 gap-3.5">
         <div className="bg-white border border-[#EAEAEE] rounded-xl px-[18px] py-4">
           <div className="text-xs font-semibold text-[#7C7C88]">답 기다리는 제안</div>
           <div className="text-[22px] font-extrabold text-[#DC2626] mt-1">{awaitingProposals.length}건</div>
@@ -320,7 +320,7 @@ export default async function InfluencerMyPage() {
       {awaitingProposals.length > 0 && (
         <Link
           href="/influencer/messages"
-          className="block bg-[#FFFBEB] border border-[#FDE68A] [.inf-pc_&]:rounded-[14px] rounded-2xl px-4 py-3 hover:bg-[#FEF3C7] transition"
+          className="block bg-[#FFFBEB] border border-[#FDE68A] lg:[.inf-pc_&]:rounded-[14px] rounded-2xl px-4 py-3 hover:bg-[#FEF3C7] transition"
         >
           <p className="text-[13px] font-bold text-[#92400E] flex items-center gap-1.5">
             <Hourglass size={14} strokeWidth={1.75} />
@@ -332,11 +332,11 @@ export default async function InfluencerMyPage() {
         </Link>
       )}
 
-      <div className="flex flex-col gap-6 [.inf-pc_&]:grid [.inf-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] [.inf-pc_&]:gap-[14px] [.inf-pc_&]:items-stretch">
+      <div className="flex flex-col gap-6 lg:[.inf-pc_&]:grid lg:[.inf-pc_&]:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:[.inf-pc_&]:gap-[14px] lg:[.inf-pc_&]:items-stretch">
         {/* 좌 (PC) / 상단 (모바일) */}
-        <div className="flex flex-col gap-6 [.inf-pc_&]:gap-[14px] min-w-0">
+        <div className="flex flex-col gap-6 lg:[.inf-pc_&]:gap-[14px] min-w-0">
           {/* 이번 주 일정 7일 스트립 (모바일) / 캘린더(PC) */}
-          <section className="[.inf-pc_&]:hidden">
+          <section className="lg:[.inf-pc_&]:hidden">
             <h2 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1.5">
               <CalendarDays size={15} strokeWidth={1.75} className="opacity-70" /> 이번 주 일정
             </h2>
@@ -360,7 +360,7 @@ export default async function InfluencerMyPage() {
             </div>
           </section>
 
-          <section className={card + ' [.inf-pc_&]:block hidden p-5'}>
+          <section className={card + ' lg:[.inf-pc_&]:block hidden p-5'}>
             <div className="flex items-baseline justify-between mb-2">
               <h2 className="text-[14.5px] font-bold">내 캘린더</h2>
               <p className="text-xs text-gray-500">
@@ -372,7 +372,7 @@ export default async function InfluencerMyPage() {
           </section>
 
           {/* 빠른 액션 (모바일만 — PC는 사이드바로 대체) */}
-          <section className="[.inf-pc_&]:hidden grid grid-cols-2 gap-3">
+          <section className="lg:[.inf-pc_&]:hidden grid grid-cols-2 gap-3">
             <Link
               href="/influencer/schedule"
               className="bg-[#F59E0B] text-white rounded-2xl p-4 shadow-sm hover:bg-[#D97706] transition text-center"
@@ -392,22 +392,22 @@ export default async function InfluencerMyPage() {
           {/* 받은 제안 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+              <h2 className="text-sm lg:[.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
                 <Inbox size={15} strokeWidth={1.75} className="opacity-70" /> 받은 대시
               </h2>
               <Link href="/influencer/messages" className="text-xs text-[#B45309] hover:underline">전체보기 →</Link>
             </div>
             {awaitingProposals.length === 0 ? (
-              <p className="text-sm text-gray-400 bg-white [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] rounded-2xl [.inf-pc_&]:rounded-[14px] p-4 shadow-sm [.inf-pc_&]:shadow-none">
+              <p className="text-sm text-gray-400 bg-white lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] rounded-2xl lg:[.inf-pc_&]:rounded-[14px] p-4 shadow-sm lg:[.inf-pc_&]:shadow-none">
                 받은 대시가 없어요.
               </p>
             ) : (
-              <div className="space-y-2 [.inf-pc_&]:space-y-0 [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] [.inf-pc_&]:rounded-[14px] [.inf-pc_&]:overflow-hidden [.inf-pc_&]:bg-white">
+              <div className="space-y-2 lg:[.inf-pc_&]:space-y-0 lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] lg:[.inf-pc_&]:rounded-[14px] lg:[.inf-pc_&]:overflow-hidden lg:[.inf-pc_&]:bg-white">
                 {awaitingProposals.slice(0, 5).map((p) => (
                   <Link
                     key={p.id}
                     href={`/influencer/messages?receiverId=${p.advertiser_id}&proposalId=${p.id}`}
-                    className="flex items-center bg-white [.inf-pc_&]:bg-transparent rounded-2xl [.inf-pc_&]:rounded-none p-3 [.inf-pc_&]:px-4 [.inf-pc_&]:py-3 shadow-sm [.inf-pc_&]:shadow-none [.inf-pc_&]:border-b [.inf-pc_&]:border-[#F5F5F7] hover:shadow-md [.inf-pc_&]:hover:bg-[#FAFAFB] transition"
+                    className="flex items-center bg-white lg:[.inf-pc_&]:bg-transparent rounded-2xl lg:[.inf-pc_&]:rounded-none p-3 lg:[.inf-pc_&]:px-4 lg:[.inf-pc_&]:py-3 shadow-sm lg:[.inf-pc_&]:shadow-none lg:[.inf-pc_&]:border-b lg:[.inf-pc_&]:border-[#F5F5F7] hover:shadow-md lg:[.inf-pc_&]:hover:bg-[#FAFAFB] transition"
                   >
                     <div className="w-9 h-9 bg-[#DBEAFE] rounded-full flex items-center justify-center text-[#1D4ED8] font-bold mr-3 shrink-0">
                       {initial(p.advertiserName)}
@@ -434,21 +434,21 @@ export default async function InfluencerMyPage() {
           {/* 진행중 협업 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+              <h2 className="text-sm lg:[.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
                 <Handshake size={15} strokeWidth={1.75} className="opacity-70" /> 진행중 협업
               </h2>
             </div>
             {inProgress.length === 0 ? (
-              <p className="text-sm text-gray-400 bg-white [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] rounded-2xl [.inf-pc_&]:rounded-[14px] p-4 shadow-sm [.inf-pc_&]:shadow-none">
+              <p className="text-sm text-gray-400 bg-white lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] rounded-2xl lg:[.inf-pc_&]:rounded-[14px] p-4 shadow-sm lg:[.inf-pc_&]:shadow-none">
                 진행중인 협업이 없어요.
               </p>
             ) : (
-              <div className="space-y-2 [.inf-pc_&]:space-y-0 [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] [.inf-pc_&]:rounded-[14px] [.inf-pc_&]:overflow-hidden [.inf-pc_&]:bg-white">
+              <div className="space-y-2 lg:[.inf-pc_&]:space-y-0 lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] lg:[.inf-pc_&]:rounded-[14px] lg:[.inf-pc_&]:overflow-hidden lg:[.inf-pc_&]:bg-white">
                 {inProgress.slice(0, 5).map((p) => (
                   <Link
                     key={p.id}
                     href={`/influencer/messages?receiverId=${p.advertiser_id}&proposalId=${p.id}`}
-                    className="flex items-center bg-white [.inf-pc_&]:bg-transparent rounded-2xl [.inf-pc_&]:rounded-none p-3 [.inf-pc_&]:px-4 [.inf-pc_&]:py-3 shadow-sm [.inf-pc_&]:shadow-none [.inf-pc_&]:border-b [.inf-pc_&]:border-[#F5F5F7] hover:shadow-md [.inf-pc_&]:hover:bg-[#FAFAFB] transition"
+                    className="flex items-center bg-white lg:[.inf-pc_&]:bg-transparent rounded-2xl lg:[.inf-pc_&]:rounded-none p-3 lg:[.inf-pc_&]:px-4 lg:[.inf-pc_&]:py-3 shadow-sm lg:[.inf-pc_&]:shadow-none lg:[.inf-pc_&]:border-b lg:[.inf-pc_&]:border-[#F5F5F7] hover:shadow-md lg:[.inf-pc_&]:hover:bg-[#FAFAFB] transition"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-sm text-gray-800 truncate">{p.title}</p>
@@ -464,17 +464,17 @@ export default async function InfluencerMyPage() {
           </section>
 
           {/* 내 오픈 목록 (모바일만 — PC는 별도 사이드바 메뉴로 이동) */}
-          <section className="[.inf-pc_&]:hidden">
+          <section className="lg:[.inf-pc_&]:hidden">
             <MyOpensList opens={opensWithStatus} />
           </section>
         </div>
 
         {/* 우 (PC) / 하단 (모바일) */}
-        <div className="flex flex-col gap-6 [.inf-pc_&]:gap-[14px] min-w-0">
+        <div className="flex flex-col gap-6 lg:[.inf-pc_&]:gap-[14px] min-w-0">
           {/* 내 채널 분석 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+              <h2 className="text-sm lg:[.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
                 <BarChart3 size={15} strokeWidth={1.75} className="opacity-70" /> 내 채널 분석
               </h2>
               <Link href="/influencer/channel-analytics" className="text-xs text-[#B45309] hover:underline">상세보기 →</Link>
@@ -486,7 +486,7 @@ export default async function InfluencerMyPage() {
           <section>
             <Link
               href="/influencer/earnings"
-              className="block bg-white [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] rounded-2xl [.inf-pc_&]:rounded-[14px] p-5 shadow-sm [.inf-pc_&]:shadow-none hover:shadow-md [.inf-pc_&]:hover:bg-[#FAFAFB] transition"
+              className="block bg-white lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] rounded-2xl lg:[.inf-pc_&]:rounded-[14px] p-5 shadow-sm lg:[.inf-pc_&]:shadow-none hover:shadow-md lg:[.inf-pc_&]:hover:bg-[#FAFAFB] transition"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -512,7 +512,7 @@ export default async function InfluencerMyPage() {
           {/* 알림함 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+              <h2 className="text-sm lg:[.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
                 <Bell size={15} strokeWidth={1.75} className="opacity-70" /> 알림함
                 {unreadNotif > 0 && (
                   <span className="ml-1.5 text-[11px] bg-red-500 text-white px-2 py-0.5 rounded-full align-middle">
@@ -523,17 +523,17 @@ export default async function InfluencerMyPage() {
               <Link href="/influencer/notifications" className="text-xs text-[#B45309] hover:underline">전체보기 →</Link>
             </div>
             {notifPreview.length === 0 ? (
-              <p className="text-sm text-gray-400 bg-white [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] rounded-2xl [.inf-pc_&]:rounded-[14px] p-4 shadow-sm [.inf-pc_&]:shadow-none">
+              <p className="text-sm text-gray-400 bg-white lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] rounded-2xl lg:[.inf-pc_&]:rounded-[14px] p-4 shadow-sm lg:[.inf-pc_&]:shadow-none">
                 아직 알림이 없어요.
               </p>
             ) : (
-              <div className="space-y-2 [.inf-pc_&]:space-y-0 [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] [.inf-pc_&]:rounded-[14px] [.inf-pc_&]:overflow-hidden [.inf-pc_&]:bg-white">
+              <div className="space-y-2 lg:[.inf-pc_&]:space-y-0 lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] lg:[.inf-pc_&]:rounded-[14px] lg:[.inf-pc_&]:overflow-hidden lg:[.inf-pc_&]:bg-white">
                 {notifPreview.map((n) => (
                   <Link
                     key={n.id}
                     href="/influencer/notifications"
-                    className={`flex items-start gap-3 rounded-2xl [.inf-pc_&]:rounded-none p-3 [.inf-pc_&]:px-4 shadow-sm [.inf-pc_&]:shadow-none [.inf-pc_&]:border-b [.inf-pc_&]:border-[#F5F5F7] transition ${
-                      n.is_read ? 'bg-white [.inf-pc_&]:bg-transparent' : 'bg-[#FEF3C7] hover:bg-[#FDE68A] [.inf-pc_&]:bg-[#FFFBEB]'
+                    className={`flex items-start gap-3 rounded-2xl lg:[.inf-pc_&]:rounded-none p-3 lg:[.inf-pc_&]:px-4 shadow-sm lg:[.inf-pc_&]:shadow-none lg:[.inf-pc_&]:border-b lg:[.inf-pc_&]:border-[#F5F5F7] transition ${
+                      n.is_read ? 'bg-white lg:[.inf-pc_&]:bg-transparent' : 'bg-[#FEF3C7] hover:bg-[#FDE68A] lg:[.inf-pc_&]:bg-[#FFFBEB]'
                     }`}
                   >
                     {(() => {
@@ -554,22 +554,22 @@ export default async function InfluencerMyPage() {
           {/* 대시 · 메시지 미리보기 */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm [.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
+              <h2 className="text-sm lg:[.inf-pc_&]:text-[14.5px] font-bold text-gray-800 flex items-center gap-1.5">
                 <MessageSquare size={15} strokeWidth={1.75} className="opacity-70" /> 대시
               </h2>
               <Link href="/influencer/messages" className="text-xs text-[#B45309] hover:underline">전체보기 →</Link>
             </div>
             {convPreview.length === 0 ? (
-              <p className="text-sm text-gray-400 bg-white [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] rounded-2xl [.inf-pc_&]:rounded-[14px] p-4 shadow-sm [.inf-pc_&]:shadow-none">
+              <p className="text-sm text-gray-400 bg-white lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] rounded-2xl lg:[.inf-pc_&]:rounded-[14px] p-4 shadow-sm lg:[.inf-pc_&]:shadow-none">
                 아직 주고받은 대시가 없어요.
               </p>
             ) : (
-              <div className="space-y-2 [.inf-pc_&]:space-y-0 [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] [.inf-pc_&]:rounded-[14px] [.inf-pc_&]:overflow-hidden [.inf-pc_&]:bg-white">
+              <div className="space-y-2 lg:[.inf-pc_&]:space-y-0 lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] lg:[.inf-pc_&]:rounded-[14px] lg:[.inf-pc_&]:overflow-hidden lg:[.inf-pc_&]:bg-white">
                 {convPreview.map((c) => (
                   <Link
                     key={c.otherId}
                     href={`/influencer/messages?receiverId=${c.otherId}`}
-                    className="flex items-center bg-white [.inf-pc_&]:bg-transparent rounded-2xl [.inf-pc_&]:rounded-none p-3 [.inf-pc_&]:px-4 shadow-sm [.inf-pc_&]:shadow-none [.inf-pc_&]:border-b [.inf-pc_&]:border-[#F5F5F7] hover:shadow-md [.inf-pc_&]:hover:bg-[#FAFAFB] transition"
+                    className="flex items-center bg-white lg:[.inf-pc_&]:bg-transparent rounded-2xl lg:[.inf-pc_&]:rounded-none p-3 lg:[.inf-pc_&]:px-4 shadow-sm lg:[.inf-pc_&]:shadow-none lg:[.inf-pc_&]:border-b lg:[.inf-pc_&]:border-[#F5F5F7] hover:shadow-md lg:[.inf-pc_&]:hover:bg-[#FAFAFB] transition"
                   >
                     <div className="w-10 h-10 bg-[#FEF3C7] rounded-full flex items-center justify-center text-[#B45309] font-bold mr-3">
                       {initial(nameById[c.otherId])}

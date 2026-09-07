@@ -307,7 +307,7 @@ export default function EarningsPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 [.inf-pc_&]:max-w-none [.inf-pc_&]:px-0 [.inf-pc_&]:py-0">
+    <div className="max-w-lg mx-auto px-4 py-8 lg:[.inf-pc_&]:max-w-none lg:[.inf-pc_&]:px-0 lg:[.inf-pc_&]:py-0">
       {confirmModal && pendingConfirm.length > 0 && (
         <PaidConfirmModal
           proposals={pendingConfirm}
@@ -336,7 +336,7 @@ export default function EarningsPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <Link href="/influencer/dashboard" className="hidden [.inf-pc_&]:inline-block mr-4 text-gray-400 hover:text-gray-600">
+          <Link href="/influencer/dashboard" className="hidden lg:[.inf-pc_&]:inline-block mr-4 text-gray-400 hover:text-gray-600">
             ← 뒤로
           </Link>
           <h1 className="text-xl font-bold text-gray-900">매출 관리</h1>
@@ -434,7 +434,7 @@ export default function EarningsPage() {
       </div>
 
       {/* 요약 카드 — 4칸 (PC 4열 / 모바일 2×2) */}
-      <div className="grid grid-cols-2 [.inf-pc_&]:grid-cols-4 gap-4 mb-3">
+      <div className="grid grid-cols-2 lg:[.inf-pc_&]:grid-cols-4 gap-4 mb-3">
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">총 매출</p>
           <p className="text-xl font-bold text-[#B45309]">{totalAmount.toLocaleString()}원</p>

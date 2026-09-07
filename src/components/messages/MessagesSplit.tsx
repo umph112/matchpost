@@ -9,20 +9,20 @@ import { usePathname } from 'next/navigation'
 // Tailwind가 정적으로 인식할 수 있게 pcClass별 분기를 리터럴 클래스로 나눈다(동적 템플릿 금지 —
 // Tailwind는 런타임 문자열 조합을 감지하지 못한다).
 const WRAP_PC_CLASS = {
-  'adv-pc': '[.adv-pc_&]:h-[calc(100vh-96px)] [.adv-pc_&]:border [.adv-pc_&]:border-[#EAEAEE] [.adv-pc_&]:rounded-[14px] [.adv-pc_&]:overflow-hidden [.adv-pc_&]:bg-white',
-  'inf-pc': '[.inf-pc_&]:h-[calc(100vh-96px)] [.inf-pc_&]:border [.inf-pc_&]:border-[#EAEAEE] [.inf-pc_&]:rounded-[14px] [.inf-pc_&]:overflow-hidden [.inf-pc_&]:bg-white',
+  'adv-pc': 'lg:[.adv-pc_&]:h-[calc(100vh-96px)] lg:[.adv-pc_&]:border lg:[.adv-pc_&]:border-[#EAEAEE] lg:[.adv-pc_&]:rounded-[14px] lg:[.adv-pc_&]:overflow-hidden lg:[.adv-pc_&]:bg-white',
+  'inf-pc': 'lg:[.inf-pc_&]:h-[calc(100vh-96px)] lg:[.inf-pc_&]:border lg:[.inf-pc_&]:border-[#EAEAEE] lg:[.inf-pc_&]:rounded-[14px] lg:[.inf-pc_&]:overflow-hidden lg:[.inf-pc_&]:bg-white',
 }
 const LIST_PC_CLASS = {
-  'adv-pc': '[.adv-pc_&]:w-[296px] [.adv-pc_&]:shrink-0 [.adv-pc_&]:border-r [.adv-pc_&]:border-[#EAEAEE]',
-  'inf-pc': '[.inf-pc_&]:w-[296px] [.inf-pc_&]:shrink-0 [.inf-pc_&]:border-r [.inf-pc_&]:border-[#EAEAEE]',
+  'adv-pc': 'lg:[.adv-pc_&]:w-[296px] lg:[.adv-pc_&]:shrink-0 lg:[.adv-pc_&]:border-r lg:[.adv-pc_&]:border-[#EAEAEE]',
+  'inf-pc': 'lg:[.inf-pc_&]:w-[296px] lg:[.inf-pc_&]:shrink-0 lg:[.inf-pc_&]:border-r lg:[.inf-pc_&]:border-[#EAEAEE]',
 }
 const LIST_SHOW_ON_PC = {
-  'adv-pc': '[.adv-pc_&]:block',
-  'inf-pc': '[.inf-pc_&]:block',
+  'adv-pc': 'lg:[.adv-pc_&]:block',
+  'inf-pc': 'lg:[.inf-pc_&]:block',
 }
 const ROOM_SHOW_ON_PC = {
-  'adv-pc': '[.adv-pc_&]:flex',
-  'inf-pc': '[.inf-pc_&]:flex',
+  'adv-pc': 'lg:[.adv-pc_&]:flex',
+  'inf-pc': 'lg:[.inf-pc_&]:flex',
 }
 
 export default function MessagesSplit({

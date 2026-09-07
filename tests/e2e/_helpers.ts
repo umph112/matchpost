@@ -190,13 +190,16 @@ export async function ledger(userId: string): Promise<LedgerRow[]> {
 // ── 로그인 ─────────────────────────────────────────────────────────
 // 단계마다 새 컨텍스트로 직접 로그인한다. 앞 테스트가 만든 컨텍스트를 물려쓰면
 // 앞이 실패해 워커가 갈릴 때 뒤가 「알 수 없는 이유」로 무너진다.
+// ⚠️ 폭은 여기서 정해진다. browser.newContext 는 프로젝트의 use.viewport 를 받지 않으므로
+//    두 폭으로 도는 스펙(29-width-shots)은 폭을 넘겨야 한다. 기본값은 지금까지와 같다.
 export async function loginAs(
   browser: Browser,
   email: string,
   password: string,
   waitUrl: string,
+  viewport: { width: number; height: number } = { width: 1440, height: 900 },
 ): Promise<{ ctx: BrowserContext; page: Page }> {
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  const ctx = await browser.newContext({ viewport })
   const page = await ctx.newPage()
   await page.goto('/login')
   await page.getByPlaceholder('이메일').fill(email)

@@ -49,7 +49,7 @@ export default async function AdminReportsPage({
   const { data: reports } = await query
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div>
       <div className="flex items-center mb-8">
         <h1 className="text-xl font-bold text-gray-900">신고 관리</h1>
         <Link

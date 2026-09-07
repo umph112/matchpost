@@ -8,8 +8,10 @@ import LogoutButton from './LogoutButton'
 import Logo from './Logo'
 import { initial } from '@/lib/initial'
 
-// 광고주 셸 — PC(사이드바) / 모바일(앱형)을 화면폭·UA로 자동 감지(사용자 토글 없음, D7 4-8).
+// 광고주 셸 — PC(사이드바) / 모바일(앱형)을 화면폭으로 가른다(사용자 토글 없음, D7 4-8).
 // PC 모드 비주얼은 design/mypage-pc/README.md 스펙 기준.
+// D33 — UA 감지를 걷어냈다. 서버는 화면 폭을 모르므로 JS 상태로 가르면 초기값이 필요하고,
+// 어느 값으로 시작하든 한쪽은 잘못된 셸을 먼저 그린다(D8·D16·D26 에서 세 번 다시 나온 원인).
 type NavItem = { href: string; label: string; Icon: typeof LayoutDashboard; badge?: 'msg' | 'notif'; count?: number }
 type NavGroup = { group: string; items: NavItem[] }
 const NAV_GROUPS: NavGroup[] = [
@@ -75,7 +77,6 @@ export default function AdvertiserShell({
   const pathname = usePathname()
   const router = useRouter()
   const fullBleed = pathname.startsWith('/advertiser/messages')
-  const [mode, setMode] = useState<'pc' | 'mobile'>('pc')
   const [open, setOpen] = useState(false)
   const [creditBalance, setCreditBalance] = useState<number | null>(null)
   const [view, setView] = useState<'me' | 'all'>(initialView) // 내 업무 / 회사 관리
@@ -146,14 +147,6 @@ export default function AdvertiserShell({
   ) : null
 
   useEffect(() => {
-    const detectMobile = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-    const apply = () => setMode(detectMobile() ? 'mobile' : 'pc')
-    apply()
-    window.addEventListener('resize', apply)
-    return () => window.removeEventListener('resize', apply)
-  }, [])
-
-  useEffect(() => {
     fetch('/api/credits/balance')
       .then(r => r.json())
       .then(d => setCreditBalance(d.balance ?? 0))
@@ -198,54 +191,17 @@ export default function AdvertiserShell({
     </nav>
   )
 
-  // ── 모바일 버전 (앱형) ──
-  if (mode === 'mobile') {
-    return (
-      <div className="min-h-screen bg-[#F6F6F7]">
-        <header className="h-14 bg-white border-b border-[#EAEAEE] flex items-center gap-3 px-4 sticky top-0 z-30">
-          <button className="text-[#5C5C68]" onClick={() => setOpen(true)} aria-label="메뉴">
-            <Menu size={20} strokeWidth={1.75} />
-          </button>
-          {/* D16 §6 — 왼쪽은 서비스 이름 + 기간(계정명 아님) */}
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-semibold text-[#17171B] truncate leading-tight">{subLine1}</span>
-            {subLine2 && <span className="text-[10.5px] text-[#9A9AA5] truncate leading-tight">{subLine2}</span>}
-          </div>
-          <div className="ml-auto flex items-center gap-2.5">
-            {viewToggle}
-            {/* D16 §6 — 계정 이니셜(initial.ts), 계정명은 오른쪽에만 */}
-            <div className="w-8 h-8 rounded-full bg-[#FEF3C7] text-[#B45309] text-[12px] font-extrabold flex items-center justify-center shrink-0" title={name}>
-              {initial(name)}
-            </div>
-            <LogoutButton />
-          </div>
-        </header>
-        {open && (
-          <div className="fixed inset-0 z-40">
-            <div className="absolute inset-0 bg-[rgba(0,0,0,0.3)]" onClick={() => setOpen(false)} />
-            <aside className="absolute left-0 top-0 bottom-0 w-60 bg-white shadow-xl flex flex-col">
-              {brand}
-              {navList}
-            </aside>
-          </div>
-        )}
-        {/* 광고주 콘솔은 PC 우선(D14 7절). 앱/모바일에선 정밀 관리를 PC로 안내한다. */}
-        {!fullBleed && (
-          <div className="max-w-lg mx-auto px-4 pt-3">
-            <div className="text-[11.5px] text-[#7C7C88] bg-[#FEF3C7] border border-[#FDE68A] rounded-lg px-3 py-2 leading-relaxed">
-              광고주 콘솔은 <b className="text-[#B45309]">PC에서 확인</b>하면 딜시트·정산·팀 관리를 더 정확하게 다룰 수 있어요.
-            </div>
-          </div>
-        )}
-        <main className={fullBleed ? 'adv-mobile h-[calc(100vh-56px)] flex flex-col' : 'adv-mobile max-w-lg mx-auto p-4'}>{children}</main>
-      </div>
-    )
-  }
-
-  // ── PC 버전 (좌측 고정 사이드바 + 넓은 콘텐츠) ──
+  // ── 폭으로 가른다 (D33) ──
+  // 두 껍데기를 모두 렌더하고 CSS(lg = 1024px)로 한쪽만 보인다 — 첫 페인트부터 맞는다.
+  // 태블릿 세로(768)는 모바일 쪽으로 간다: PC 셸이 lg:min-w-[1360px] 이라 768 에서는 가로 스크롤이 난다.
+  // ⚠️ children 은 아래 <main> 한 곳에만 있다. 두 곳에 넣으면 화면이 두 번 마운트돼
+  //    데이터를 두 번 부르고 폼 상태가 갈린다. 껍데기(사이드바·상단바·드로어)만 둘로 갈랐다.
+  // ⚠️ 그래서 .adv-pc 마커는 폭과 무관하게 늘 붙어 있다. 화면 쪽 PC 조건이
+  //    lg:[.adv-pc_&]: 로 폭에 묶여 있는 이유다 — 마커만 보고 갈리면 모바일에서 PC 표가 나온다.
   return (
-    <div className="flex min-h-screen min-w-[1360px] bg-[#F6F6F7] text-[#1A1A1F]">
-      <aside className="w-[236px] shrink-0 bg-white border-r border-[#EAEAEE] sticky top-0 h-screen flex flex-col">
+    <div className="flex min-h-screen lg:min-w-[1360px] bg-[#F6F6F7] lg:text-[#1A1A1F]">
+      {/* PC 사이드바 */}
+      <aside className="hidden lg:flex w-[236px] shrink-0 bg-white border-r border-[#EAEAEE] sticky top-0 h-screen flex-col">
         {brand}
         {navList}
         <div className="mt-auto border-t border-[#F1F1F4] px-4 py-3.5 flex flex-col gap-2.5">
@@ -271,8 +227,40 @@ export default function AdvertiserShell({
         </div>
       </aside>
 
+      {/* 모바일 드로어 — 햄버거로 여는 같은 메뉴 */}
+      {open && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-[rgba(0,0,0,0.3)]" onClick={() => setOpen(false)} />
+          <aside className="absolute left-0 top-0 bottom-0 w-60 bg-white shadow-xl flex flex-col">
+            {brand}
+            {navList}
+          </aside>
+        </div>
+      )}
+
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="h-16 bg-white/[.88] backdrop-blur-[10px] border-b border-[#EAEAEE] flex items-center gap-3.5 px-7 sticky top-0 z-30">
+        {/* 모바일 상단바 56px — 아래 fullBleed main 의 h-calc 이 이 높이를 그대로 쓴다 */}
+        <header className="lg:hidden h-14 bg-white border-b border-[#EAEAEE] flex items-center gap-3 px-4 sticky top-0 z-30">
+          <button className="text-[#5C5C68]" onClick={() => setOpen(true)} aria-label="메뉴">
+            <Menu size={20} strokeWidth={1.75} />
+          </button>
+          {/* D16 §6 — 왼쪽은 서비스 이름 + 기간(계정명 아님) */}
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-semibold text-[#17171B] truncate leading-tight">{subLine1}</span>
+            {subLine2 && <span className="text-[10.5px] text-[#9A9AA5] truncate leading-tight">{subLine2}</span>}
+          </div>
+          <div className="ml-auto flex items-center gap-2.5">
+            {viewToggle}
+            {/* D16 §6 — 계정 이니셜(initial.ts), 계정명은 오른쪽에만 */}
+            <div className="w-8 h-8 rounded-full bg-[#FEF3C7] text-[#B45309] text-[12px] font-extrabold flex items-center justify-center shrink-0" title={name}>
+              {initial(name)}
+            </div>
+            <LogoutButton />
+          </div>
+        </header>
+
+        {/* PC 상단바 64px */}
+        <header className="hidden lg:flex h-16 bg-white/[.88] backdrop-blur-[10px] border-b border-[#EAEAEE] items-center gap-3.5 px-7 sticky top-0 z-30">
           <div className="flex flex-col">
             <span className="text-sm font-bold tracking-[-0.01em]">{subLine1}</span>
             {subLine2 && <span className="text-[11px] text-[#9A9AA5] mt-px">{subLine2}</span>}
@@ -297,7 +285,24 @@ export default function AdvertiserShell({
             <LogoutButton />
           </div>
         </header>
-        <main className="adv-pc flex-1 flex flex-col gap-[14px] pt-[26px] px-7 pb-10">{children}</main>
+        {/* 광고주 콘솔은 PC 우선(D14 7절). 앱/모바일에선 정밀 관리를 PC로 안내한다. */}
+        {!fullBleed && (
+          <div className="lg:hidden max-w-lg w-full mx-auto px-4 pt-3">
+            <div className="text-[11.5px] text-[#7C7C88] bg-[#FEF3C7] border border-[#FDE68A] rounded-lg px-3 py-2 leading-relaxed">
+              광고주 콘솔은 <b className="text-[#B45309]">PC에서 확인</b>하면 딜시트·정산·팀 관리를 더 정확하게 다룰 수 있어요.
+            </div>
+          </div>
+        )}
+        {/* max-w-lg 에 w-full 을 같이 준다 — flex 아이템이라 auto 여백만으론 내용 폭으로 줄어든다 */}
+        <main
+          className={
+            fullBleed
+              ? 'adv-pc adv-mobile h-[calc(100vh-56px)] flex flex-col lg:h-auto lg:flex-1 lg:gap-[14px] lg:pt-[26px] lg:px-7 lg:pb-10'
+              : 'adv-pc adv-mobile max-w-lg w-full mx-auto p-4 lg:max-w-none lg:w-auto lg:mx-0 lg:flex lg:flex-col lg:flex-1 lg:gap-[14px] lg:pt-[26px] lg:px-7 lg:pb-10'
+          }
+        >
+          {children}
+        </main>
       </div>
     </div>
   )
